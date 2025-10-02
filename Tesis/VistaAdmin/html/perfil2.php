@@ -8,7 +8,7 @@ if (isset($_SESSION['id_usuario'])) {
     $Nombre = $_SESSION['nombre'];
     $Apellido = $_SESSION['apellido'];
 
-    // Traer el id_rol y nombre_rol del usuario (usa la columna correcta: "rol")
+    // Traer el id_rol y nombre_rol del usuario 
     $sql = "SELECT r.id_rol, r.nombre_rol FROM usuarios u JOIN roles r ON u.rol = r.id_rol WHERE u.id_usuario = $ID_Usuario";
     $result = $conexion->query($sql);
     $row = $result->fetch_assoc();
@@ -53,7 +53,18 @@ $emails = array_unique(array_column($filas, 'user_email'));
 $telefonos = array_unique(array_column($filas, 'user_telefono'));
 $roles = array_unique(array_column($filas, 'nombre_rol'));
 
+
+
+// Traer los permisos para la sección "Recetas" del rol actual
+$id_seccion_recetas = 3; // id para recetas
+$sql_permiso_recetas = "SELECT permisos FROM roles_permisos_secciones WHERE id_rol = $RolId AND id_seccion = $id_seccion_recetas";
+$result_permiso_recetas = $conexion->query($sql_permiso_recetas);
+$permisos_recetas = [];
+if ($row_permiso_recetas = $result_permiso_recetas->fetch_assoc()) {
+    $permisos_recetas = explode(',', str_replace("'", "", $row_permiso_recetas['permisos']));
+}
 ?>
+
 
 
 
@@ -244,15 +255,19 @@ $roles = array_unique(array_column($filas, 'nombre_rol'));
                                             </div>
                                         </a>
                                     </li>
-                                    <li>
-                                        <div class="dropdown-divider"></div>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" href="./perfil.php">
-                                            <i class="bx bx-user me-2"></i>
-                                            <span class="align-middle">Mi perfil</span>
-                                        </a>
-                                    </li>
+
+                                    
+                                        <li>
+                                            <div class="dropdown-divider"></div>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="../../VistaCliente/html/index.php">
+                                                <i class='bx bx-arrow-back me-2'></i>
+                                                <span class="align-middle">Volver al sitio web</span>
+                                            </a>
+                                        </li>
+                                    
+
                                     <li>
                                         <div class="dropdown-divider"></div>
                                     </li>
@@ -289,11 +304,53 @@ $roles = array_unique(array_column($filas, 'nombre_rol'));
                                     <div class="card-body">
                                         <div class="user-avatar-section">
                                             <div class=" d-flex align-items-center flex-column">
-                                                <img class="rounded-1 my-4" src="<?php echo $filas[0]['img'] ?>" height="110" width="110" alt="User avatar" />
+
+
+
+                                                <!-- Mostrar imagen de perfil o icono grande de persona -->
+                                                <?php
+                                                $img_perfil = (!empty($filas[0]['img'])) ? $filas[0]['img'] : null;
+                                                ?>
+                                                <div style="position: relative; display: inline-block;">
+                                                    <label for="inputFotoPerfil" style="cursor:pointer;">
+                                                        <?php if ($img_perfil): ?>
+                                                            <img class="rounded-1 my-4" src="<?php echo $img_perfil; ?>" height="130" width="130" alt="User avatar" id="fotoPerfil" style="object-fit:cover;">
+                                                        <?php else: ?>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="130" height="130" fill="#bdbdbd" class="bi bi-person-circle my-4" viewBox="0 0 16 16">
+                                                                <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
+                                                                <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1" />
+                                                            </svg>
+                                                        <?php endif; ?>
+                                                        <input type="file" id="inputFotoPerfil" name="foto_perfil" accept="image/*" style="display: none;">
+                                                    </label>
+                                                </div>
+                                                <script>
+                                                    document.getElementById('inputFotoPerfil').addEventListener('change', function() {
+                                                        var formData = new FormData();
+                                                        formData.append('id_usuario', '<?php echo $ID_Usuario; ?>');
+                                                        formData.append('foto_perfil', this.files[0]);
+                                                        fetch('subir_foto_perfil.php', {
+                                                            method: 'POST',
+                                                            body: formData
+                                                        }).then(response => {
+                                                            if (response.redirected) {
+                                                                window.location.href = response.url;
+                                                            } else {
+                                                                window.location.reload();
+                                                            }
+                                                        });
+                                                    });
+                                                </script>
+
+
                                                 <div class="user-info text-center">
                                                     <h4 class="mb-2"><?php echo $filas[0]['nombre'], ' ', $filas[0]['apellido'] ?></h4>
                                                     <span class="badge bg-label-secondary"><?php echo $filas[0]['nombre_usuario'] ?></span>
                                                 </div>
+                                                <br>
+
+
+
                                             </div>
                                         </div>
                                         <div class="d-flex justify-content-around flex-wrap my-4 py-3">
@@ -417,13 +474,14 @@ $roles = array_unique(array_column($filas, 'nombre_rol'));
                                 $limit = 5; // Mostrar 5 datos por página
 
                                 // Consulta para obtener recetas con filtros y paginación 
-                                $sql = "SELECT r.titulo, u.nombre AS usuario, r.dificultad, r.tiempo_preparacion, r.id_receta,
+                                $sql = "SELECT r.titulo, r.estado, u.nombre AS usuario, r.dificultad, r.tiempo_preparacion, r.id_receta,
                 GROUP_CONCAT(c.nombre SEPARATOR ', ') AS categorias
             FROM recetas r
             JOIN usuarios u ON r.usuario_id = u.id_usuario
             JOIN recetas_categorias rc ON r.id_receta = rc.receta_id
             JOIN categoria c ON rc.categoria_id = c.id_categoria
-            WHERE r.usuario_id = $ID_Usuario AND $where_conditions
+            WHERE r.usuario_id = $ID_Usuario AND c.estado = 'habilitado' AND $where_conditions
+            AND r.estado = 'habilitado'
             GROUP BY r.id_receta
             LIMIT $limit OFFSET $offset";
                                 $result = $conexion->query($sql);
@@ -441,7 +499,8 @@ $roles = array_unique(array_column($filas, 'nombre_rol'));
                 JOIN usuarios u ON r.usuario_id = u.id_usuario
                 JOIN recetas_categorias rc ON r.id_receta = rc.receta_id
                 JOIN categoria c ON rc.categoria_id = c.id_categoria
-                WHERE r.usuario_id = $ID_Usuario AND $where_conditions";
+                WHERE r.usuario_id = $ID_Usuario AND $where_conditions
+                AND r.estado = 'habilitado'";
 
                                 $result_total = $conexion->query($sql_total);
                                 $total = $result_total->fetch_assoc()['total'];
@@ -456,7 +515,7 @@ $roles = array_unique(array_column($filas, 'nombre_rol'));
                                     }
                                 }
                                 // Consulta para obtener todas las categorías 
-                                $sql_categorias = "SELECT nombre FROM categoria";
+                                $sql_categorias = "SELECT nombre FROM categoria WHERE estado = 'habilitado'";
                                 $result_categorias = $conexion->query($sql_categorias);
                                 $categorias_options = "";
                                 while ($row_categorias = $result_categorias->fetch_assoc()) {
@@ -528,6 +587,8 @@ $roles = array_unique(array_column($filas, 'nombre_rol'));
                                         </nav>
                                     </div>
                                 </div> -->
+
+                                <?php if(in_array('detalle',$permisos_recetas)) :?>
                                 <div class="card">
                                     <div class="card-header d-flex align-items-center justify-content-between">
                                         <div class="card-title mb-0">
@@ -566,8 +627,12 @@ $roles = array_unique(array_column($filas, 'nombre_rol'));
                                                             <div class="dropdown">
                                                                 <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
                                                                 <div class="dropdown-menu">
+                                                                    <?php if(in_array('detalle',$permisos_recetas)): ?>
                                                                     <a class="dropdown-item" href="vista-detalle-receta.php?id_receta=<?php echo $row['id_receta']; ?>"><i class='bx bx-show-alt me-2'></i> Detalle</a>
+                                                                    <?php endif; ?>
+                                                                    <?php if(in_array('editar', $permisos_recetas)): ?>
                                                                     <a class="dropdown-item" href="vista-editar-receta.php?id_receta=<?php echo $row['id_receta']; ?>"><i class='bx bx-edit-alt me-2'></i> Editar</a>
+                                                                    <?php endif; ?>
                                                                 </div>
                                                             </div>
                                                         </td>
@@ -579,6 +644,7 @@ $roles = array_unique(array_column($filas, 'nombre_rol'));
                                         <ul class="pagination justify-content-center" id="pagination"> <?php echo $pagination_html; ?> </ul>
                                     </div>
                                 </div>
+                                <?php endif;?>
 
                                 <!-- <script>
                                     const recetasPorPagina = 10;

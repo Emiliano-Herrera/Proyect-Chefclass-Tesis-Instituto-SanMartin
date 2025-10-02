@@ -10,47 +10,47 @@ include("conexion.php");
 // Verificar si el usuario ha iniciado sesión
 // Comprueba si existe la variable de sesión 'id_usuario'
 if (isset($_SESSION['id_usuario'])) {
-    
+
     // OBTENER DATOS BÁSICOS DEL USUARIO DESDE LA SESIÓN
-    
+
     // Guardar el ID del usuario actual desde la sesión
     $ID_Usuario = $_SESSION['id_usuario'];
-    
+
     // Guardar el nombre del usuario desde la sesión  
     $Nombre = $_SESSION['nombre'];
-    
+
     // Guardar el apellido del usuario desde la sesión
     $Apellido = $_SESSION['apellido'];
 
     // CONSULTAR EL ROL DEL USUARIO EN LA BASE DE DATOS
-    
+
     // Consulta SQL para obtener el ID y nombre del rol del usuario
     // JOIN une la tabla 'usuarios' con 'roles' usando la columna 'rol'
     $sql = "SELECT r.id_rol, r.nombre_rol FROM usuarios u JOIN roles r ON u.rol = r.id_rol WHERE u.id_usuario = $ID_Usuario";
-    
+
     // Ejecutar la consulta en la base de datos
     $result = $conexion->query($sql);
-    
+
     // Obtener la primera fila del resultado como array asociativo
     $row = $result->fetch_assoc();
-    
+
     // Guardar el nombre del rol (ej: 'Administrador', 'Usuario')
     $Rol = $row['nombre_rol'];
-    
+
     // Guardar el ID numérico del rol (ej: 1, 2, 3)
     $RolId = $row['id_rol'];
 
     // CONSULTAR LAS SECCIONES PERMITIDAS PARA ESTE ROL
-    
+
     // Consulta para obtener todas las secciones a las que tiene acceso este rol
     $sql_permisos = "SELECT id_seccion FROM roles_permisos_secciones WHERE id_rol = $RolId";
-    
+
     // Ejecutar la consulta
     $result_permisos = $conexion->query($sql_permisos);
-    
+
     // Crear un array vacío para almacenar los IDs de secciones permitidas
     $secciones_permitidas = [];
-    
+
     // Recorrer TODOS los resultados de la consulta usando while
     // Mientras haya filas disponibles, el bucle sigue ejecutándose
     while ($row_permiso = $result_permisos->fetch_assoc()) {
@@ -62,33 +62,32 @@ if (isset($_SESSION['id_usuario'])) {
     $id_seccion_usuarios = 1;
 
     // CONSULTAR LOS PERMISOS ESPECÍFICOS PARA LA SECCIÓN DE USUARIOS
-    
+
     // Consulta para obtener los permisos específicos (crear, editar, eliminar, etc.)
     // Solo para la sección de Usuarios y el rol actual
     $sql_permiso_usuario = "SELECT permisos FROM roles_permisos_secciones WHERE id_rol = $RolId AND id_seccion = $id_seccion_usuarios";
-    
+
     // Ejecutar la consulta
     $result_permiso_usuario = $conexion->query($sql_permiso_usuario);
-    
+
     // Crear array vacío para los permisos del usuario
     $permisos_usuario = [];
-    
+
     // Verificar si se obtuvieron resultados y procesarlos
     if ($row_permiso_usuario = $result_permiso_usuario->fetch_assoc()) {
         // PROCESAR LOS PERMISOS DE TIPO SET DE MYSQL:
         // 1. str_replace("'", "", ...) → Elimina las comillas simples del string
         // 2. explode(',', ...) → Convierte el string en array separando por comas
-        
+
         // Ejemplo: Convierte "'crear,editar,eliminar'" en ['crear', 'editar', 'eliminar']
         $permisos_usuario = explode(',', str_replace("'", "", $row_permiso_usuario['permisos']));
     }
-    
 } else {
     // SI EL USUARIO NO HA INICIADO SESIÓN:
-    
+
     // Redirigir al usuario a la página de Login
     header("Location: Login.php");
-    
+
     // Terminar la ejecución del script inmediatamente
     // Esto evita que se ejecute código adicional
     exit();
@@ -97,7 +96,6 @@ if (isset($_SESSION['id_usuario'])) {
 
 
 
-?>
 
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <!DOCTYPE html>
@@ -442,6 +440,7 @@ if (isset($_SESSION['id_usuario'])) {
                             <!-- Tabla de resultados -->
                             <div class="table-responsive text-nowrap">
                                 <table class="table table-hover">
+                                    <!-- ENCABEZADO DE LA TABLA -->
                                     <thead>
                                         <tr>
                                             <th>Persona</th>
@@ -451,33 +450,56 @@ if (isset($_SESSION['id_usuario'])) {
                                             <th>Acciones</th>
                                         </tr>
                                     </thead>
+
+                                    <!-- CUERPO DE LA TABLA -->
                                     <tbody>
                                         <?php if ($result->num_rows > 0): ?>
+                                            <!-- 
+                        Si hay resultados en la consulta, recorrer cada fila con while
+                        fetch_assoc() obtiene una fila como array asociativo
+                        El bucle se ejecuta mientras haya filas disponibles
+                        -->
                                             <?php while ($row = $result->fetch_assoc()): ?>
                                                 <tr>
+                                                    <!-- COLUMNA: INFORMACIÓN PERSONAL CON FOTO -->
                                                     <td>
                                                         <div class="d-flex align-items-center">
                                                             <?php
-                                                            // Mostramos la foto del usuario si existe, sino un ícono por defecto
+                                                            // Obtener la ruta de la imagen del usuario
                                                             $imgPath = $row['img'];
+
+                                                            // Verificar si la imagen existe y mostrar la foto
+                                                            // Si no existe, mostrar un ícono por defecto
                                                             if (!empty($imgPath) && file_exists("../ruta/donde/guardas/las/imagenes/$imgPath")) {
+                                                                // Mostrar imagen del usuario
                                                                 echo '<img src="./img_usuario/' . $imgPath . '" alt="Avatar" class="rounded-circle me-3" width="40">';
                                                             } else {
+                                                                // Mostrar ícono por defecto (silueta de persona)
                                                                 echo '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" class="bi bi-person-fill rounded-circle me-3" viewBox="0 0 16 16">
-                                                  <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/></svg>';
+                                              <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/></svg>';
                                                             }
                                                             ?>
                                                             <div>
+                                                                <!-- Mostrar nombre y apellido del usuario -->
                                                                 <strong><?= htmlspecialchars($row['nombre']) ?></strong>
                                                                 <div class="text-muted small"><?= htmlspecialchars($row['apellido']) ?></div>
                                                             </div>
                                                         </div>
                                                     </td>
+
+                                                    <!-- COLUMNA: NOMBRE DE USUARIO -->
                                                     <td><?= htmlspecialchars($row['nombre_usuario']) ?></td>
+
+                                                    <!-- COLUMNA: FECHA DE CREACIÓN FORMATEADA -->
                                                     <td>
                                                         <?php
+                                                        // Convertir la fecha de la base de datos a objeto DateTime
                                                         $fecha = new DateTime($row['fecha_creacion']);
+
+                                                        // Configurar localización para español (aunque no se usa directamente)
                                                         setlocale(LC_TIME, 'es_ES.UTF-8');
+
+                                                        // Array para traducir meses de inglés a español
                                                         $meses = [
                                                             'January' => 'Enero',
                                                             'February' => 'Febrero',
@@ -492,46 +514,72 @@ if (isset($_SESSION['id_usuario'])) {
                                                             'November' => 'Noviembre',
                                                             'December' => 'Diciembre'
                                                         ];
-                                                        $dia = $fecha->format('d');
-                                                        $mes = $meses[$fecha->format('F')];
-                                                        $anio = $fecha->format('Y');
+
+                                                        // Extraer día, mes y año de la fecha
+                                                        $dia = $fecha->format('d');       // Día con 2 dígitos (01-31)
+                                                        $mes = $meses[$fecha->format('F')]; // Mes en español
+                                                        $anio = $fecha->format('Y');     // Año con 4 dígitos
+
+                                                        // Mostrar fecha formateada: "15 de Enero del 2024"
                                                         echo "$dia de $mes del $anio";
                                                         ?>
                                                     </td>
+
+                                                    <!-- COLUMNA: ESTADO DEL USUARIO -->
                                                     <td>
+                                                        <!-- Badge verde que muestra el estado "habilitado" -->
                                                         <span class="badge bg-success"><?= htmlspecialchars($row['estado']) ?></span>
                                                     </td>
+
+                                                    <!-- COLUMNA: ACCIONES DISPONIBLES -->
                                                     <td>
-                                                        <!-- Menú desplegable de acciones -->
+                                                        <!-- Menú desplegable con las acciones posibles -->
                                                         <div class="dropdown">
+                                                            <!-- Botón que activa el menú desplegable -->
                                                             <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
                                                                 <i class="bx bx-dots-vertical-rounded"></i>
                                                             </button>
+
+                                                            <!-- Contenido del menú desplegable -->
                                                             <div class="dropdown-menu">
+                                                                <!-- OPCIÓN: VER DETALLE -->
                                                                 <?php if (in_array('detalle', $permisos_usuario)): ?>
                                                                     <a class="dropdown-item" href="PerfilUsuario.php?id_usuario=<?= $row['id_usuario'] ?>">
                                                                         <i class="bi bi-eye me-1"></i> Ver detalle
                                                                     </a>
                                                                 <?php endif; ?>
 
+                                                                <!-- 
+                                            Verificar que el usuario no sea el mismo que está logueado
+                                            Esto evita que un usuario se edite/elimine a sí mismo
+                                            -->
                                                                 <?php if ($ID_Usuario != $row['id_usuario']): ?>
+
+                                                                    <!-- OPCIÓN: EDITAR USUARIO -->
                                                                     <?php if (in_array('editar', $permisos_usuario)): ?>
                                                                         <a class="dropdown-item" href="vista-editar-usuario.php?Id=<?= $row['id_usuario'] ?>">
                                                                             <i class="bi bi-pencil-square me-1"></i> Editar
                                                                         </a>
                                                                     <?php endif; ?>
 
+                                                                    <!-- OPCIÓN: ELIMINAR USUARIO -->
                                                                     <?php if (in_array('eliminar', $permisos_usuario)): ?>
+                                                                        <!-- 
+                                                    onclick llama a función JavaScript con confirmación
+                                                    addslashes() escapa comillas para evitar errores en JavaScript
+                                                    -->
                                                                         <a class="dropdown-item" href="#" onclick="confirmarEliminacion(<?= $row['id_usuario'] ?>, '<?= addslashes($row['nombre']) ?>', '<?= addslashes($row['apellido']) ?>')">
                                                                             <i class="bx bx-trash me-1"></i> Eliminar
                                                                         </a>
                                                                     <?php endif; ?>
 
+                                                                    <!-- OPCIÓN: DESHABILITAR USUARIO -->
                                                                     <?php if (in_array('estado', $permisos_usuario)): ?>
                                                                         <a class="dropdown-item" href="#" onclick="deshabilitarUsuario(<?= $row['id_usuario'] ?>, '<?= addslashes($row['nombre']) ?>', '<?= addslashes($row['apellido']) ?>')">
                                                                             <i class="bi bi-box-arrow-right me-1"></i> Deshabilitar
                                                                         </a>
                                                                     <?php endif; ?>
+
                                                                 <?php endif; ?>
                                                             </div>
                                                         </div>
@@ -539,7 +587,7 @@ if (isset($_SESSION['id_usuario'])) {
                                                 </tr>
                                             <?php endwhile; ?>
                                         <?php else: ?>
-                                            <!-- Mensaje cuando no hay resultados -->
+                                            <!-- MENSAJE CUANDO NO HAY RESULTADOS -->
                                             <tr>
                                                 <td colspan="5" class="text-center py-4">No se encontraron usuarios habilitados</td>
                                             </tr>
@@ -547,44 +595,60 @@ if (isset($_SESSION['id_usuario'])) {
                                     </tbody>
                                 </table>
 
-                                <!-- Pie de tabla con paginación -->
+                                <!-- PIE DE TABLA CON INFORMACIÓN DE PAGINACIÓN -->
                                 <div class="d-flex justify-content-between align-items-center p-3">
+                                    <!-- TEXTO INFORMATIVO SOBRE LOS RESULTADOS MOSTRADOS -->
                                     <div class="text-muted">
+                                        <!-- 
+                    Muestra el rango de resultados actual y el total
+                    Ej: "Mostrando 1 a 10 de 25 usuarios"
+                    min() evita que se muestre un número mayor al total
+                    -->
                                         Mostrando <?= ($inicio + 1) ?> a <?= min($inicio + $resultadosPorPagina, $totalUsuarios) ?> de <?= $totalUsuarios ?> usuarios
                                     </div>
 
-                                    <!-- Mostramos la paginación solo si hay más de una página -->
+                                    <!-- PAGINACIÓN - SOLO SE MUESTRA SI HAY MÁS DE UNA PÁGINA -->
                                     <?php if ($totalPaginas > 1): ?>
                                         <nav aria-label="Paginación">
                                             <ul class="pagination mb-0">
                                                 <?php
-                                                // Juntamos los filtros para mantenerlos en la paginación
+                                                // PREPARAR FILTROS PARA MANTENERLOS EN LA PAGINACIÓN
+
+                                                // Array con todos los filtros actuales
                                                 $params = [
                                                     'nombre' => $nombreFiltro,
                                                     'apellido' => $apellidoFiltro,
                                                     'usuario' => $usuarioFiltro,
                                                     'fecha' => $fechaFiltro
                                                 ];
+
+                                                // array_filter() elimina los filtros vacíos
+                                                // http_build_query() convierte el array en string de URL
                                                 $queryString = http_build_query(array_filter($params));
 
-                                                // Botón Anterior
+                                                // BOTÓN "ANTERIOR"
+                                                // Si estamos en página 1, el botón está deshabilitado
                                                 echo '<li class="page-item ' . ($paginaActual == 1 ? 'disabled' : '') . '">';
                                                 echo '<a class="page-link" href="?page=' . ($paginaActual - 1) . '&' . $queryString . '" aria-label="Anterior">';
                                                 echo '<span aria-hidden="true">&laquo;</span>';
                                                 echo '</a></li>';
 
-                                                // Calculamos qué páginas mostrar (5 en total centradas en la actual)
-                                                $startPage = max(1, $paginaActual - 2);
-                                                $endPage = min($totalPaginas, $startPage + 4);
+                                                // CÁLCULO DE QUÉ PÁGINAS MOSTRAR
+                                                // Mostrar 5 páginas centradas en la actual
+                                                $startPage = max(1, $paginaActual - 2);  // No menor que 1
+                                                $endPage = min($totalPaginas, $startPage + 4); // No mayor que el total
 
-                                                // Mostramos las páginas
+                                                // GENERACIÓN DE LOS NÚMEROS DE PÁGINA
+                                                // Bucle for que crea los enlaces a cada página
                                                 for ($i = $startPage; $i <= $endPage; $i++) {
+                                                    // Marcar como activa la página actual
                                                     echo '<li class="page-item ' . ($i == $paginaActual ? 'active' : '') . '">';
                                                     echo '<a class="page-link" href="?page=' . $i . '&' . $queryString . '">' . $i . '</a>';
                                                     echo '</li>';
                                                 }
 
-                                                // Botón Siguiente
+                                                // BOTÓN "SIGUIENTE"
+                                                // Si estamos en la última página, el botón está deshabilitado
                                                 echo '<li class="page-item ' . ($paginaActual == $totalPaginas ? 'disabled' : '') . '">';
                                                 echo '<a class="page-link" href="?page=' . ($paginaActual + 1) . '&' . $queryString . '" aria-label="Siguiente">';
                                                 echo '<span aria-hidden="true">&raquo;</span>';
@@ -600,7 +664,6 @@ if (isset($_SESSION['id_usuario'])) {
 
                     <!-- //? JavaScript para las funcionalidades DE USUARIOS HABILITADOS 111111111111111111111111111111111111111111111111111111111111 -->
                     <script>
-                        
                         // Buscar al presionar Enter en cualquier campo de filtro
                         document.addEventListener('DOMContentLoaded', function() {
                             document.querySelectorAll('#nombre, #apellido, #usuario, #fecha').forEach(input => {
@@ -859,7 +922,7 @@ if (isset($_SESSION['id_usuario'])) {
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- //? JavaScript para las funcionalidades DE USUARIOS DESHABILITADOS 22222222222222222222222222222222222222222222222222222222222222 -->
                     <script>
                         // Buscar al presionar Enter en cualquier campo de filtro

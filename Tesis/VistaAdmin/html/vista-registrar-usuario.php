@@ -152,9 +152,9 @@ if (isset($_SESSION['id_usuario'])) {
             <span class="menu-header-text">Administración</span>
           </li>
 
-            <?php
-            // Mapeo de id_seccion a archivo, icono y nombre
-            $secciones_menu = [
+          <?php
+          // Mapeo de id_seccion a archivo, icono y nombre
+          $secciones_menu = [
             1 => ['archivo' => 'usuarios.php',      'icono' => 'bxs-user-detail',  'nombre' => 'Usuarios'],
             2 => ['archivo' => 'roles.php',         'icono' => 'bxs-user-badge',   'nombre' => 'Roles'],
             3 => ['archivo' => 'vista-recetas.php', 'icono' => 'bxs-food-menu',    'nombre' => 'Recetas'],
@@ -162,39 +162,39 @@ if (isset($_SESSION['id_usuario'])) {
             5 => ['archivo' => 'categorias.php',    'icono' => 'bxs-category',     'nombre' => 'Categorias'],
             6 => ['archivo' => 'auditoria.php',     'icono' => 'bxs-time',         'nombre' => 'Auditorias'],
             7 => ['archivo' => 'localidades.php',   'icono' => 'bxs-map',          'nombre' => 'Localidades'],
-            ];
+          ];
 
-            // Detectar el archivo actual
-            $archivo_actual = basename($_SERVER['PHP_SELF']);
+          // Detectar el archivo actual
+          $archivo_actual = basename($_SERVER['PHP_SELF']);
 
-            // Archivos que deben marcar "Usuarios" como activo
-            $usuarios_activos = [
+          // Archivos que deben marcar "Usuarios" como activo
+          $usuarios_activos = [
             'usuarios.php',
             'vista-registrar-usuario.php',
             'vista-editar-usuario.php',
             'PerfilUsuario.php'
-            ];
+          ];
 
-            // Mostrar solo las secciones permitidas para el rol
-            foreach ($secciones_menu as $id => $info) {
+          // Mostrar solo las secciones permitidas para el rol
+          foreach ($secciones_menu as $id => $info) {
             if (in_array($id, $secciones_permitidas)) {
               // Para la sección Usuarios, marcar activo si el archivo actual está en $usuarios_activos
               if ($id == 1) {
-              $active = in_array($archivo_actual, $usuarios_activos) ? 'active' : '';
+                $active = in_array($archivo_actual, $usuarios_activos) ? 'active' : '';
               } else {
-              $active = ($archivo_actual == $info['archivo']) ? 'active' : '';
+                $active = ($archivo_actual == $info['archivo']) ? 'active' : '';
               }
-            ?>
+          ?>
               <li class="menu-item <?= $active ?>">
-              <a href="<?= $info['archivo'] ?>" class="menu-link">
-                <i class='menu-icon bx <?= $info['icono'] ?>'></i>
-                <div data-i18n="<?= $info['nombre'] ?>"><?= $info['nombre'] ?></div>
-              </a>
+                <a href="<?= $info['archivo'] ?>" class="menu-link">
+                  <i class='menu-icon bx <?= $info['icono'] ?>'></i>
+                  <div data-i18n="<?= $info['nombre'] ?>"><?= $info['nombre'] ?></div>
+                </a>
               </li>
-            <?php
+          <?php
             }
-            }
-            ?>
+          }
+          ?>
 
         </ul>
       </aside>
@@ -304,26 +304,32 @@ if (isset($_SESSION['id_usuario'])) {
               <div class="row">
                 <div class="col-12">
                   <div class="card">
-                    <h5 class="card-header">Formulario de registro de usuario</h5>
+                    <h3 class="card-header">Registro de usuario</h3>
                     <div class="card-body">
                       <form id="formValidationExamples" method="post" enctype="multipart/form-data">
                         <!-- 1. Datos personales -->
                         <div class="row">
                           <div class="col-12">
-                            <h6>1. Datos personales</h6>
+                            <h4>1. Datos personales</h4>
                             <hr class="mt-0">
                           </div>
                           <div class="col-md-6 mb-3">
                             <label for="nombre" class="form-label">Nombre</label>
-                            <input type="text" id="nombre" class="form-control" placeholder="Nombre" name="nombre" required pattern="[A-Za-zÁÉÍÓÚáéíóúñÑ\s]+">
+                            <input type="text" id="nombre" class="form-control" placeholder="Nombre" name="nombre" pattern="[A-Za-zÁÉÍÓÚáéíóúñÑ\s]+">
+                            <div class="invalid-feedback" id="nombre-error" style="display:none;">
+                              El nombre es obligatorio.
+                            </div>
                           </div>
                           <div class="col-md-6 mb-3">
                             <label for="apellido" class="form-label">Apellido</label>
-                            <input type="text" id="apellido" class="form-control" placeholder="Apellido" name="apellido" required pattern="[A-Za-zÁÉÍÓÚáéíóúñÑ\s]+">
+                            <input type="text" id="apellido" class="form-control" placeholder="Apellido" name="apellido" pattern="[A-Za-zÁÉÍÓÚáéíóúñÑ\s]+">
+                            <div class="invalid-feedback" id="apellido-error" style="display:none;">
+                              El Apellido es obligatorio.
+                            </div>
                           </div>
                           <div class="col-md-6 mb-3">
                             <label for="genero" class="form-label">Género</label>
-                            <select class="form-select" name="genero" id="genero" required>
+                            <select class="form-select" name="genero" id="genero">
                               <?php
                               require "conexion.php";
                               $g = mysqli_query($conexion, "SELECT * FROM generos");
@@ -337,10 +343,10 @@ if (isset($_SESSION['id_usuario'])) {
                           </div>
                           <div class="col-md-6 mb-3">
                             <label for="rol" class="form-label">Rol</label>
-                            <select class="form-select" name="rol" id="rol" required>
+                            <select class="form-select" name="rol" id="rol">
                               <?php
                               require "conexion.php";
-                              $g = mysqli_query($conexion, "SELECT * FROM roles");
+                              $g = mysqli_query($conexion, "SELECT * FROM roles WHERE estado = 'habilitado'");
                               while ($opciones = mysqli_fetch_row($g)) {
                               ?>
                                 <option value="<?php echo $opciones[0] ?>"><?php echo $opciones[1] ?></option>
@@ -354,40 +360,64 @@ if (isset($_SESSION['id_usuario'])) {
                         <!-- Detalles de cuenta -->
                         <div class="row">
                           <div class="col-12 mt-5">
-                            <h6>2. Detalles de cuenta</h6>
+                            <h4>2. Detalles de cuenta</h4>
                             <hr class="mt-0">
                           </div>
                           <div class="col-md-6 mb-3">
                             <label for="archivo" class="form-label">Foto de perfil</label>
-                            <input class="form-control" type="file" id="archivo" name="archivo" required>
+                            <input class="form-control" type="file" id="archivo" name="archivo">
+                            <div class="invalid-feedback" id="foto-perfil-error" style="display:none;">
+                              La foto de perfil es obligatoria.
+                            </div>
                           </div>
                           <div class="col-md-6 mb-3">
                             <label for="username" class="form-label">Nombre de usuario</label>
-                            <input type="text" id="username" class="form-control" placeholder="Nombre de usuario" name="username" required>
+                            <input type="text" id="username" class="form-control" placeholder="Nombre de usuario" name="username" pattern="[A-Za-zÁÉÍÓÚáéíóúñÑ\s]+" title="Solo letras, sin números ni caracteres especiales">
+                            <div class="invalid-feedback" id="username-error" style="display:none;">
+                              El nombre de usuario es obligatorio.
+                            </div>
                           </div>
                           <div class="col-md-12 mb-3">
                             <label for="emails" class="form-label">Emails</label>
                             <div id="email-container">
                               <div class="input-group mb-3">
-                                <input type="email" class="form-control" name="emails[]" placeholder="Email" id="email" required>
+                                <input type="email" class="form-control" name="emails[]" placeholder="Email" id="email">
+
                                 <button class="btn btn-outline-secondary add-email-btn" type="button">Agregar otro</button>
+                                <div class="invalid-feedback" id="email-error" style="display:none;">
+                                  El email es obligatorio.
+                                </div>
                               </div>
                             </div>
                           </div>
                           <div class="col-md-12 mb-3">
                             <label for="telefonos" class="form-label">Teléfonos</label>
                             <div id="phone-container">
+                              <!-- En el bloque inicial de teléfonos -->
                               <div class="input-group mb-3">
-                                <input type="text" class="form-control phone-input" name="telefonos[]" placeholder="Teléfono" pattern="[0-9]{10,13}" title="Debe contener entre 10 y 13 números" minlength="10" maxlength="13" required>
+                                <input type="text" class="form-control phone-input" name="telefonos[]" placeholder="Teléfono" pattern="[0-9]{10,13}" title="Debe contener entre 10 y 13 números" minlength="10" maxlength="13">
+
+                                <select class="form-select ms-2" name="tipos_telefono[]">
+                                  <option value="Personal">Personal</option>
+                                  <option value="Laboral">Laboral</option>
+                                </select>
                                 <button class="btn btn-outline-secondary add-phone-btn" type="button">Agregar otro</button>
+                                <div class="invalid-feedback" id="telefono-error" style="display:none;">
+                                  El telefono es obligatorio.
+                                </div>
                               </div>
                             </div>
                           </div>
+
+
                           <div class="col-md-6 mb-3">
                             <div class="form-password-toggle">
                               <label for="contraseña" class="form-label">Contraseña</label>
                               <div class="input-group input-group-merge">
-                                <input class="form-control" type="password" id="contraseña" name="contraseña" placeholder="••••••••" required>
+                                <input class="form-control" type="password" id="contraseña" name="contraseña" placeholder="••••••••">
+                                <div class="invalid-feedback" id="password-error" style="display:none;">
+                                  La contraseña es obligatoria.
+                                </div>
                                 <span class="input-group-text cursor-pointer"><i class="bx bx-hide"></i></span>
                               </div>
                               <ul id="password-criteria" class="text-muted small">
@@ -402,10 +432,72 @@ if (isset($_SESSION['id_usuario'])) {
                             <div class="form-password-toggle">
                               <label for="contraseña2" class="form-label">Confirmar contraseña</label>
                               <div class="input-group input-group-merge">
-                                <input class="form-control" type="password" id="contraseña2" name="contraseña2" placeholder="••••••••" required>
+                                <input class="form-control" type="password" id="contraseña2" name="contraseña2" placeholder="••••••••">
+                                <div class="invalid-feedback" id="password-confirm-error" style="display:none;">
+                                  La confirmacion de contraseña es obligatoria.
+                                </div>
                                 <span class="input-group-text cursor-pointer"><i class="bx bx-hide"></i></span>
                               </div>
                             </div>
+                          </div>
+                        </div>
+
+
+                        <!--Ubicacion -->
+
+                        <!--Ubicacion -->
+
+                        <div class="row">
+                          <div class="col-12 mt-5">
+                            <h4>3. Ubicación</h4>
+                            <hr class="mt-0">
+                          </div>
+                          <!-- Ubicación del usuario -->
+                          <div class="row mb-3">
+                            <div class="col-md-4">
+                              <label for="provincia" class="form-label">Provincia</label>
+                              <input type="text" id="provincia" name="provincia" class="form-control" readonly>
+                              <div class="invalid-feedback" id="provincia-error" style="display:none;">
+                                La provincia es obligatoria.
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <label for="departamento" class="form-label">Departamento</label>
+                              <input type="text" id="departamento" name="departamento" class="form-control" readonly>
+
+                            </div>
+                            <div class="col-md-4">
+                              <label for="localidad" class="form-label">Localidad</label>
+                              <input type="text" id="localidad" name="localidad" class="form-control" readonly>
+                              <div class="invalid-feedback" id="localidad-error" style="display:none;">
+                                La localidad es obligatoria.
+                              </div>
+                            </div>
+                            <div class="col-md-6 mt-3">
+                              <label for="barrio" class="form-label">Barrio</label>
+                              <input type="text" id="barrio" name="barrio" class="form-control" readonly>
+                              <div class="invalid-feedback" id="barrio-error" style="display:none;">
+                                El barrio es obligatorio.
+                              </div>
+                            </div>
+                            <div class="col-md-6 mt-3">
+                              <label for="pais" class="form-label">País</label>
+                              <input type="text" id="pais" name="pais" class="form-control" readonly>
+                              <div class="invalid-feedback" id="pais-error" style="display:none;">
+                                El país es obligatorio.
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- Inputs ocultos para latitud y longitud -->
+                          <input type="hidden" id="latitud" name="latitud">
+                          <input type="hidden" id="longitud" name="longitud">
+
+                          <!-- Mapa para seleccionar ubicación -->
+                          <div class="mb-3">
+                            <label class="form-label">Ubicación en el mapa</label>
+                            <div id="map" style="height: 350px; border-radius: 10px;"></div>
+                            <div class="form-text">Haz clic en el mapa para seleccionar la ubicación del usuario.</div>
                           </div>
                         </div>
                         <div class="col-12">
@@ -428,11 +520,10 @@ if (isset($_SESSION['id_usuario'])) {
               <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 
-
               <script>
-                //funcion para que en los emails solo se permitan letras (a-z), números (0-9) y puntos (.).
-                document.getElementById("email").addEventListener("input", function() { // Eliminar espacios mientras se escribe 
-                  this.value = this.value.replace(/\s/g, ''); // para validar las restricciones del email 
+                // Solo permitir letras, números y puntos en emails (sin espacios)
+                document.getElementById("email").addEventListener("input", function() {
+                  this.value = this.value.replace(/\s/g, '');
                   const emailRegex = /^[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)*@[a-zA-Z0-9]+\.[a-zA-Z]{2,}$/;
                   if (!emailRegex.test(this.value)) {
                     this.setCustomValidity("El email no cumple con las restricciones especificadas.");
@@ -441,7 +532,7 @@ if (isset($_SESSION['id_usuario'])) {
                   }
                 });
 
-                //Funcion para que solamente se permitan letras en nombre y apellido
+                // Solo letras en nombre y apellido
                 document.getElementById("nombre").addEventListener("input", function() {
                   this.value = this.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúñÑ\s]/g, '');
                 });
@@ -449,8 +540,7 @@ if (isset($_SESSION['id_usuario'])) {
                   this.value = this.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúñÑ\s]/g, '');
                 });
 
-
-                // Validar los requisitos de la contraseña
+                // Validar requisitos de contraseña
                 function validarContrasena() {
                   const password = document.getElementById('contraseña').value;
                   const minLength = document.getElementById('min-length');
@@ -469,82 +559,160 @@ if (isset($_SESSION['id_usuario'])) {
                   specialChar.style.color = specialCharRegex.test(password) ? 'green' : 'red';
                 }
 
+                // Validar formulario
                 function validarFormulario(event) {
-                  event.preventDefault(); // Prevenir el envío automático del formulario
+                  event.preventDefault();
 
                   const errorMessage = document.getElementById('error-message');
                   const successMessage = document.getElementById('success-message');
-                  errorMessage.innerText = ''; // Limpiar el mensaje de error
-                  successMessage.innerText = ''; // Limpiar el mensaje de éxito
+                  errorMessage.innerText = '';
+                  successMessage.innerText = '';
 
-                  // Validar todos los campos del formulario
                   let isValid = true;
                   let mensajeError = '';
 
+                  //Mensaje de error si es que algun campo del formulario esta vacio 
+
+                  // Validar campos de ubicación
+                  const ubicacionCampos = [{
+                      id: 'provincia',
+                      mensaje: 'La provincia es obligatoria.'
+                    },
+                    {
+                      id: 'departamento',
+                      mensaje: 'El departamento es obligatorio.'
+                    },
+                    {
+                      id: 'localidad',
+                      mensaje: 'La localidad es obligatoria.'
+                    },
+                    {
+                      id: 'barrio',
+                      mensaje: 'El barrio es obligatorio.'
+                    },
+                    {
+                      id: 'pais',
+                      mensaje: 'El país es obligatorio.'
+                    }
+                  ];
+
+                  ubicacionCampos.forEach(function(campo) {
+                    const input = document.getElementById(campo.id);
+                    const errorDiv = document.getElementById(campo.id + '-error');
+                    if (input && input.value.trim() === '') {
+                      input.classList.add('is-invalid');
+                      if (errorDiv) {
+                        errorDiv.style.display = 'block';
+                        errorDiv.textContent = campo.mensaje;
+                      }
+                      isValid = false;
+                    } else {
+                      input.classList.remove('is-invalid');
+                      if (errorDiv) errorDiv.style.display = 'none';
+                    }
+                    // Limpiar error al escribir
+                    if (input) {
+                      input.addEventListener('input', function() {
+                        if (this.value.trim() !== '') {
+                          this.classList.remove('is-invalid');
+                          if (errorDiv) errorDiv.style.display = 'none';
+                        }
+                      });
+                    }
+                  });
+
                   // Validar nombre
-                  const nombre = document.getElementById('nombre').value.trim();
-                  if (nombre === '') {
+                  const nombreInput = document.getElementById('nombre');
+                  const nombreError = document.getElementById('nombre-error');
+                  if (nombreInput.value.trim() === '') {
                     isValid = false;
-                    mensajeError += 'El nombre es obligatorio.\n';
+                    nombreInput.classList.add('is-invalid');
+                    nombreError.style.display = 'block';
+                    nombreError.textContent = 'El nombre es obligatorio.';
+                  } else {
+                    nombreInput.classList.remove('is-invalid');
+                    nombreError.style.display = 'none';
                   }
 
                   // Validar apellido
-                  const apellido = document.getElementById('apellido').value.trim();
-                  if (apellido === '') {
+                  const apellidoInput = document.getElementById('apellido');
+                  const apellidoError = document.getElementById('apellido-error');
+                  if (apellidoInput.value.trim() === '') {
                     isValid = false;
-                    mensajeError += 'El apellido es obligatorio.\n';
+                    apellidoInput.classList.add('is-invalid');
+                    apellidoError.style.display = 'block';
+                    apellidoError.textContent = 'El apellido es obligatorio.';
+                  } else {
+                    apellidoInput.classList.remove('is-invalid');
+                    apellidoError.style.display = 'none';
                   }
 
                   // Validar género
-                  const genero = document.getElementById('genero').value;
-                  if (genero === '') {
+                  const generoInput = document.getElementById('genero');
+                  const generoError = document.getElementById('genero-error');
+                  if (generoInput.value === '') {
                     isValid = false;
-                    mensajeError += 'El género es obligatorio.\n';
+                    generoInput.classList.add('is-invalid');
+                    if (generoError) {
+                      generoError.style.display = 'block';
+                      generoError.textContent = 'El género es obligatorio.';
+                    }
+                  } else {
+                    generoInput.classList.remove('is-invalid');
+                    if (generoError) generoError.style.display = 'none';
                   }
 
                   // Validar rol
-                  const rol = document.getElementById('rol').value;
-                  if (rol === '') {
+                  const rolInput = document.getElementById('rol');
+                  const rolError = document.getElementById('rol-error');
+                  if (rolInput.value === '') {
                     isValid = false;
-                    mensajeError += 'El rol es obligatorio.\n';
-                  }
-
-                  // Validar nombre de usuario
-                  const username = document.getElementById('username').value.trim();
-                  if (username === '') {
-                    isValid = false;
-                    mensajeError += 'El nombre de usuario es obligatorio.\n';
-                  }
-
-                  // Validar emails
-                  const emailInputs = document.querySelectorAll('input[name="emails[]"]');
-                  if (emailInputs.length > 3) {
-                    isValid = false;
-                    mensajeError += 'No puedes agregar más de 3 emails.\n';
-                  }
-                  emailInputs.forEach(emailInput => {
-                    const email = emailInput.value.trim();
-                    if (email === '' || !validateEmail(email)) {
-                      isValid = false;
-                      mensajeError += 'Uno de los emails no es válido.\n';
+                    rolInput.classList.add('is-invalid');
+                    if (rolError) {
+                      rolError.style.display = 'block';
+                      rolError.textContent = 'El rol es obligatorio.';
                     }
-                  });
-
-                  // Validar teléfonos
-                  const telefonoInputs = document.querySelectorAll('input[name="telefonos[]"]');
-                  if (telefonoInputs.length > 3) {
-                    isValid = false;
-                    mensajeError += 'No puedes agregar más de 3 teléfonos.\n';
+                  } else {
+                    rolInput.classList.remove('is-invalid');
+                    if (rolError) rolError.style.display = 'none';
                   }
-                  telefonoInputs.forEach(telefonoInput => {
-                    const telefono = telefonoInput.value.trim();
-                    if (telefono === '' || telefono.length < 10 || telefono.length > 13 || !/^[0-9]+$/.test(telefono)) {
-                      isValid = false;
-                      mensajeError += 'Uno de los teléfonos no es válido. Debe contener entre 10 y 13 números y solo dígitos.\n';
-                    }
-                  });
 
-                  // Validar que las contraseñas cumplan con los requisitos
+                  // Validar username
+                  const usernameInput = document.getElementById('username');
+                  const usernameError = document.getElementById('username-error');
+                  if (usernameInput.value.trim() === '') {
+                    isValid = false;
+                    usernameInput.classList.add('is-invalid');
+                    usernameError.style.display = 'block';
+                    usernameError.textContent = 'El nombre de usuario es obligatorio.';
+                  } else {
+                    usernameInput.classList.remove('is-invalid');
+                    usernameError.style.display = 'none';
+                  }
+
+                  // Validar solo letras en nombre de usuario
+                  if (!/^[A-Za-zÁÉÍÓÚáéíóúñÑ\s]+$/.test(usernameInput.value.trim())) {
+                    isValid = false;
+                    usernameInput.classList.add('is-invalid');
+                    usernameError.style.display = 'block';
+
+                  }
+
+
+                  // Validar foto de perfil
+                  const archivoInput = document.getElementById('archivo');
+                  const archivoError = document.getElementById('foto-perfil-error');
+                  if (!archivoInput.value) {
+                    isValid = false;
+                    archivoInput.classList.add('is-invalid');
+                    archivoError.style.display = 'block';
+                    archivoError.textContent = 'Debe seleccionar un archivo de imagen.';
+                  } else {
+                    archivoInput.classList.remove('is-invalid');
+                    archivoError.style.display = 'none';
+                  }
+
+                  // Validar contraseñas
                   const password = document.getElementById('contraseña').value;
                   const confirmPassword = document.getElementById('contraseña2').value;
                   const lengthRegex = /.{8,}/;
@@ -556,25 +724,76 @@ if (isset($_SESSION['id_usuario'])) {
                     isValid = false;
                     mensajeError += 'La contraseña no cumple con los requisitos.\n';
                   }
-
                   if (password === '' || confirmPassword === '' || password !== confirmPassword) {
                     isValid = false;
                     mensajeError += 'Las contraseñas no coinciden o están vacías.\n';
                   }
 
-                  // Si no es válido, mostrar errores con SweetAlert y detener el envío
-                  if (!isValid) {
-                    Swal.fire({
-                      icon: 'error',
-                      title: 'Error',
-                      text: mensajeError,
+                  // Validar emails (visual)
+                  const emailInputs = document.querySelectorAll('input[name="emails[]"]');
+                  let emailVacio = true;
+                  emailInputs.forEach(emailInput => {
+                    const errorDiv = emailInput.parentElement.querySelector('.invalid-feedback') || document.getElementById('email-error');
+                    if (emailInput.value.trim() === '' || !validateEmail(emailInput.value.trim())) {
+                      isValid = false;
+                      emailInput.classList.add('is-invalid');
+                      if (errorDiv) {
+                        errorDiv.style.display = 'block';
+                        errorDiv.textContent = 'El email es obligatorio y debe ser válido.';
+                      }
+                    } else {
+                      emailInput.classList.remove('is-invalid');
+                      if (errorDiv) errorDiv.style.display = 'none';
+                      emailVacio = false;
+                    }
+                    emailInput.addEventListener('input', function() {
+                      if (this.value.trim() !== '' && validateEmail(this.value.trim())) {
+                        this.classList.remove('is-invalid');
+                        if (errorDiv) errorDiv.style.display = 'none';
+                      }
                     });
-                    return false;
-                  }
+                  });
+                  if (emailVacio) isValid = false;
 
-                  // Si es válido, enviar el formulario mediante AJAX
+                  // Validar teléfonos (visual)
+                  const telefonoInputs = document.querySelectorAll('input[name="telefonos[]"]');
+                  let telefonoVacio = true;
+                  telefonoInputs.forEach(telefonoInput => {
+                    const errorDiv = telefonoInput.parentElement.querySelector('.invalid-feedback') || document.getElementById('telefono-error');
+                    if (
+                      telefonoInput.value.trim() === '' ||
+                      telefonoInput.value.trim().length < 10 ||
+                      telefonoInput.value.trim().length > 13 ||
+                      !/^[0-9]+$/.test(telefonoInput.value.trim())
+                    ) {
+                      isValid = false;
+                      telefonoInput.classList.add('is-invalid');
+                      if (errorDiv) {
+                        errorDiv.style.display = 'block';
+                        errorDiv.textContent = 'El teléfono es obligatorio y debe contener entre 10 y 13 dígitos.';
+                      }
+                    } else {
+                      telefonoInput.classList.remove('is-invalid');
+                      if (errorDiv) errorDiv.style.display = 'none';
+                      telefonoVacio = false;
+                    }
+                    telefonoInput.addEventListener('input', function() {
+                      if (
+                        this.value.trim() !== '' &&
+                        this.value.trim().length >= 10 &&
+                        this.value.trim().length <= 13 &&
+                        /^[0-9]+$/.test(this.value.trim())
+                      ) {
+                        this.classList.remove('is-invalid');
+                        if (errorDiv) errorDiv.style.display = 'none';
+                      }
+                    });
+                  });
+                  if (telefonoVacio) isValid = false;
+
+
+                  // Enviar formulario por AJAX
                   const formData = new FormData(document.getElementById('formValidationExamples'));
-
                   fetch('guardar-usuario.php', {
                       method: 'POST',
                       body: formData
@@ -606,31 +825,28 @@ if (isset($_SESSION['id_usuario'])) {
                     });
                 }
 
-                // Función para validar email
+                // Validar email
                 function validateEmail(email) {
                   const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                   return re.test(email);
                 }
 
-                // Asociar la función validarFormulario al evento submit del formulario
+                // Asociar eventos
                 document.getElementById('formValidationExamples').addEventListener('submit', validarFormulario);
-
-                // Verificación de la contraseña mientras se escribe
                 document.getElementById('contraseña').addEventListener('input', validarContrasena);
 
-                // Funcionalidad para agregar más emails
+                // Agregar emails (máximo 2)
                 document.querySelector('.add-email-btn').addEventListener('click', function() {
                   const emailContainer = document.getElementById('email-container');
-                  if (emailContainer.children.length <
-                    3) {
+                  if (emailContainer.children.length < 2) {
                     const newEmailInput = document.createElement('div');
                     newEmailInput.classList.add('input-group', 'mb-3');
                     newEmailInput.innerHTML = `
-                      <input type="email" class="form-control" name="emails[]" placeholder="Email" />
-                    <button class="btn btn-outline-secondary remove-email-btn" type="button">Eliminar</button>`;
+        <input type="email" class="form-control" name="emails[]" placeholder="Email" required />
+        <button class="btn btn-outline-secondary remove-email-btn" type="button">Eliminar</button>
+      `;
                     emailContainer.appendChild(newEmailInput);
 
-                    // Funcionalidad para eliminar emails
                     newEmailInput.querySelector('.remove-email-btn').addEventListener('click', function() {
                       newEmailInput.remove();
                     });
@@ -638,29 +854,32 @@ if (isset($_SESSION['id_usuario'])) {
                     Swal.fire({
                       icon: 'error',
                       title: 'Límite alcanzado',
-                      text: 'No puedes agregar más de 3 emails.',
+                      text: 'No puedes agregar más de 2 emails.',
                     });
                   }
                 });
 
+                // Agregar teléfonos (máximo 2) con tipo
                 document.querySelector('.add-phone-btn').addEventListener('click', function() {
                   const phoneContainer = document.getElementById('phone-container');
-                  if (phoneContainer.children.length <
-                    3) {
+                  if (phoneContainer.children.length < 2) {
                     const newPhoneInput = document.createElement('div');
                     newPhoneInput.classList.add('input-group', 'mb-3');
                     newPhoneInput.innerHTML = `
-                      <input type="text" class="form-control phone-input" name="telefonos[]" placeholder="Teléfono" pattern="[0-9]{10,13}" title="Debe contener entre 10 y 13 números" minlength="10" maxlength="13" />
-                    <button class="btn btn-outline-secondary remove-phone-btn" type="button">Eliminar</button>
-                    `;
+        <input type="text" class="form-control phone-input" name="telefonos[]" placeholder="Teléfono" pattern="[0-9]{10,13}" title="Debe contener entre 10 y 13 números" minlength="10" maxlength="13" required />
+        <select class="form-select ms-2" name="tipos_telefono[]" required>
+          <option value="Personal">Personal</option>
+          <option value="Laboral">Laboral</option>
+        </select>
+        <button class="btn btn-outline-secondary remove-phone-btn" type="button">Eliminar</button>
+      `;
                     phoneContainer.appendChild(newPhoneInput);
 
-                    // Funcionalidad para eliminar teléfonos
                     newPhoneInput.querySelector('.remove-phone-btn').addEventListener('click', function() {
                       newPhoneInput.remove();
                     });
 
-                    // Validar que solo se ingresen números en el campo de teléfono
+                    // Solo números en el nuevo campo
                     newPhoneInput.querySelector('.phone-input').addEventListener('keypress', function(event) {
                       if (!/[0-9]/.test(event.key)) {
                         event.preventDefault();
@@ -670,12 +889,12 @@ if (isset($_SESSION['id_usuario'])) {
                     Swal.fire({
                       icon: 'error',
                       title: 'Límite alcanzado',
-                      text: 'No puedes agregar más de 3 teléfonos.',
+                      text: 'No puedes agregar más de 2 teléfonos.',
                     });
                   }
                 });
 
-                // Validar que solo se ingresen números en los campos existentes de teléfono
+                // Solo números en los campos existentes de teléfono
                 document.querySelectorAll('.phone-input').forEach(function(input) {
                   input.addEventListener('keypress', function(event) {
                     if (!/[0-9]/.test(event.key)) {
@@ -684,45 +903,81 @@ if (isset($_SESSION['id_usuario'])) {
                   });
                 });
 
-                // Funcionalidad para agregar más teléfonos
-                $('.add-phone-btn').on('click', function() {
-                  const phoneContainer = $('#phone-container');
-                  if (phoneContainer.children().length < 3) {
-                    const newPhoneInput = `
-                      <div class="input-group mb-3">
-                      <input type="text" class="form-control" name="telefonos[]" placeholder="Teléfono" pattern="[0-9]{10,13}" title="Debe contener entre 10 y 13 números" minlength="10" maxlength="13" />
-                      <button class="btn btn-outline-secondary remove-phone-btn" type="button">Eliminar</button>
-                </div>`;
-                    phoneContainer.append(newPhoneInput);
 
-                    // Funcionalidad para eliminar teléfonos
-                    $('.remove-phone-btn').last().on('click', function() {
-                      $(this).parent().remove();
-                    });
 
-                    // Validar que solo se ingresen números en el campo de teléfono
-                    $('.phone-input').last().on('keypress', function(event) {
-                      if (!/[0-9]/.test(event.key)) {
-                        event.preventDefault();
-                      }
-                    });
+                // Inicializar el mapa con Leaflet
+                var map = L.map('map').setView([-28.4696, -65.7852], 13); // Catamarca por defecto
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                  maxZoom: 19,
+                  attribution: '© OpenStreetMap'
+                }).addTo(map);
+
+                var marker;
+
+                map.on('click', function(e) {
+                  var lat = e.latlng.lat.toFixed(6);
+                  var lng = e.latlng.lng.toFixed(6);
+
+                  if (marker) {
+                    marker.setLatLng([lat, lng]);
                   } else {
-                    Swal.fire({
-                      icon: 'error',
-                      title: 'Límite alcanzado',
-                      text: 'No puedes agregar más de 3 teléfonos.',
-                    });
+                    marker = L.marker([lat, lng]).addTo(map);
                   }
+
+                  // Guardar en los inputs ocultos para enviar al backend
+                  document.getElementById('latitud').value = lat;
+                  document.getElementById('longitud').value = lng;
+
+                  // Geocodificación inversa con Nominatim
+                  fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`)
+                    .then(response => response.json())
+                    .then(data => {
+                      // Puedes ver la estructura de data.address en la consola
+                      // console.log(data);
+
+                      // Autocompletar los campos si existen en la respuesta
+                      document.getElementById('provincia').value = data.address.state || '';
+                      document.getElementById('departamento').value = data.address.county || '';
+                      document.getElementById('localidad').value = data.address.city || data.address.town || data.address.village || '';
+                      document.getElementById('barrio').value = data.address.suburb || '';
+                      document.getElementById('pais').value = data.address.country || '';
+                    })
+                    .catch(error => {
+                      // Si hay error, limpia los campos
+                      document.getElementById('provincia').value = '';
+                      document.getElementById('departamento').value = '';
+                      document.getElementById('localidad').value = '';
+                      document.getElementById('barrio').value = '';
+                      document.getElementById('pais').value = '';
+                    });
                 });
 
-                // Validar que solo se ingresen números en los campos existentes de teléfono
-                $('.phone-input').on('keypress', function(event) {
-                  if (!/[0-9]/.test(event.key)) {
-                    event.preventDefault();
-                  }
+
+                //Evita mas de un espacio seguido para los input text y input email
+                document.querySelectorAll('input[type="text"], input[type="email"]').forEach(function(input) {
+                  input.addEventListener('input', function() {
+                    this.value = this.value.replace(/ {2,}/g, ' ');
+                    this.value = this.value.replace(/^\s+/, '');
+
+                  });
+
+
+                });
+
+                // Evita espacios en los inputs de Password
+                document.querySelectorAll('input[type="password"]').forEach(function(input) {
+                  input.addEventListener('input', function() {
+                    this.value = this.value.replace(/\s/g, '');
+                  });
+
+                });
+
+                // Solo letras en el username
+                document.getElementById("username").addEventListener("input", function() {
+                  this.value = this.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúñÑ\s]/g, '');
                 });
               </script>
-
 
 
 
