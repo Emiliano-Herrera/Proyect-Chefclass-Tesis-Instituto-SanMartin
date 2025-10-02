@@ -15,7 +15,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($stmt->execute()) {
         // Redirigir al usuario de vuelta a la página de la receta
-        header("Location: vista-detalle-receta.php?id=" . $receta_id);
+
+
+        header("Location: vista-detalle-receta.php?id=$receta_id&comentado=ok");
+      
         exit();
     } else {
         echo "Error: " . $sql . "<br>" . $conexion->error;

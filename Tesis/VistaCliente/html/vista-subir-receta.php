@@ -25,10 +25,12 @@ if (isset($_SESSION['id_usuario'])) {
 <head>
     <link rel="stylesheet" href="./css/style.css">
     <link rel="stylesheet" href="../css/boton-naranja.css">
+    <!-- Link para cambiar las letras a  Roboto -->
+    <link rel="stylesheet" href="../css/cambio_de_letra.css">
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>ChefClass </title>
+    <title>ChefClass - Subir Receta</title>
     <link rel="icon" href="../img/chefclassFinal.png">
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="css/bootstrap.min.css">
@@ -36,31 +38,38 @@ if (isset($_SESSION['id_usuario'])) {
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <!-- animate CSS -->
-    <link rel="stylesheet" href="./css/animate.css">
-    <!-- owl carousel CSS -->
-    <link rel="stylesheet" href="./css/owl.carousel.min.css">
-    <!-- themify CSS -->
-    <link rel="stylesheet" href="./css/themify-icons.css">
-    <!-- flaticon CSS -->
-    <link rel="stylesheet" href="./css/flaticon.css">
-    <!-- font awesome CSS -->
-    <link rel="stylesheet" href="./css/magnific-popup.css">
-    <!-- swiper CSS -->
-    <link rel="stylesheet" href="./css/slick.css">
-    <link rel="stylesheet" href="./css/gijgo.min.css">
-    <link rel="stylesheet" href="./css/nice-select.css">
-    <link rel="stylesheet" href="./css/all.css">
-    <!-- style CSS -->
-    <link rel="stylesheet" href="./css/style.css">
-</head>
+    <link rel="stylesheet" href="../css/boton-naranja.css">
+    <link rel="stylesheet" href="../css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/animate.css">
+    <link rel="stylesheet" href="../css/owl.carousel.min.css">
+    <link rel="stylesheet" href="../css/themify-icons.css">
+    <link rel="stylesheet" href="../css/flaticon.css">
+    <link rel="stylesheet" href="../css/magnific-popup.css">
+    <link rel="stylesheet" href="../css/slick.css">
+    <link rel="stylesheet" href="../css/gijgo.min.css">
+    <link rel="stylesheet" href="../css/nice-select.css">
+    <link rel="stylesheet" href="../css/all.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="../css/cambio_de_letra.css">
 
-<body>
     <style>
+        /* Solo para este archivo: fuerza negrita y color negro al enlace activo */
+        .navbar-nav .nav-link.active {
+            color: #212529 !important;
+            /* color negro Bootstrap */
+            font-weight: bold !important;
+        }
+
         .error {
             border: 2px solid red;
         }
     </style>
+
+</head>
+
+<body>
+
 
     <!--::header part start::-->
     <header class="main_menu">
@@ -75,37 +84,44 @@ if (isset($_SESSION['id_usuario'])) {
                             <span class="navbar-toggler-icon"></span>
                         </button>
 
-                        <div class="collapse navbar-collapse main-menu-item justify-content-end"
-                            id="navbarSupportedContent">
+                        <div class="collapse navbar-collapse main-menu-item justify-content-end" id="navbarSupportedContent">
+
                             <ul class="navbar-nav">
                                 <li class="nav-item">
-                                    <a class="nav-link" href="index.php">Inicio</a>
+                                    <a class="nav-link <?= basename($_SERVER['PHP_SELF']) == 'index.php' ? 'active' : '' ?>" href="index.php">Inicio</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="vista-nosotros.php">Nosotros</a>
+                                    <a class="nav-link <?= basename($_SERVER['PHP_SELF']) == 'vista-nosotros.php' ? 'active' : '' ?>" href="vista-nosotros.php">Nosotros</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="vista-categoria.php">Categorías</a>
+                                    <a class="nav-link <?= basename($_SERVER['PHP_SELF']) == 'vista-categoria.php' ? 'active' : '' ?>" href="vista-categoria.php">Categorías</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="vista-equipo.php">Equipo</a>
+                                    <?php if (!isset($_SESSION['id_usuario'])): ?>
+                                        <a class="nav-link subir-receta-no-logeado" href="#">Subir recetas</a>
+                                    <?php else: ?>
+                                        <a class="nav-link <?= basename($_SERVER['PHP_SELF']) == 'vista-subir-receta.php' ? 'active' : '' ?>" href="vista-subir-receta.php">Subir recetas</a>
+                                    <?php endif; ?>
                                 </li>
-
                                 <?php if (isset($_SESSION['id_usuario'])): ?>
                                     <li class="nav-item">
-                                        <a class="nav-link" href="vista-perfil.php">Perfil</a>
+                                        <a class="nav-link <?= basename($_SERVER['PHP_SELF']) == 'vista-perfil.php' ? 'active' : '' ?>" href="vista-perfil.php">Perfil</a>
                                     </li>
                                 <?php endif; ?>
-
-
-
                             </ul>
                         </div>
-                        <div class="menu_btn">
+                        <div class="menu_btn d-flex align-items-center">
                             <?php if (!isset($_SESSION['id_usuario'])): ?>
                                 <a href="../../VistaAdmin/html/Login.php" class="btn-naranja d-none d-sm-block">Iniciar sesión</a>
                             <?php else: ?>
-                                <a href="cerrar_sesion.php" class="btn-naranja d-none d-sm-block">Cerrar sesión</a>
+
+
+                                <span class="d-none d-sm-inline align-middle" style="font-weight: 500; margin-right: 2rem;">
+                                    <i class="bi bi-person-circle" style="font-size: 1.3em; vertical-align: middle;"></i>
+                                    <?= htmlspecialchars($_SESSION['nombre'] . ' ' . $_SESSION['apellido']) ?>
+                                </span>
+
+                                <a href="cerrar_sesion.php" class="btn-naranja d-none d-sm-block ms-1">Cerrar sesión</a>
                             <?php endif; ?>
                         </div>
                     </nav>
@@ -253,29 +269,53 @@ if (isset($_SESSION['id_usuario'])) {
             <div class="row">
                 <div class="col-12">
                     <div class="card">
-                        <h5 class="card-header">Formulario para subir una receta</h5>
+                        <h3 class="card-header">Subir una receta</h3>
                         <div class="card-body">
+
+                            <style>
+                                .error {
+                                    border: 2px solid red !important;
+                                }
+
+                                .text-danger {
+                                    font-size: 0.9em;
+                                }
+                            </style>
 
                             <form id="formValidationExamples" class="row g-3" method="POST" action="insert-receta.php" enctype="multipart/form-data">
                                 <!-- 1. Datos de la receta -->
-                                <div class="col-12">
-                                    <h6>1. Datos de la receta</h6>
-                                    <hr class="mt-0" />
+                                <div class="col-12 text-center d-flex flex-column align-items-center">
+                                    <h4>1. Datos de la receta</h4>
+                                    <hr class="mt-0" style="width: 60%; min-width: 120px;">
                                 </div>
+                                <!-- Justo antes de <form id="formValidationExamples"... -->
+                                <div class="col-12 mb-2">
+                                    <small class="text-muted">Los campos marcados con <span class="text-danger">*</span> son obligatorios.</small>
+                                </div>
+                                <!-- Título -->
                                 <div class="col-md-6">
-                                    <label class="form-label" for="titulo">Título</label>
+                                    <label class="form-label" for="titulo">Título <span class="text-danger">*</span></label>
                                     <input type="text" id="titulo" class="form-control" placeholder="Título" name="titulo" data-required="true" />
+                                    <small class="text-danger d-none" id="error-titulo">Debes ingresar un título.</small>
                                 </div>
+
+                                <!-- Tiempo de preparación -->
                                 <div class="col-md-6">
-                                    <label class="form-label" for="tiempo">Tiempo de preparación (HH:MM)</label>
+                                    <label class="form-label" for="tiempo">Tiempo de preparación (HH:MM) <span class="text-danger">*</span></label>
                                     <input type="time" id="tiempo" class="form-control" placeholder="Tiempo de preparación" name="tiempo" data-required="true" />
+                                    <small class="text-danger d-none" id="error-tiempo">Debes ingresar el tiempo de preparación.</small>
                                 </div>
+
+                                <!-- Descripción -->
                                 <div class="col-md-12">
-                                    <label class="form-label" for="descripcion">Descripción</label>
+                                    <label class="form-label" for="descripcion">Descripción <span class="text-danger">*</span></label>
                                     <textarea id="descripcion" class="form-control" placeholder="Describe brevemente la receta" name="descripcion" rows="3" data-required="true"></textarea>
+                                    <small class="text-danger d-none" id="error-descripcion">Debes ingresar una descripción.</small>
                                 </div>
+
+                                <!-- Dificultad -->
                                 <div class="col-md-6">
-                                    <label class="form-label">Dificultad</label>
+                                    <label class="form-label">Dificultad <span class="text-danger">*</span></label>
                                     <div class="form-check custom mb-2">
                                         <input type="radio" id="dificultad-facil" name="dificultad" class="form-check-input" value="Fácil" data-required="true" />
                                         <label class="form-check-label" for="dificultad-facil">Fácil</label>
@@ -288,16 +328,20 @@ if (isset($_SESSION['id_usuario'])) {
                                         <input type="radio" id="dificultad-dificil" name="dificultad" class="form-check-input" value="Difícil" data-required="true" />
                                         <label class="form-check-label" for="dificultad-dificil">Difícil</label>
                                     </div>
+                                    <small class="text-danger d-none" id="error-dificultad">Debes seleccionar la dificultad.</small>
                                 </div>
+
+
+
                                 <!-- Selector de Categorías -->
                                 <div class="col-md-6">
-                                    <label class="form-label" for="categoria">Categorías</label>
+                                    <label class="form-label" for="categoria">Categorías <span class="text-danger">*</span></label>
                                     <div class="input-group mb-3">
                                         <select class="form-select" id="categoria" name="categoria[]" data-required="true">
                                             <option disabled value="">Selecciona una categoría...</option>
                                             <?php
                                             include('conexion.php');
-                                            $sql_categoria = "SELECT id_categoria, nombre FROM categoria";
+                                            $sql_categoria = "SELECT id_categoria, nombre FROM categoria WHERE estado = 'habilitado' ";
                                             $result_categoria = $conexion->query($sql_categoria);
                                             if ($result_categoria->num_rows > 0) {
                                                 while ($row = $result_categoria->fetch_assoc()) {
@@ -307,72 +351,161 @@ if (isset($_SESSION['id_usuario'])) {
                                             ?>
                                         </select>
                                         <button type="button" class="btn btn-outline-success" id="add-categoria-btn">Agregar Categoría</button>
+                                        <small class="text-danger d-none" id="error-categoria">Debes seleccionar al menos una categoría.</small>
                                     </div>
 
-                                    <script>
-                                        document.getElementById('scroll-categoria-down').addEventListener('click', function() {
-                                            const select = document.getElementById('categoria');
-                                            const optionHeight = select.options[1] ? select.options[1].offsetHeight : 32; // fallback
-                                            select.scrollBy({
-                                                top: optionHeight,
-                                                behavior: 'smooth'
-                                            });
-                                        });
 
-                                        document.getElementById('scroll-categoria-up').addEventListener('click', function() {
-                                            const select = document.getElementById('categoria');
-                                            const optionHeight = select.options[1] ? select.options[1].offsetHeight : 32; // fallback
-                                            select.scrollBy({
-                                                top: -optionHeight,
-                                                behavior: 'smooth'
-                                            });
-                                        });
-                                    </script>
                                     <div id="selected-categorias"></div>
 
 
                                 </div>
+
+
+
                                 <!-- 2. Instrucciones de la receta -->
-                                <div class="col-12 mt-5">
-                                    <h6>2. Instrucciones de la receta</h6>
-                                    <hr class="mt-0" />
+                                <div class="col-12 text-center d-flex flex-column align-items-center">
+                                    <h4>2. Instrucciones de la receta</h4>
+                                    <hr class="mt-0" style="width: 60%; min-width: 120px;">
                                 </div>
+                                <!-- Pasos (solo el primer paso, los demás se agregan dinámicamente igual) -->
                                 <div class="col-md-12">
-                                    <label class="form-label" for="instrucciones">Pasos</label>
+                                    <label class="form-label" for="instrucciones">Pasos <span class="text-danger">*</span></label>
                                     <div id="instrucciones-container">
                                         <div class="input-group mb-3">
-                                            <input type="number" class="form-control" name="num_pasos[]" placeholder="Número de paso" data-required="true" />
+                                            <input type="number" class="form-control" name="num_pasos[]" placeholder="Número de paso" value="1" readonly data-required="true" />
                                             <input type="text" class="form-control" name="pasos[]" placeholder="Descripción del paso" data-required="true" />
                                             <button class="btn btn-outline-success add-instruccion-btn" type="button">Agregar paso</button>
                                         </div>
+
                                     </div>
+                                    <small class="text-danger d-none" id="error-pasos">Debes ingresar al menos un paso.</small>
                                 </div>
                                 <!-- 3. Ingredientes de la receta -->
-                                <div class="col-12 mt-5">
-                                    <h6 class="mt-2">3. Ingredientes de la receta</h6>
-                                    <hr class="mt-0" />
+                                <div class="col-12 text-center d-flex flex-column align-items-center">
+                                    <h4>3. Ingredientes de la receta</h4>
+                                    <hr class="mt-0" style="width: 60%; min-width: 120px;">
                                 </div>
+                                <!-- Para el autocompletado de los ingredientes -->
+
+                                <!-- ...código anterior... -->
+
+                                <!-- Para el autocompletado de los ingredientes -->
+                                <?php
+                                include('conexion.php');
+                                $ingredientes = [];
+                                $sql = "SELECT nombre FROM ingredientes";
+                                $result = $conexion->query($sql);
+                                while ($row = $result->fetch_assoc()) {
+                                    $ingredientes[] = $row['nombre'];
+                                }
+                                ?>
+                                <script>
+                                    const ingredientesBD = <?php echo json_encode($ingredientes); ?>;
+                                </script>
+                                <datalist id="ingredientes-list">
+                                    <?php foreach ($ingredientes as $ing): ?>
+                                        <option value="<?php echo htmlspecialchars($ing); ?>">
+                                        <?php endforeach; ?>
+                                </datalist>
+
+                                <!-- Para el autocompletado de las cantidades -->
+                                <?php
+                                $cantidadesSugeridas = [
+                                    "1/2",
+                                    "1/5",
+                                    "0/5",
+                                    "2/3",
+                                    "2/5",
+                                    "100",
+                                    "200",
+                                    "250",
+                                    "500",
+                                    "1000",
+                                    "1",
+                                    "2",
+                                    "3",
+                                    "4",
+                                    "5",
+                                    "6",
+                                    "7",
+                                    "8",
+                                    "9",
+                                    "10",
+                                    "18",
+                                    "25"
+                                    // Agregar mas si necesitamos mas sugerencias
+                                ];
+                                ?>
+                                <script>
+                                    const cantidadesBD = <?php echo json_encode($cantidadesSugeridas); ?>;
+                                </script>
+                                <datalist id="cantidades-list">
+                                    <?php foreach ($cantidadesSugeridas as $cant): ?>
+                                        <option value="<?php echo htmlspecialchars($cant); ?>">
+                                        <?php endforeach; ?>
+                                </datalist>
+
+
+                                <script>
+                                    // Array de ingredientes desde PHP
+                                    const ingredientesBD = <?php echo json_encode($ingredientes); ?>;
+                                </script>
+                                <datalist id="ingredientes-list">
+                                    <?php foreach ($ingredientes as $ing): ?>
+                                        <option value="<?php echo htmlspecialchars($ing); ?>">
+                                        <?php endforeach; ?>
+                                </datalist>
+                                <datalist id="ingredientes-list">
+                                    <?php foreach ($ingredientes as $ing): ?>
+                                        <option value="<?php echo htmlspecialchars($ing); ?>">
+                                        <?php endforeach; ?>
+                                </datalist>
+                                <!-- Ingredientes (solo el primer ingrediente, los demás se agregan dinámicamente igual) -->
                                 <div class="col-md-12">
-                                    <label class="form-label" for="ingredientes">Ingredientes</label>
+                                    <label class="form-label" for="ingredientes">Ingredientes <span class="text-danger">*</span></label>
+
                                     <div id="ingredientes-container">
                                         <div class="input-group mb-3">
-                                            <input type="text" class="form-control" name="ingredientes[]" placeholder="Ingrediente" data-required="true" />
-                                            <input type="text" class="form-control" name="cantidades[]" placeholder="Cantidad" data-required="true" />
+                                            <input type="text" class="form-control" name="ingredientes[]" placeholder="Ingrediente" required />
+                                            <input type="text" class="form-control" name="cantidades[]" placeholder="Cantidad (ej: 1, 1/2, 2, 1/2)" list="cantidades-list" />
+                                            <input type="text" class="form-control" name="unidades[]" placeholder="Unidad (ej: Taza, Cucharada, A gusto)" list="unidades-list" />
+                                            <datalist id="unidades-list">
+                                                <option value="Taza">
+                                                <option value="Tazas">
+                                                <option value="Cucharada">
+                                                <option value="Cucharadas">
+                                                <option value="Cucharadita">
+                                                <option value="Gramos">
+                                                <option value="Gramo">
+                                                <option value="Pizca">
+                                                <option value="Pizcas">
+                                                <option value="Mililitros">
+                                                <option value="Mililitro">
+                                                <option value="A gusto">
+                                                <option value="Unidad">
+                                                <option value="Unidades">
+
+                                            </datalist>
                                             <button class="btn btn-outline-success add-ingrediente-btn" type="button">Agregar ingrediente</button>
                                         </div>
                                     </div>
+
+                                    <small class="text-danger d-none" id="error-ingredientes">Debes ingresar ingredientes.</small>
                                 </div>
                                 <!-- 4. Sube imágenes o videos de tu receta -->
-                                <div class="col-12 mt-5">
-                                    <h6 class="mt-2">4. Subir fotos o videos de la receta (Asegurate de seleccionar todas las imagenes o videos de una vez)</h6>
-                                    <hr class="mt-0" />
+                                <div class="col-12 text-center d-flex flex-column align-items-center">
+                                    <h4>4. Subir fotos o videos de la receta (Asegurate de seleccionar todas las imagenes o videos de una vez)</h4>
+                                    <hr class="mt-0" style="width: 60%; min-width: 120px;">
                                 </div>
+
+                                <!-- Subir fotos o videos -->
                                 <div class="col-12">
-                                    <label class="form-label" for="media_files">Subir fotos o videos</label>
+                                    <label class="form-label" for="media_files">Subir fotos o videos <span class="text-danger">*</span></label>
                                     <div class="input-group mb-3">
                                         <label class="input-group-text" for="inputGroupFile01">Subir</label>
                                         <input type="file" class="form-control" id="inputGroupFile01" name="media_files[]" accept="image/*,video/*" multiple data-required="true" />
                                     </div>
+                                    <small class="text-danger d-none" id="error-media">Debes subir al menos una imagen o video.</small>
                                 </div>
                                 <div class="col-12 justify-content-between">
                                     <button type="submit" class="button button-contactForm btn_4 me-2">Subir receta</button>
@@ -394,137 +527,10 @@ if (isset($_SESSION['id_usuario'])) {
     </section>
     <!-- ================ contact section end ================= -->
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const addCategoriaBtn = document.getElementById('add-categoria-btn');
-            const categoriaSelect = document.getElementById('categoria');
-            const selectedCategoriasContainer = document.getElementById('selected-categorias');
-
-            // Evento para agregar una categoría
-            addCategoriaBtn.addEventListener('click', function() {
-                const selectedCategoriaValue = categoriaSelect.value;
-                const selectedCategoriaText = categoriaSelect.options[categoriaSelect.selectedIndex].text;
-
-                // Verificar si ya se seleccionó la categoría
-                if (selectedCategoriaValue && !document.querySelector(`#selected-categorias input[value="${selectedCategoriaValue}"]`)) {
-                    // Crear un nuevo elemento para la categoría seleccionada
-                    const categoriaElement = document.createElement('div');
-                    categoriaElement.className = 'input-group mb-2';
-                    categoriaElement.innerHTML = `
-                <input type="hidden" name="categoria[]" value="${selectedCategoriaValue}">
-                <input type="text" class="form-control" value="${selectedCategoriaText}" readonly>
-                <button class="btn btn-outline-danger remove-categoria-btn" type="button">Eliminar</button>
-            `;
-
-                    // Agregar el evento para eliminar la categoría
-                    categoriaElement.querySelector('.remove-categoria-btn').addEventListener('click', function() {
-                        categoriaElement.remove();
-                    });
-
-                    // Agregar la categoría al contenedor
-                    selectedCategoriasContainer.appendChild(categoriaElement);
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Por favor selecciona una categoría válida o evita duplicados.',
-                        confirmButtonText: 'Aceptar'
-                    });
-                }
-            });
-        });
-        // Agregar paso de instrucción
-        document.querySelector('.add-instruccion-btn').addEventListener('click', function() {
-            let container = document.getElementById('instrucciones-container');
-            let newInputGroup = document.createElement('div');
-            newInputGroup.className = 'input-group mb-3';
-            newInputGroup.innerHTML = `<input type="number" class="form-control" name="num_pasos[]" placeholder="Número de paso" required />
-                                                                            <input type="text" class="form-control" name="pasos[]" placeholder="Descripción del paso" required />
-                                                                            <button class="btn btn-outline-danger remove-instruccion-btn" type="button">Eliminar</button>`;
-            container.appendChild(newInputGroup);
-
-            // Agregar evento de eliminar paso
-            newInputGroup.querySelector('.remove-instruccion-btn').addEventListener('click', function() {
-                container.removeChild(newInputGroup);
-            });
-        });
-
-        // Agregar ingrediente
-        document.querySelector('.add-ingrediente-btn').addEventListener('click', function() {
-            let container = document.getElementById('ingredientes-container');
-            let newInputGroup = document.createElement('div');
-            newInputGroup.className = 'input-group mb-3';
-            newInputGroup.innerHTML = `<input type="text" class="form-control" name="ingredientes[]" placeholder="Ingrediente" required />
-                                                                            <input type="text" class="form-control" name="cantidades[]" placeholder="Cantidad" required />
-                                                                            <button class="btn btn-outline-danger remove-ingrediente-btn" type="button">Eliminar</button>`;
-            container.appendChild(newInputGroup);
-
-            // Agregar evento de eliminar ingrediente
-            newInputGroup.querySelector('.remove-ingrediente-btn').addEventListener('click', function() {
-                container.removeChild(newInputGroup);
-            });
-        });
-    </script>
 
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
-    <script>
-        //Definición de Palabras Prohibidas
-        const forbiddenWords = ["gay", "gil", "topo", "topoide"]; // Añade aquí las palabras que quieres prohibir
 
-        //Función para Verificar Palabras Prohibidas Esta función toma una cadena de texto (text) como argumento 
-        // y verifica si contiene alguna de las palabras prohibidas. Si encuentra alguna palabra prohibida, 
-        //devuelve true, de lo contrario, devuelve false.
-        function containsForbiddenWords(text) {
-            for (let word of forbiddenWords) {
-                if (text.includes(word)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        // Función para Validar el Formulario
-        /* Obtención de Valores: Se obtienen los valores de los campos del formulario 
-        (título, descripción, instrucciones y ingredientes).
-
-        Lista de Campos Inválidos: Se crea una lista para almacenar los nombres de los campos que 
-        contienen palabras prohibidas.
-
-        Verificación de Palabras Prohibidas: Se verifica si cada campo contiene alguna de las 
-        palabras prohibidas usando la función containsForbiddenWords. 
-        Si se encuentra una palabra prohibida en un campo, se añade el nombre del campo a la lista invalidFields.
-
-        Mostrar Alerta y Prevenir Envío: Si hay campos inválidos 
-        (es decir, invalidFields no está vacío), se previene el envío del formulario (event.preventDefault()) 
-        y se muestra una alerta de error usando SweetAlert2, indicando los campos que contienen palabras no permitidas. */
-        function validateForm(event) {
-            const titulo = document.getElementById('titulo').value;
-            const descripcion = document.getElementById('descripcion').value;
-            const instrucciones = Array.from(document.querySelectorAll('input[name="pasos[]"]')).map(input => input.value);
-            const ingredientes = Array.from(document.querySelectorAll('input[name="ingredientes[]"]')).map(input => input.value);
-
-            let invalidFields = [];
-
-            if (containsForbiddenWords(titulo)) invalidFields.push('Título');
-            if (containsForbiddenWords(descripcion)) invalidFields.push('Descripción');
-            if (instrucciones.some(containsForbiddenWords)) invalidFields.push('Instrucciones');
-            if (ingredientes.some(containsForbiddenWords)) invalidFields.push('Ingredientes');
-
-            if (invalidFields.length > 0) {
-                event.preventDefault();
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: `Los siguientes campos contienen palabras no permitidas: ${invalidFields.join(', ')}.`,
-                    confirmButtonText: 'Aceptar'
-                });
-            }
-        }
-
-        //Asignación del Evento de Validación al Formulario
-        document.getElementById('formValidationExamples').addEventListener('submit', validateForm);
-    </script>
 
     <!-- footer part start-->
     <!--
@@ -602,148 +608,495 @@ if (isset($_SESSION['id_usuario'])) {
     <!-- Y para los sweetAlert cuando falta algo del formulario -->
 
     <script>
-        // ...existing code...
         document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('formValidationExamples');
-            const requiredFields = form.querySelectorAll('[data-required]');
-
-            function validateField(field) {
-                if (field.type === 'radio') {
-                    const radios = document.querySelectorAll(`input[name="${field.name}"]`);
-                    const isChecked = Array.from(radios).some(radio => radio.checked);
-                    if (!isChecked) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: `Debes seleccionar una ${field.name}.`,
-                            confirmButtonText: 'Aceptar'
-                        });
-                        radios.forEach(radio => radio.classList.add('error'));
-                        return false;
-                    } else {
-                        radios.forEach(radio => radio.classList.remove('error'));
-                    }
-                } else if (field.tagName === 'SELECT') {
-                    // Validar que se haya seleccionado al menos una categoría
-                    if (field.selectedOptions.length === 0 || !field.value.trim()) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: `Debes seleccionar al menos una categoría.`,
-                            confirmButtonText: 'Aceptar'
-                        });
-                        field.classList.add('error');
-                        return false;
-                    } else {
-                        field.classList.remove('error');
-                    }
-                } else if (field.type === 'file' && field.name === 'media_files[]') {
-                    if (field.files.length === 0) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: `Debes ingresar una imagen o video.`,
-                            confirmButtonText: 'Aceptar'
-                        });
-                        field.classList.add('error');
-                        return false;
-                    } else {
-                        field.classList.remove('error');
-                    }
-                } else {
-                    if (!field.value.trim()) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: `Debes ingresar ${field.placeholder || field.name}.`,
-                            confirmButtonText: 'Aceptar'
-                        });
-                        field.classList.add('error');
-                        return false;
-                    } else {
-                        field.classList.remove('error');
-                    }
-                }
-                return true;
+            // --- LIMPIEZA DE ESPACIOS ---
+            function limpiarEspaciosInput(input) {
+                input.value = input.value
+                    .replace(/^\s+/, '') // sin espacios al principio
+                    .replace(/\s{2,}/g, ' ') // solo un espacio entre palabras
+                    .replace(/(\s+)$/, function(match) {
+                        return match.length > 1 ? ' ' : match; // máximo un espacio al final
+                    });
             }
-
-            form.addEventListener('submit', function(event) {
-                let isValid = true;
-                for (let field of requiredFields) {
-                    if (!validateField(field)) {
-                        isValid = false;
-                        event.preventDefault();
-                        field.scrollIntoView({
-                            behavior: "smooth",
-                            block: "center"
-                        });
-                        field.focus();
-                        break;
-                    }
-                }
-                if (!isValid) {
-                    event.preventDefault();
-                }
+            // Aplica limpieza en tiempo real a todos los inputs de texto y textarea
+            document.querySelectorAll('input[type="text"], textarea').forEach(function(input) {
+                input.addEventListener('input', function() {
+                    limpiarEspaciosInput(input);
+                });
             });
 
-            // ...existing code...
-            // ...existing code...
-
-            // Agregar eventos de validación a los campos dinámicamente agregados
-            function addValidationEvents(field) {
-                field.addEventListener('blur', function() {
-                    validateField(field);
-                });
-
-                field.addEventListener('input', function() {
-                    if (field.value.trim()) {
-                        field.classList.remove('error');
-                    }
-                });
+            // --- FUNCIONES DE ERROR VISUAL ---
+            function mostrarError(id, mensaje) {
+                const error = document.getElementById(id);
+                if (error) {
+                    error.textContent = mensaje;
+                    error.classList.remove('d-none');
+                }
             }
 
+            function ocultarError(id) {
+                const error = document.getElementById(id);
+                if (error) {
+                    error.textContent = '';
+                    error.classList.add('d-none');
+                }
+            }
 
-            // Agregar paso de instrucción
+            // --- VALIDACIÓN DINÁMICA AL CORREGIR ---
+            document.querySelectorAll('input, textarea, select').forEach(function(input) {
+                input.addEventListener('input', function() {
+                    if (input.classList.contains('error') && input.value.trim()) {
+                        input.classList.remove('error');
+                        const id = input.id ? 'error-' + input.id : '';
+                        ocultarError(id);
+                    }
+                });
+            });
+
+            // --- AGREGAR PASOS DINÁMICOS ---
             document.querySelector('.add-instruccion-btn').addEventListener('click', function() {
                 let container = document.getElementById('instrucciones-container');
+                let pasoNumber = container.querySelectorAll('.input-group').length + 1;
                 let newInputGroup = document.createElement('div');
                 newInputGroup.className = 'input-group mb-3';
-                newInputGroup.innerHTML = `<input type="number" class="form-control" name="num_pasos[]" placeholder="Número de paso" data-required="true" />
-                                        <input type="text" class="form-control" name="pasos[]" placeholder="Descripción del paso" data-required="true" />
-                                        <button class="btn btn-outline-danger remove-instruccion-btn" type="button">Eliminar</button>`;
+                newInputGroup.innerHTML = `
+            <input type="number" class="form-control" name="num_pasos[]" placeholder="Número de paso" value="${pasoNumber}" readonly data-required="true" />
+            <input type="text" class="form-control" name="pasos[]" placeholder="Descripción del paso" data-required="true" />
+            <button class="btn btn-outline-danger remove-instruccion-btn" type="button">Eliminar</button>
+        `;
                 container.appendChild(newInputGroup);
 
-                // Agregar eventos de validación a los nuevos campos
+                // Limpieza y validación en el nuevo input
+                newInputGroup.querySelectorAll('input[type="text"]').forEach(function(input) {
+                    input.addEventListener('input', function() {
+                        limpiarEspaciosInput(input);
+                    });
+                });
                 newInputGroup.querySelectorAll('[data-required]').forEach(addValidationEvents);
 
-                // Agregar evento de eliminar paso
+                // Eliminar paso y renumerar
                 newInputGroup.querySelector('.remove-instruccion-btn').addEventListener('click', function() {
                     container.removeChild(newInputGroup);
+                    Array.from(container.querySelectorAll('.input-group')).forEach((group, idx) => {
+                        let numInput = group.querySelector('input[name="num_pasos[]"]');
+                        if (numInput) numInput.value = idx + 1;
+                    });
                 });
             });
 
-            // Agregar ingrediente
+
+
+            // --- AGREGAR INGREDIENTES DINÁMICOS ---
             document.querySelector('.add-ingrediente-btn').addEventListener('click', function() {
                 let container = document.getElementById('ingredientes-container');
                 let newInputGroup = document.createElement('div');
                 newInputGroup.className = 'input-group mb-3';
-                newInputGroup.innerHTML = `<input type="text" class="form-control" name="ingredientes[]" placeholder="Ingrediente" data-required="true" />
-                                        <input type="text" class="form-control" name="cantidades[]" placeholder="Cantidad" data-required="true" />
-                                        <button class="btn btn-outline-danger remove-ingrediente-btn" type="button">Eliminar</button>`;
+                newInputGroup.innerHTML = `
+        <input type="text" class="form-control" name="ingredientes[]" placeholder="Ingrediente" required />
+        <input type="text" class="form-control" name="cantidades[]" placeholder="Cantidad (ej: 1, 1/2, 2 1/2, a gusto)" />
+        <input type="text" class="form-control" name="unidades[]" placeholder="Unidad (ej: taza, cucharada, a gusto)" />
+        <button class="btn btn-outline-danger remove-ingrediente-btn" type="button">Eliminar</button>
+    `;
                 container.appendChild(newInputGroup);
 
-                // Agregar eventos de validación a los nuevos campos
-                newInputGroup.querySelectorAll('[data-required]').forEach(addValidationEvents);
-
-                // Agregar evento de eliminar ingrediente
                 newInputGroup.querySelector('.remove-ingrediente-btn').addEventListener('click', function() {
                     container.removeChild(newInputGroup);
                 });
             });
-        });
 
-       
+
+
+
+            // --- VALIDACIÓN DE CAMPOS DINÁMICOS ---
+            function addValidationEvents(field) {
+                field.addEventListener('blur', function() {
+                    validateField(field);
+                });
+                field.addEventListener('input', function() {
+                    if (field.value.trim()) {
+                        field.classList.remove('error');
+                    }
+                    if (field.name === "pasos[]") {
+                        limpiarEspaciosInput(field);
+                    }
+                });
+            }
+
+            // --- VALIDACIÓN VISUAL Y PALABRAS PROHIBIDAS ---
+            const form = document.getElementById('formValidationExamples');
+            form.addEventListener('submit', function(event) {
+                let valido = true;
+
+                // Limpia espacios antes de validar
+                document.querySelectorAll('input[type="text"], textarea').forEach(function(input) {
+                    input.value = input.value.replace(/^\s+|\s+$/g, '').replace(/\s{2,}/g, ' ');
+                });
+
+                // Título
+                const titulo = document.getElementById('titulo');
+                if (!titulo.value.trim()) {
+                    mostrarError('error-titulo', 'Debes ingresar un título.');
+                    titulo.classList.add('error');
+                    valido = false;
+                } else {
+                    ocultarError('error-titulo');
+                    titulo.classList.remove('error');
+                }
+
+                // Tiempo de preparación
+                const tiempo = document.getElementById('tiempo');
+                if (!tiempo.value.trim()) {
+                    mostrarError('error-tiempo', 'Debes ingresar el tiempo de preparación.');
+                    tiempo.classList.add('error');
+                    valido = false;
+                } else {
+                    ocultarError('error-tiempo');
+                    tiempo.classList.remove('error');
+                }
+
+                // Descripción
+                const descripcion = document.getElementById('descripcion');
+                if (!descripcion.value.trim()) {
+                    mostrarError('error-descripcion', 'Debes ingresar una descripción.');
+                    descripcion.classList.add('error');
+                    valido = false;
+                } else {
+                    ocultarError('error-descripcion');
+                    descripcion.classList.remove('error');
+                }
+
+                // Dificultad
+                const dificultadRadios = document.querySelectorAll('input[name="dificultad"]');
+                const dificultadChecked = Array.from(dificultadRadios).some(radio => radio.checked);
+                if (!dificultadChecked) {
+                    mostrarError('error-dificultad', 'Debes seleccionar la dificultad.');
+                    dificultadRadios.forEach(radio => radio.classList.add('error'));
+                    valido = false;
+                } else {
+                    ocultarError('error-dificultad');
+                    dificultadRadios.forEach(radio => radio.classList.remove('error'));
+                }
+
+                // Categoría
+                const categoria = document.getElementById('categoria');
+                const selectedCategorias = document.querySelectorAll('#selected-categorias input[name="categoria[]"]');
+                if ((!categoria.value.trim() && selectedCategorias.length === 0) || categoria.value === "") {
+                    mostrarError('error-categoria', 'Debes seleccionar al menos una categoría.');
+                    categoria.classList.add('error');
+                    valido = false;
+                } else {
+                    ocultarError('error-categoria');
+                    categoria.classList.remove('error');
+                }
+
+                // Pasos
+                const pasos = document.querySelectorAll('input[name="pasos[]"]');
+                let pasoVacio = false;
+                pasos.forEach(paso => {
+                    if (!paso.value.trim()) pasoVacio = true;
+                });
+                if (pasos.length === 0 || pasoVacio) {
+                    mostrarError('error-pasos', 'Debes ingresar la descripcion del paso.');
+                    pasos.forEach(paso => paso.classList.add('error'));
+                    valido = false;
+                } else {
+                    ocultarError('error-pasos');
+                    pasos.forEach(paso => paso.classList.remove('error'));
+                }
+
+                // Ingredientes
+                const ingredientes = document.querySelectorAll('input[name="ingredientes[]"]');
+                let ingredienteVacio = false;
+                ingredientes.forEach(ing => {
+                    if (!ing.value.trim()) ingredienteVacio = true;
+                });
+                if (ingredientes.length === 0 || ingredienteVacio) {
+                    mostrarError('error-ingredientes', 'Debes ingresar al menos un ingrediente.');
+                    ingredientes.forEach(ing => ing.classList.add('error'));
+                    valido = false;
+                } else {
+                    ocultarError('error-ingredientes');
+                    ingredientes.forEach(ing => ing.classList.remove('error'));
+                }
+
+                // Media files
+                const media = document.getElementById('inputGroupFile01');
+                if (!media.files || media.files.length === 0) {
+                    mostrarError('error-media', 'Debes subir al menos una imagen o video.');
+                    media.classList.add('error');
+                    valido = false;
+                } else {
+                    ocultarError('error-media');
+                    media.classList.remove('error');
+
+                    // Validación de tamaño de archivos individuales
+                    const MAX_SIZE_MB = 40;
+                    const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
+                    let archivosGrandes = [];
+                    for (let file of media.files) {
+                        if (file.size > MAX_SIZE_BYTES) {
+                            archivosGrandes.push(file.name);
+                        }
+                    }
+                    if (archivosGrandes.length > 0) {
+                        event.preventDefault();
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Archivo demasiado grande',
+                            text: `Los siguientes archivos superan el límite de ${MAX_SIZE_MB} MB:\n${archivosGrandes.join(', ')}`,
+                            confirmButtonText: 'Aceptar'
+                        });
+                        media.value = '';
+                        valido = false;
+                    }
+
+                    // Validación de tamaño total de archivos
+                    let totalSize = 0;
+                    for (let file of media.files) {
+                        totalSize += file.size;
+                    }
+                    const MAX_TOTAL_SIZE_MB = 40; // Límite total en MB (Igual que el post_max_size de PHP)
+                    const MAX_TOTAL_SIZE_BYTES = MAX_TOTAL_SIZE_MB * 1024 * 1024;
+                    if (totalSize > MAX_TOTAL_SIZE_BYTES) {
+                        event.preventDefault();
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Demasiado peso total',
+                            text: `El tamaño total de los archivos supera el límite de ${MAX_TOTAL_SIZE_MB} MB.`,
+                            confirmButtonText: 'Aceptar'
+                        });
+                        media.value = '';
+                        valido = false;
+                    }
+                }
+
+                // Si hay algún error, evita el envío
+                if (!valido) {
+                    event.preventDefault();
+                    const primerError = document.querySelector('.error');
+                    if (primerError) primerError.scrollIntoView({
+                        behavior: "smooth",
+                        block: "center"
+                    });
+                    return;
+                }
+
+                // --- PALABRAS PROHIBIDAS ---
+                const forbiddenWords = ["gay", "gil", "topo", "topoide"];
+
+                function containsForbiddenWords(text) {
+                    for (let word of forbiddenWords) {
+                        if (text.includes(word)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+                const instrucciones = Array.from(document.querySelectorAll('input[name="pasos[]"]')).map(input => input.value);
+                if (
+                    containsForbiddenWords(titulo.value) ||
+                    containsForbiddenWords(descripcion.value) ||
+                    instrucciones.some(containsForbiddenWords) ||
+                    Array.from(ingredientes).some(input => containsForbiddenWords(input.value))
+                ) {
+                    event.preventDefault();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: `Uno o más campos contienen palabras no permitidas.`,
+                        confirmButtonText: 'Aceptar'
+                    });
+                }
+            });
+
+            // --- AGREGAR CATEGORÍA DINÁMICA ---
+            const addCategoriaBtn = document.getElementById('add-categoria-btn');
+            const categoriaSelect = document.getElementById('categoria');
+            const selectedCategoriasContainer = document.getElementById('selected-categorias');
+            addCategoriaBtn.addEventListener('click', function() {
+                const selectedCategoriaValue = categoriaSelect.value;
+                const selectedCategoriaText = categoriaSelect.options[categoriaSelect.selectedIndex].text;
+                if (selectedCategoriaValue && !document.querySelector(`#selected-categorias input[value="${selectedCategoriaValue}"]`)) {
+                    const categoriaElement = document.createElement('div');
+                    categoriaElement.className = 'input-group mb-2';
+                    categoriaElement.innerHTML = `
+                <input type="hidden" name="categoria[]" value="${selectedCategoriaValue}">
+                <input type="text" class="form-control" value="${selectedCategoriaText}" readonly>
+                <button class="btn btn-outline-danger remove-categoria-btn" type="button">Eliminar</button>
+            `;
+                    categoriaElement.querySelector('.remove-categoria-btn').addEventListener('click', function() {
+                        categoriaElement.remove();
+                    });
+                    selectedCategoriasContainer.appendChild(categoriaElement);
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Por favor evita seleccionar categorias duplicadas .',
+                        confirmButtonText: 'Aceptar'
+                    });
+                }
+            });
+
+
+            // Función para buscar sugerencias (case-insensitive, contiene)
+            function sugerenciasIngrediente(valor) {
+                valor = valor.trim().toLowerCase();
+                if (!valor) return [];
+                return ingredientesBD.filter(ing =>
+                    ing.toLowerCase().includes(valor)
+                );
+            }
+
+            function corregirIngrediente(valor) {
+                valor = valor.trim().toLowerCase();
+                // Solo autocorrige si hay coincidencia exacta (ignorando mayúsculas/minúsculas)
+                let exacta = ingredientesBD.find(ing => ing.toLowerCase() === valor);
+                if (exacta) return exacta;
+                return null;
+            }
+
+            // Capitaliza la primera letra de cada palabra
+            function capitalizarPrimeraLetra(texto) {
+                return texto.replace(/\b\w/g, l => l.toUpperCase());
+            }
+
+            // Aplica a todos los inputs de ingredientes (incluyendo los dinámicos)
+            function aplicarAutocompletado(input) {
+                // Solo autocorrige cuando el usuario sale del input (blur) o presiona Enter
+                input.addEventListener('blur', function() {
+                    let valor = input.value.trim();
+                    let correcion = corregirIngrediente(valor);
+                    if (correcion && valor.length >= 3) {
+                        input.value = correcion;
+                    } else if (valor.length > 0) {
+                        input.value = capitalizarPrimeraLetra(valor);
+                    }
+                });
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        let valor = input.value.trim();
+                        let correcion = corregirIngrediente(valor);
+                        if (correcion && valor.length >= 3) {
+                            input.value = correcion;
+                        } else if (valor.length > 0) {
+                            input.value = capitalizarPrimeraLetra(valor);
+                        }
+                    }
+                });
+            }
+
+            // Inicial para los inputs ya presentes
+            document.querySelectorAll('input[name="ingredientes[]"]').forEach(aplicarAutocompletado);
+
+            // Para los inputs agregados dinámicamente
+            const ingredientesContainer = document.getElementById('ingredientes-container');
+            ingredientesContainer.addEventListener('input', function(e) {
+                if (e.target && e.target.name === "ingredientes[]") {
+                    aplicarAutocompletado(e.target);
+                }
+            }, true);
+
+
+            function corregirCantidad(valor) {
+                valor = valor.trim().toLowerCase();
+                // Solo autocorrige si hay coincidencia exacta
+                let exacta = cantidadesBD.find(cant => cant.toLowerCase() === valor);
+                if (exacta) return exacta;
+                return null;
+            }
+
+            function aplicarAutocorreccionCantidad(input) {
+                input.addEventListener('blur', function() {
+                    const valor = input.value;
+                    const correcion = corregirCantidad(valor);
+                    if (correcion && valor.length >= 2) {
+                        input.value = correcion;
+                    }
+                });
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        const valor = input.value;
+                        const correcion = corregirCantidad(valor);
+                        if (correcion && valor.length >= 2) {
+                            input.value = correcion;
+                        }
+                    }
+                });
+            }
+
+            // Inicial para los inputs ya presentes
+            document.querySelectorAll('input[name="cantidades[]"]').forEach(aplicarAutocorreccionCantidad);
+
+            // Para los inputs agregados dinámicamente
+            ingredientesContainer.addEventListener('input', function(e) {
+                if (e.target && e.target.name === "cantidades[]") {
+                    aplicarAutocorreccionCantidad(e.target);
+                }
+            }, true);
+
+            function soloLetras(input) {
+                input.addEventListener('input', function() {
+                    // Permite solo letras (mayúsculas, minúsculas, tildes y espacios)
+                    input.value = input.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]/g, '');
+                });
+            }
+
+            // Aplica a todos los inputs de ingredientes actuales
+            document.querySelectorAll('input[name="ingredientes[]"]').forEach(soloLetras);
+
+            // Para los inputs agregados dinámicamente
+            ingredientesContainer.addEventListener('input', function(e) {
+                if (e.target && e.target.name === "ingredientes[]") {
+                    soloLetras(e.target);
+                }
+            }, true);
+
+            // Solo letras para el tItulo
+            const tituloInput = document.getElementById('titulo');
+            if (tituloInput) {
+                tituloInput.addEventListener('input', function() {
+                    // Permite solo letras, tildes y espacios
+                    this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]/g, '');
+                });
+            }
+        });
     </script>
+    <!--Scrip para validar la extension de los archivos -->
+    <script>
+        document.getElementById('inputGroupFile01').addEventListener('change', function(event) {
+            const archivos = event.target.files;
+            const formatosPermitidos = ['jpg', 'jpeg', 'png', 'gif', 'mp4', 'webm', 'ogg'];
+            let archivosInvalidos = [];
+            for (let file of archivos) {
+                let extension = file.name.split('.').pop().toLowerCase();
+                if (!formatosPermitidos.includes(extension)) {
+                    archivosInvalidos.push(file.name);
+                }
+            }
+            if (archivosInvalidos.length > 0) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Formato no permitido',
+                    text: `Los siguientes archivos tienen un formato no permitido:\n${archivosInvalidos.join(', ')}\n\nSolo se permiten: ${formatosPermitidos.join(', ')}`,
+                    confirmButtonText: 'Aceptar'
+                });
+                event.target.value = '';
+            }
+        });
+    </script>
+    <?php
+    if (isset($_GET['status']) && $_GET['status'] === 'error_webp'): ?>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Formato no permitido',
+                text: 'No se permiten imágenes en formato .webp. Por favor, selecciona otra imagen.',
+                confirmButtonText: 'Aceptar'
+            });
+        </script>
+    <?php endif; ?>
     <!-- jquery plugins here-->
     <!-- jquery -->
     <script src="js/jquery-1.12.1.min.js"></script>
@@ -776,6 +1129,91 @@ if (isset($_SESSION['id_usuario'])) {
 
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js" integrity="sha384-cuYeSxntonz0PPNlHhBs68uyIAVpIIOZZ5JqeqvYYIcEL727kskC66kF92t6Xl2V" crossorigin="anonymous"></script>
+
+    <!-- Footer igual al de vista-perfil.php -->
+    <footer class="footer-area mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-xl-3 col-sm-6 col-md-4">
+                    <div class="single-footer-widget footer_1">
+                        <h4>Sobre nosotros</h4>
+                        <p>Bienvenidos a ChefClass, tu comunidad culinaria en línea.
+                            Somos la plataforma perfecta para los amantes de la cocina que desean compartir,
+                            descubrir y disfrutar de recetas únicas y deliciosas.
+                            Inspirados por la pasión de cocinar y la conexión que se genera al compartir nuestras creaciones,
+                            ChefClass se ha convertido en el lugar ideal para encontrar inspiración diaria..</p>
+                    </div>
+                </div>
+                <div class="col-xl-2 col-sm-7 col-md-4">
+                    <div class="single-footer-widget footer_2">
+                        <h4>Enlaces</h4>
+                        <div class="contact_info">
+
+                            <ul>
+                                <li><a href="index.php" class="<?= basename($_SERVER['PHP_SELF']) == 'index.php' ? 'active' : '' ?>">Inicio</a></li>
+                                <li><a href="vista-nosotros.php" class="<?= basename($_SERVER['PHP_SELF']) == 'vista-nosotros.php' ? 'active' : '' ?>">Nosotros</a></li>
+                                <li><a href="vista-categoria.php" class="<?= basename($_SERVER['PHP_SELF']) == 'vista-categoria.php' ? 'active' : '' ?>">Categorías</a></li>
+
+                                <?php if (!isset($_SESSION['id_usuario'])): ?>
+                                    <li><a href="#" class="subir-receta-no-logeado <?= basename($_SERVER['PHP_SELF']) == 'vista-subir-receta.php' ? 'active' : '' ?>">Subir Recetas</a></li>
+                                <?php else: ?>
+                                    <li><a href="vista-subir-receta.php" class="<?= basename($_SERVER['PHP_SELF']) == 'vista-subir-receta.php' ? 'active' : '' ?>">Subir Recetas</a></li>
+                                <?php endif; ?>
+
+                                <?php if (isset($_SESSION['id_usuario'])) : ?>
+                                    <li><a href="vista-perfil.php" class="<?= basename($_SERVER['PHP_SELF']) == 'vista-perfil.php' ? 'active' : '' ?>">Perfil</a></li>
+                                <?php endif; ?>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-sm-6 col-md-4">
+                    <div class="single-footer-widget footer_2">
+                        <h4>Contáctenos</h4>
+                        <div class="contact_info">
+                            <p><span> Ubicación :</span>San Martín 311, K4751 San Fernando del Valle de Catamarca, Catamarca </p>
+                            <p><span> Celular :</span> +2 36 265 (8060)</p>
+                            <p><span> Email : </span>tesisdesarrollodesoftware@gmail.com</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-sm-6 col-md-4">
+                    <div class="single-footer-widget footer_3">
+                        <h4>Iniciar sesión en ChefClass</h4>
+                        <form action="#">
+                            <div class="form-group">
+                                <div class="input-group mb-3">
+                                    <div class="input-group-append">
+                                        <?php if (!isset($_SESSION['id_usuario'])): ?>
+                                            <a href="../../VistaAdmin/html/Login.php" class="btn-naranja d-none d-sm-block">Iniciar sesión</a>
+                                        <?php else: ?>
+                                            <a href="cerrar_sesion.php" class="btn-naranja d-none d-sm-block">Cerrar sesión</a>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="copyright_part_text">
+                <div class="row">
+                    <div class="col-lg-8">
+                        <p class="footer-text m-0">
+                            ChefClass | Proyecto realizado por
+                            <a href="#" target="_blank" id="creditos-link">Lucas Salvatierra, Emiliano Olivera.</a>
+                        </p>
+                        <script>
+                            document.getElementById('creditos-link').addEventListener('click', function(e) {
+                                e.preventDefault();
+                            });
+                        </script>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </footer>
 </body>
 
 

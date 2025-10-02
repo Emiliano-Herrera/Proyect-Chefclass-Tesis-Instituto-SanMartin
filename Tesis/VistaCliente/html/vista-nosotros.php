@@ -78,6 +78,43 @@ if (isset($_SESSION['id_usuario'])) {
                                 color: #ff6600;
                                 font-weight: bold;
                             }
+
+                            .single_blog_img img {
+                                width: 100%;
+                                height: 250px;
+                                object-fit: cover;
+                                border-top-left-radius: 15px;
+                                border-top-right-radius: 15px;
+                            }
+
+                            .single_blog_item {
+                                display: flex;
+                                flex-direction: column;
+                                justify-content: space-between;
+                                height: 100%;
+                            }
+
+                            .single_blog_text {
+                                flex-grow: 1;
+                                display: flex;
+                                flex-direction: column;
+                                justify-content: space-between;
+                            }
+
+                            .single_blog_text h3 {
+                                margin-top: 10px;
+                                margin-bottom: 10px;
+                                text-transform: uppercase;
+                            }
+
+                            .single_blog_text p {
+                                margin-bottom: 10px;
+                            }
+
+                            .single_blog_text a {
+                                align-self: flex-start;
+                            }
+                        </style>
                         </style>
 
                         <div class="collapse navbar-collapse main-menu-item justify-content-end" id="navbarSupportedContent">
@@ -98,6 +135,7 @@ if (isset($_SESSION['id_usuario'])) {
                                         <a class="nav-link <?= basename($_SERVER['PHP_SELF']) == 'vista-subir-receta.php' ? 'active' : '' ?>" href="vista-subir-receta.php">Subir recetas</a>
                                     <?php endif; ?>
                                     <?php if (isset($_SESSION['id_usuario'])): ?>
+
                                 <li class="nav-item">
                                     <a class="dropdown-item <?= basename($_SERVER['PHP_SELF']) == 'vista-perfil.php' ? 'active' : '' ?>" href="vista-perfil.php">Perfil</a>
                                 </li>
@@ -105,11 +143,18 @@ if (isset($_SESSION['id_usuario'])) {
                             </ul>
                         </div>
 
-                        <div class="menu_btn">
+                        <div class="menu_btn d-flex align-items-center">
                             <?php if (!isset($_SESSION['id_usuario'])): ?>
                                 <a href="../../VistaAdmin/html/Login.php" class="btn-naranja d-none d-sm-block">Iniciar sesión</a>
                             <?php else: ?>
-                                <a href="cerrar_sesion.php" class="btn-naranja d-none d-sm-block">Cerrar sesión</a>
+
+
+                                <span class="d-none d-sm-inline align-middle" style="font-weight: 500; margin-right: 2rem;">
+                                    <i class="bi bi-person-circle" style="font-size: 1.3em; vertical-align: middle;"></i>
+                                    <?= htmlspecialchars($_SESSION['nombre'] . ' ' . $_SESSION['apellido']) ?>
+                                </span>
+
+                                <a href="cerrar_sesion.php" class="btn-naranja d-none d-sm-block ms-1">Cerrar sesión</a>
                             <?php endif; ?>
                         </div>
                     </nav>
@@ -149,7 +194,7 @@ if (isset($_SESSION['id_usuario'])) {
                         <h2>ChefClass nuestra historia.</h2>
                         <h4>Un lugar para quienes aman cocinar, compartir y disfrutar de la buena comida.</h4>
                         <p>
-                            ChefClass nació del deseo de unir a personas apasionadas por la cocina, sin importar su experiencia. Aquí, cada receta cuenta una historia y cada usuario es parte de una gran familia culinaria. 
+                            ChefClass nació del deseo de unir a personas apasionadas por la cocina, sin importar su experiencia. Aquí, cada receta cuenta una historia y cada usuario es parte de una gran familia culinaria.
                             <br><br>
                             Nos encanta ver cómo la creatividad y el entusiasmo de nuestra comunidad llenan de sabor cada rincón del sitio. En ChefClass, no solo compartimos recetas: compartimos momentos, recuerdos y la alegría de cocinar juntos.
                             <br><br>
@@ -237,17 +282,12 @@ if (isset($_SESSION['id_usuario'])) {
                 <div class="col-sm-6 col-lg-4">
                     <div class="single_blog_item">
                         <div class="single_blog_img">
-                            <img src="../img/team/chefs_1.png" alt="">
+                            <img src="../img/LucasSalvatierra.jpg" alt="">
                         </div>
                         <div class="single_blog_text text-center">
                             <h3>Lucas Salvatierra</h3>
-                            <p>Chef Master</p>
-                            <div class="social_icon">
-                                <a href="#"> <i class="ti-facebook"></i> </a>
-                                <a href="#"> <i class="ti-twitter-alt"></i> </a>
-                                <a href="#"> <i class="ti-instagram"></i> </a>
-                                <a href="#"> <i class="ti-skype"></i> </a>
-                            </div>
+                            <p>Desarrollador de Software</p>
+
                         </div>
                     </div>
                 </div>
@@ -258,17 +298,11 @@ if (isset($_SESSION['id_usuario'])) {
                         </div>
                         <div class="single_blog_text text-center">
                             <h3>Emiliano Olivera</h3>
-                            <p>Desarrollador web</p>
-                            <div class="social_icon">
-                                <a href="#"> <i class="ti-facebook"></i> </a>
-                                <a href="#"> <i class="ti-twitter-alt"></i> </a>
-                                <a href="#"> <i class="ti-instagram"></i> </a>
-                                <a href="#"> <i class="ti-skype"></i> </a>
-                            </div>
+                            <p>Desarrollador de Software</p>
+
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
     </section>
@@ -293,11 +327,21 @@ if (isset($_SESSION['id_usuario'])) {
                         <h4>Enlaces</h4>
                         <div class="contact_info">
                             <ul>
-                                <li><a href="#">Inicio</a></li>
-                                <li><a href="#">Nosotros</a></li>
-                                <li><a href="#">Categorías</a></li>
-                                <li><a href="#">Subir Recetas</a></li>
-                                <li><a href="#">Perfil</a></li>
+                                <li><a href="index.php">Inicio</a></li>
+                                <li><a href="vista-nosotros.php">Nosotros</a></li>
+                                <li><a href="vista-categoria.php">Categorías</a></li>
+
+
+                                <?php if (!isset($_SESSION['id_usuario'])): ?>
+                                    <li><a href="#" class="subir-receta-no-logeado">Subir Recetas</a></li>
+                                <?php else: ?>
+                                    <li><a href="vista-subir-receta.php">Subir Recetas</a></li>
+                                <?php endif; ?>
+
+                                <?php if (isset($_SESSION['id_usuario'])) : ?>
+                                    <li><a href="vista-perfil.php">Perfil</a></li>
+                                <?php endif; ?>
+
                             </ul>
                         </div>
                     </div>
@@ -335,16 +379,17 @@ if (isset($_SESSION['id_usuario'])) {
             <div class="copyright_part_text">
                 <div class="row">
                     <div class="col-lg-8">
-                        <p class="footer-text m-0">ChefClass | Proyecto realizado por <a href="#" target="_blank">Lucas Salvatierra, Emiliano Olivera.</a></p>
+                        <p class="footer-text m-0">
+                            ChefClass | Proyecto realizado por
+                            <a href="#" target="_blank" id="creditos-link">Lucas Salvatierra, Emiliano Olivera.</a>
+                        </p>
+                        <script>
+                            document.getElementById('creditos-link').addEventListener('click', function(e) {
+                                e.preventDefault();
+                            });
+                        </script>
                     </div>
-                    <div class="col-lg-4">
-                        <div class="copyright_social_icon text-right">
-                            <a href="#"><i class="fab fa-facebook-f"></i></a>
-                            <a href="#"><i class="fab fa-twitter"></i></a>
-                            <a href="#"><i class="fab fa-whatsapp"></i></a>
-                            <a href="#"><i class="ti-instagram"></i></a>
-                        </div>
-                    </div>
+
                 </div>
             </div>
         </div>
@@ -361,6 +406,8 @@ if (isset($_SESSION['id_usuario'])) {
                     text: 'Por favor, inicia sesión para poder subir una receta.',
                     confirmButtonText: 'Iniciar sesión',
                     showCancelButton: true,
+                    confirmButtonColor: '#007bff', // Azul 
+                    cancelButtonColor: '#d33', // Rojo
                     cancelButtonText: 'Cancelar'
                 }).then((result) => {
                     if (result.isConfirmed) {

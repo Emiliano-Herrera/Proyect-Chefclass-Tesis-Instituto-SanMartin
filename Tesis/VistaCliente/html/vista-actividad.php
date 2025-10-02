@@ -15,7 +15,7 @@ if (isset($_SESSION['id_usuario'])) {
 
 include("conexion.php");
 
-// Parámetros de paginación
+// Parámetros de paginación (Para ver cuandtas recetas hay por pagina)
 $recetasPorPagina = 6;
 $comentariosPorPagina = 5;
 
@@ -28,13 +28,30 @@ $offsetRecetas = ($paginaActualRecetas - 1) * $recetasPorPagina;
 $offsetComentarios = ($paginaActualComentarios - 1) * $comentariosPorPagina;
 
 // Consulta para obtener las recetas a las que el usuario ha dado "me gusta" con paginación
+
 $sqlRecetasLikes = "
-    SELECT R.id_receta, R.titulo, RI.url_imagen
-    FROM recetas R
-    LEFT JOIN imagenes_recetas IR ON R.id_receta = IR.recetas_id
-    LEFT JOIN img_recetas RI ON IR.img_id = RI.id_img
+   SELECT 
+    R.id_receta, 
+    R.titulo, 
+    (
+        SELECT RI.url_imagen
+        FROM imagenes_recetas IR
+        INNER JOIN img_recetas RI ON IR.img_id = RI.id_img
+        WHERE IR.recetas_id = R.id_receta
+          AND (
+            RI.url_imagen LIKE '%.jpg' OR
+            RI.url_imagen LIKE '%.jpeg' OR
+            RI.url_imagen LIKE '%.png' OR
+            RI.url_imagen LIKE '%.gif' OR
+            RI.url_imagen LIKE '%.webp'
+          )
+        ORDER BY IR.img_id ASC
+        LIMIT 1
+    ) AS url_imagen
+FROM recetas R
+
     LEFT JOIN likes L ON R.id_receta = L.receta_id
-    WHERE L.usuario_id = ? AND RI.url_imagen IS NOT NULL
+    WHERE L.usuario_id = ?
     GROUP BY R.id_receta
     ORDER BY R.fecha_creacion DESC
     LIMIT ? OFFSET ?
@@ -53,17 +70,24 @@ while ($receta = $resultRecetasLikes->fetch_assoc()) {
 }
 
 
-// Consulta para obtener las recetas que el usuario ha comentado con paginación
+
+
+// Se define el orden antes de la consulta
+$ordenComentarios = isset($_GET['ordenComentarios']) && $_GET['ordenComentarios'] == 'antiguo' ? 'ASC' : 'DESC';
+
+// Consulta para obtener los comentarios hechos en recetas del usuario logueado
+
+
 $sqlRecetasComentarios = "
-    SELECT R.id_receta, R.titulo, RI.url_imagen, U.nombre_usuario, U.img AS avatar_usuario, C.comentario
+    SELECT R.id_receta, R.titulo, RI.url_imagen, U.nombre_usuario, U.img AS avatar_usuario, C.comentario, C.id_comentario
     FROM recetas R
     LEFT JOIN imagenes_recetas IR ON R.id_receta = IR.recetas_id
     LEFT JOIN img_recetas RI ON IR.img_id = RI.id_img
     LEFT JOIN comentarios C ON R.id_receta = C.receta_id
     LEFT JOIN usuarios U ON R.usuario_id = U.id_usuario
-    WHERE C.usuario_id = ? AND RI.url_imagen IS NOT NULL
-    GROUP BY R.id_receta, C.comentario
-    ORDER BY R.fecha_creacion DESC
+    WHERE C.usuario_id = ? AND RI.url_imagen IS NOT NULL AND C.id_comentario IS NOT NULL
+    GROUP BY R.id_receta, C.id_comentario
+    ORDER BY R.fecha_creacion $ordenComentarios
     LIMIT ? OFFSET ?
 ";
 $statementRecetasComentarios = $conexion->prepare($sqlRecetasComentarios);
@@ -87,6 +111,7 @@ $statementTotalRecetasLikes->execute();
 $resultTotalRecetasLikes = $statementTotalRecetasLikes->get_result();
 $totalRecetasLikes = $resultTotalRecetasLikes->fetch_assoc()['total'];
 
+// Consulta para obtener el número total de recetas comentadas por el usuario
 $sqlTotalRecetasComentarios = "SELECT COUNT(DISTINCT R.id_receta) AS total FROM recetas R LEFT JOIN comentarios C ON R.id_receta = C.receta_id WHERE C.usuario_id = ?";
 $statementTotalRecetasComentarios = $conexion->prepare($sqlTotalRecetasComentarios);
 $statementTotalRecetasComentarios->bind_param("i", $ID_Usuario);
@@ -186,6 +211,26 @@ $totalPaginasComentarios = ceil($totalRecetasComentarios / $comentariosPorPagina
                                 color: #ff6600;
                                 font-weight: bold;
                             }
+
+                            /* Estilo de paginación naranja */
+                            .pagination .page-link {
+                                color: #ff6426;
+                                /* Naranja principal */
+                                border: 1px solid #ff6426;
+                                background: #fff;
+                                transition: background 0.2s, color 0.2s;
+                            }
+
+                            .pagination .page-link:hover {
+                                background: #ff6426;
+                                color: #fff;
+                            }
+
+                            .pagination .page-item.active .page-link {
+                                background-color: #ff6426;
+                                border-color: #ff6426;
+                                color: #fff;
+                            }
                         </style>
 
                         <div class="collapse navbar-collapse main-menu-item justify-content-end" id="navbarSupportedContent">
@@ -210,16 +255,26 @@ $totalPaginasComentarios = ceil($totalRecetasComentarios / $comentariosPorPagina
                             </ul>
                         </div>
 
-                        <div class="menu_btn">
+                        <div class="menu_btn d-flex align-items-center">
                             <?php if (!isset($_SESSION['id_usuario'])): ?>
                                 <a href="../../VistaAdmin/html/Login.php" class="btn-naranja d-none d-sm-block">Iniciar sesión</a>
                             <?php else: ?>
-                                <a href="cerrar_sesion.php" class="btn-naranja d-none d-sm-block">Cerrar sesión</a>
+
+
+
+                                <span class="d-none d-sm-inline align-middle" style="font-weight: 500; margin-right: 2rem; color: #212529;">
+                                    <i class="bi bi-person-circle" style="font-size: 1.3em; vertical-align: middle;"></i>
+                                    <?= htmlspecialchars($_SESSION['nombre'] . ' ' . $_SESSION['apellido']) ?>
+                                </span>
+
+                                <a href="cerrar_sesion.php" class="btn-naranja d-none d-sm-block ms-1">Cerrar sesión</a>
                             <?php endif; ?>
                         </div>
                     </nav>
                 </div>
+                </nav>
             </div>
+        </div>
         </div>
     </header>
     <!-- Header part end-->
@@ -274,12 +329,13 @@ $totalPaginasComentarios = ceil($totalRecetasComentarios / $comentariosPorPagina
             <!-- //! NAV MENÚ ME GUSTA Y COMENTARIOS -->
             <div class="row justify-content-center">
                 <div class="col-lg-12">
+
                     <ul class="nav justify-content-center">
                         <li class="nav-item">
-                            <a class="nav-link active" id="me-gusta-tab" data-bs-toggle="tab" href="#me-gusta" role="tab" aria-controls="me-gusta" aria-selected="true"><i class="bi bi-heart"></i> ME GUSTA</a>
+                            <a class="nav-link <?= (!isset($_GET['ordenComentarios']) && !isset($_GET['paginaComentarios'])) ? 'active' : '' ?>" id="me-gusta-tab" data-bs-toggle="tab" href="#me-gusta" role="tab" aria-controls="me-gusta" aria-selected="true"><i class="bi bi-heart"></i> ME GUSTA</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" id="comentarios-tab" data-bs-toggle="tab" href="#comentarios" role="tab" aria-controls="comentarios" aria-selected="false"><i class="bi bi-chat"></i> COMENTARIOS</a>
+                            <a class="nav-link <?= (isset($_GET['ordenComentarios']) || isset($_GET['paginaComentarios'])) ? 'active' : '' ?>" id="comentarios-tab" data-bs-toggle="tab" href="#comentarios" role="tab" aria-controls="comentarios" aria-selected="false"><i class="bi bi-chat"></i> COMENTARIOS</a>
                         </li>
                     </ul>
                 </div>
@@ -331,7 +387,8 @@ $totalPaginasComentarios = ceil($totalRecetasComentarios / $comentariosPorPagina
             <!-- //? ME GUSTAS ===================================================================== -->
             <div class="tab-content" id="myTabContent">
                 <!-- ME GUSTA TAB -->
-                <div class="tab-pane fade show active" id="me-gusta" role="tabpanel" aria-labelledby="me-gusta-tab">
+
+                <div class="tab-pane fade show <?= (!isset($_GET['ordenComentarios']) && !isset($_GET['paginaComentarios'])) ? 'active' : '' ?>" id="me-gusta" role="tabpanel" aria-labelledby="me-gusta-tab">
                     <div class="container mt-5">
                         <!-- Filtro de orden -->
                         <div class="d-flex justify-content-end mb-3">
@@ -348,17 +405,33 @@ $totalPaginasComentarios = ceil($totalRecetasComentarios / $comentariosPorPagina
                         // Ordenar me gusta según filtro
                         $ordenRecetas = isset($_GET['ordenRecetas']) && $_GET['ordenRecetas'] == 'antiguo' ? 'ASC' : 'DESC';
                         // Repetir consulta para obtener recetas ordenadas si cambia el filtro
+
                         $sqlRecetasLikes = "
-                            SELECT R.id_receta, R.titulo, RI.url_imagen
-                            FROM recetas R
-                            LEFT JOIN imagenes_recetas IR ON R.id_receta = IR.recetas_id
-                            LEFT JOIN img_recetas RI ON IR.img_id = RI.id_img
-                            LEFT JOIN likes L ON R.id_receta = L.receta_id
-                            WHERE L.usuario_id = ? AND RI.url_imagen IS NOT NULL
-                            GROUP BY R.id_receta
-                            ORDER BY R.fecha_creacion $ordenRecetas
-                            LIMIT ? OFFSET ?
-                        ";
+    SELECT 
+        R.id_receta, 
+        R.titulo, 
+        (
+            SELECT RI.url_imagen
+            FROM imagenes_recetas IR
+            INNER JOIN img_recetas RI ON IR.img_id = RI.id_img
+            WHERE IR.recetas_id = R.id_receta
+              AND (
+                RI.url_imagen LIKE '%.jpg' OR
+                RI.url_imagen LIKE '%.jpeg' OR
+                RI.url_imagen LIKE '%.png' OR
+                RI.url_imagen LIKE '%.gif' OR
+                RI.url_imagen LIKE '%.webp'
+              )
+            ORDER BY IR.img_id ASC
+            LIMIT 1
+        ) AS url_imagen
+    FROM recetas R
+    LEFT JOIN likes L ON R.id_receta = L.receta_id
+    WHERE L.usuario_id = ?
+    GROUP BY R.id_receta
+    ORDER BY R.fecha_creacion $ordenRecetas
+    LIMIT ? OFFSET ?
+";
                         $statementRecetasLikes = $conexion->prepare($sqlRecetasLikes);
                         $statementRecetasLikes->bind_param("iii", $ID_Usuario, $recetasPorPagina, $offsetRecetas);
                         $statementRecetasLikes->execute();
@@ -389,26 +462,22 @@ $totalPaginasComentarios = ceil($totalRecetasComentarios / $comentariosPorPagina
                             <?php endif; ?>
                         </div>
                         <!-- Paginación -->
-                        <nav aria-label="...">
-                            <ul class="pagination">
-                                <li class="page-item <?= $paginaActualRecetas <= 1 ? 'disabled' : '' ?>">
-                                    <a class="page-link" href="?paginaRecetas=<?= $paginaActualRecetas - 1 ?>&ordenRecetas=<?= $ordenRecetas == 'ASC' ? 'antiguo' : 'reciente' ?>">Previous</a>
-                                </li>
+
+                        <nav aria-label="Paginación">
+                            <ul class="pagination justify-content-center">
                                 <?php for ($i = 1; $i <= $totalPaginasRecetas; $i++): ?>
                                     <li class="page-item <?= $i == $paginaActualRecetas ? 'active' : '' ?>">
                                         <a class="page-link" href="?paginaRecetas=<?= $i ?>&ordenRecetas=<?= $ordenRecetas == 'ASC' ? 'antiguo' : 'reciente' ?>"><?= $i ?></a>
                                     </li>
                                 <?php endfor; ?>
-                                <li class="page-item <?= $paginaActualRecetas >= $totalPaginasRecetas ? 'disabled' : '' ?>">
-                                    <a class="page-link" href="?paginaRecetas=<?= $paginaActualRecetas + 1 ?>&ordenRecetas=<?= $ordenRecetas == 'ASC' ? 'antiguo' : 'reciente' ?>">Next</a>
-                                </li>
                             </ul>
                         </nav>
                     </div>
                 </div>
 
                 <!-- COMENTARIOS TAB -->
-                <div class="tab-pane fade" id="comentarios" role="tabpanel" aria-labelledby="comentarios-tab">
+
+                <div class="tab-pane fade show <?= (isset($_GET['ordenComentarios']) || isset($_GET['paginaComentarios'])) ? 'active' : '' ?>" id="comentarios" role="tabpanel" aria-labelledby="comentarios-tab">
                     <div class="container mt-5">
                         <!-- Filtro de orden (igual que ME GUSTA) -->
                         <div class="d-flex justify-content-end mb-3">
@@ -476,18 +545,38 @@ $totalPaginasComentarios = ceil($totalRecetasComentarios / $comentariosPorPagina
                         // Ordenar comentarios según filtro
                         $ordenComentarios = isset($_GET['ordenComentarios']) && $_GET['ordenComentarios'] == 'antiguo' ? 'ASC' : 'DESC';
                         // Repetir consulta para obtener comentarios ordenados si cambia el filtro
+
                         $sqlRecetasComentarios = "
-                            SELECT R.id_receta, R.titulo, RI.url_imagen, U.nombre_usuario, U.img AS avatar_usuario, C.comentario
-                            FROM recetas R
-                            LEFT JOIN imagenes_recetas IR ON R.id_receta = IR.recetas_id
-                            LEFT JOIN img_recetas RI ON IR.img_id = RI.id_img
-                            LEFT JOIN comentarios C ON R.id_receta = C.receta_id
-                            LEFT JOIN usuarios U ON R.usuario_id = U.id_usuario
-                            WHERE C.usuario_id = ? AND RI.url_imagen IS NOT NULL
-                            GROUP BY R.id_receta, C.comentario
-                            ORDER BY R.fecha_creacion $ordenComentarios
-                            LIMIT ? OFFSET ?
-                        ";
+    SELECT 
+        R.id_receta, 
+        R.titulo, 
+        (
+            SELECT RI.url_imagen
+            FROM imagenes_recetas IR
+            INNER JOIN img_recetas RI ON IR.img_id = RI.id_img
+            WHERE IR.recetas_id = R.id_receta
+              AND (
+                RI.url_imagen LIKE '%.jpg' OR
+                RI.url_imagen LIKE '%.jpeg' OR
+                RI.url_imagen LIKE '%.png' OR
+                RI.url_imagen LIKE '%.gif' OR
+                RI.url_imagen LIKE '%.webp'
+              )
+            ORDER BY IR.img_id ASC
+            LIMIT 1
+        ) AS url_imagen,
+        U.nombre_usuario, 
+        U.img AS avatar_usuario, 
+        C.comentario, 
+        C.id_comentario
+    FROM recetas R
+    LEFT JOIN comentarios C ON R.id_receta = C.receta_id
+    LEFT JOIN usuarios U ON R.usuario_id = U.id_usuario
+    WHERE C.usuario_id = ?
+    GROUP BY R.id_receta, C.comentario
+    ORDER BY R.fecha_creacion $ordenComentarios
+    LIMIT ? OFFSET ?
+";
                         $statementRecetasComentarios = $conexion->prepare($sqlRecetasComentarios);
                         $statementRecetasComentarios->bind_param("iii", $ID_Usuario, $comentariosPorPagina, $offsetComentarios);
                         $statementRecetasComentarios->execute();
@@ -510,9 +599,17 @@ $totalPaginasComentarios = ceil($totalRecetasComentarios / $comentariosPorPagina
                                             <span class="comentario-nombre-usuario"><?= htmlspecialchars($receta['nombre_usuario']); ?></span>
                                             <span class="comentario-nombre-receta"><?= htmlspecialchars($receta['titulo']); ?></span>
                                             <img src="<?= htmlspecialchars($receta['imagenes'][0]); ?>" class="comentario-img-receta" alt="Imagen de <?= htmlspecialchars($receta['titulo']); ?>">
+
+                                            <a href="#"
+                                                class="btn btn-link text-danger btn-eliminar-comentario"
+                                                data-id="<?= $receta['id_comentario']; ?>"
+                                                title="Eliminar comentario">
+                                                <i class="bi bi-trash" style="font-size: 1.5rem;"></i>
+                                            </a>
                                         </div>
+
                                         <div class="bg-light rounded p-3 mt-2">
-                                            <p class="mb-0"><?= htmlspecialchars($receta['comentario']); ?></p>
+                                            <p class="mb-0">💬 <?= htmlspecialchars($receta['comentario']); ?></p>
                                         </div>
                                     </div>
                                 </div>
@@ -520,20 +617,17 @@ $totalPaginasComentarios = ceil($totalRecetasComentarios / $comentariosPorPagina
                         <?php else: ?>
                             <p>No hay recetas que hayas comentado.</p>
                         <?php endif; ?>
+
                         <!-- Paginación -->
-                        <nav aria-label="...">
-                            <ul class="pagination">
-                                <li class="page-item <?= $paginaActualComentarios <= 1 ? 'disabled' : '' ?>">
-                                    <a class="page-link" href="?paginaComentarios=<?= $paginaActualComentarios - 1 ?>&ordenComentarios=<?= $ordenComentarios == 'ASC' ? 'antiguo' : 'reciente' ?>">Previous</a>
-                                </li>
+
+
+                        <nav aria-label="Paginación">
+                            <ul class="pagination justify-content-center">
                                 <?php for ($i = 1; $i <= $totalPaginasComentarios; $i++): ?>
                                     <li class="page-item <?= $i == $paginaActualComentarios ? 'active' : '' ?>">
                                         <a class="page-link" href="?paginaComentarios=<?= $i ?>&ordenComentarios=<?= $ordenComentarios == 'ASC' ? 'antiguo' : 'reciente' ?>"><?= $i ?></a>
                                     </li>
                                 <?php endfor; ?>
-                                <li class="page-item <?= $paginaActualComentarios >= $totalPaginasComentarios ? 'disabled' : '' ?>">
-                                    <a class="page-link" href="?paginaComentarios=<?= $paginaActualComentarios + 1 ?>&ordenComentarios=<?= $ordenComentarios == 'ASC' ? 'antiguo' : 'reciente' ?>">Next</a>
-                                </li>
                             </ul>
                         </nav>
                     </div>
@@ -563,11 +657,21 @@ $totalPaginasComentarios = ceil($totalRecetasComentarios / $comentariosPorPagina
                         <h4>Enlaces</h4>
                         <div class="contact_info">
                             <ul>
-                                <li><a href="#">Inicio</a></li>
-                                <li><a href="#">Nosotros</a></li>
-                                <li><a href="#">Categorías</a></li>
-                                <li><a href="#">Subir Recetas</a></li>
-                                <li><a href="#">Perfil</a></li>
+                                <li><a href="index.php">Inicio</a></li>
+                                <li><a href="vista-nosotros.php">Nosotros</a></li>
+                                <li><a href="vista-categoria.php">Categorías</a></li>
+
+
+                                <?php if (!isset($_SESSION['id_usuario'])): ?>
+                                    <li><a href="#" class="subir-receta-no-logeado">Subir Recetas</a></li>
+                                <?php else: ?>
+                                    <li><a href="vista-subir-receta.php">Subir Recetas</a></li>
+                                <?php endif; ?>
+
+                                <?php if (isset($_SESSION['id_usuario'])) : ?>
+                                    <li><a href="vista-perfil.php">Perfil</a></li>
+                                <?php endif; ?>
+
                             </ul>
                         </div>
                     </div>
@@ -605,20 +709,65 @@ $totalPaginasComentarios = ceil($totalRecetasComentarios / $comentariosPorPagina
             <div class="copyright_part_text">
                 <div class="row">
                     <div class="col-lg-8">
-                        <p class="footer-text m-0">ChefClass | Proyecto realizado por <a href="#" target="_blank">Lucas Salvatierra, Emiliano Olivera.</a></p>
+                        <p class="footer-text m-0">
+                            ChefClass | Proyecto realizado por
+                            <a href="#" target="_blank" id="creditos-link">Lucas Salvatierra, Emiliano Olivera.</a>
+                        </p>
+                        <script>
+                            document.getElementById('creditos-link').addEventListener('click', function(e) {
+                                e.preventDefault();
+                            });
+                        </script>
                     </div>
-                    <div class="col-lg-4">
-                        <div class="copyright_social_icon text-right">
-                            <a href="#"><i class="fab fa-facebook-f"></i></a>
-                            <a href="#"><i class="fab fa-twitter"></i></a>
-                            <a href="#"><i class="fab fa-whatsapp"></i></a>
-                            <a href="#"><i class="ti-instagram"></i></a>
-                        </div>
-                    </div>
+
                 </div>
             </div>
         </div>
     </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.querySelectorAll('.btn-eliminar-comentario').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const idComentario = this.getAttribute('data-id');
+                Swal.fire({
+                    title: '¿Estás seguro?',
+                    text: "¡No podrás recuperar este comentario!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ff6426',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Redirección a eliminar_comentario.php con el id del comentario que se va a eliminar
+                        window.location.href = 'eliminar_comentario.php?id=' + idComentario;
+
+                    }
+                });
+            });
+        });
+
+
+
+        // Mostrar SweetAlert si se eliminó un comentario
+        <?php if (isset($_GET['comentarioEliminado']) && $_GET['comentarioEliminado'] == 1): ?>
+            Swal.fire({
+                icon: 'success',
+                title: '¡Comentario eliminado!',
+                showConfirmButton: false,
+                timer: 1500
+            });
+            // Quitar el parámetro de la URL sin recargar
+            if (window.history.replaceState) {
+                const url = new URL(window.location);
+                url.searchParams.delete('comentarioEliminado');
+                window.history.replaceState({}, document.title, url.pathname + url.search);
+            }
+        <?php endif; ?>
+    </script>
     <!-- footer part end-->
 
     <!-- jquery plugins here-->

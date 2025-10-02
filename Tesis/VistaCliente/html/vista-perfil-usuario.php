@@ -238,11 +238,19 @@ function generar_estrellas($promedio)
                             </ul>
                         </div>
 
-                        <div class="menu_btn">
+                        <div class="menu_btn d-flex align-items-center">
                             <?php if (!isset($_SESSION['id_usuario'])): ?>
                                 <a href="../../VistaAdmin/html/Login.php" class="btn-naranja d-none d-sm-block">Iniciar sesión</a>
                             <?php else: ?>
-                                <a href="cerrar_sesion.php" class="btn-naranja d-none d-sm-block">Cerrar sesión</a>
+
+
+
+                                <span class="d-none d-sm-inline align-middle" style="font-weight: 500; margin-right: 2rem; color: #212529;">
+                                    <i class="bi bi-person-circle" style="font-size: 1.3em; vertical-align: middle;"></i>
+                                    <?= htmlspecialchars($_SESSION['nombre'] . ' ' . $_SESSION['apellido']) ?>
+                                </span>
+
+                                <a href="cerrar_sesion.php" class="btn-naranja d-none d-sm-block ms-1">Cerrar sesión</a>
                             <?php endif; ?>
                         </div>
                     </nav>
@@ -293,60 +301,62 @@ function generar_estrellas($promedio)
         </div>
         <div class="perfil-usuario-body">
             <div class="perfil-usuario-bio">
-            <!-- Nombre de usuario y nombre completo -->
-            <h3 class="titulo mb-0" style="font-size: 1.4rem;"><?php echo $filas[0]['nombre_usuario']; ?></h3>
-            <p class="titulo" style="font-size: 1.1rem;"><?php echo $filas[0]['nombre'], ' ', $filas[0]['apellido'] ?></p>
-            <!-- Datos de contacto -->
-            <ul class="lista-datos" style="font-size: 1em;">
-                <li><i class="bi bi-telephone" style="font-size: 1.3em;"></i> Teléfono: 
-                <?php if (!empty($telefonos)): ?>
-                    <?php foreach ($telefonos as $telefono) { echo " $telefono" . " - "; } ?> 
-                <?php endif; ?>
-                </li>
-                <li><i class="bi bi-envelope" style="font-size: 1.3em;"></i> Email: <?php echo $filas[0]['user_email'] ?></li>
-            </ul>
-            <ul class="lista-datos" style="font-size: 1em;">
-                <li><i class="bi bi-calendar-check" style="font-size: 1.3em;"></i> Registro: <?php echo strftime('%e de %b del %Y', strtotime($filas[0]['fecha_creacion'])); ?></li>
-            </ul>
-            <!-- Botón subir receta -->
-            <div class="titulo mb-2">
-                <a class="btn btn-outline-success" href="vista-subir-receta.php"><i class="bi bi-plus-square m-1"> </i> Subir receta</a>
-            </div>
-            <!-- Seguidores, seguidos y publicaciones -->
-            <div class="seguidores-seguidos titulo mt-3">
-                <div class="d-flex justify-content-center align-items-center gap-4 flex-wrap">
-                <?php
-                    $totalPublicaciones = count($recetas);
-                ?>
-                <div class="text-center px-3 py-2 bg-white seguidores-card" style="border:none; box-shadow:none;">
-                    <a href="#" data-bs-toggle="modal" data-bs-target="#modalSeguidores" class="text-decoration-none text-dark">
-                    <div class="mb-1"><i class="bi bi-people-fill fs-3 text-primary"></i></div>
-                    <div class="fw-bold fs-5"><?php echo number_format($seguidores); ?></div>
-                    <div class="small text-muted" style="font-size:0.7em;">Seguidores</div>
-                    </a>
+                <!-- Nombre de usuario y nombre completo -->
+                <h3 class="titulo mb-0" style="font-size: 1.4rem;"><?php echo $filas[0]['nombre_usuario']; ?></h3>
+                <p class="titulo" style="font-size: 1.1rem;"><?php echo $filas[0]['nombre'], ' ', $filas[0]['apellido'] ?></p>
+                <!-- Datos de contacto -->
+                <ul class="lista-datos" style="font-size: 1em;">
+                    <li><i class="bi bi-telephone" style="font-size: 1.3em;"></i> Teléfono:
+                        <?php if (!empty($telefonos)): ?>
+                            <?php foreach ($telefonos as $telefono) {
+                                echo " $telefono" . " - ";
+                            } ?>
+                        <?php endif; ?>
+                    </li>
+                    <li><i class="bi bi-envelope" style="font-size: 1.3em;"></i> Email: <?php echo $filas[0]['user_email'] ?></li>
+                </ul>
+                <ul class="lista-datos" style="font-size: 1em;">
+                    <li><i class="bi bi-calendar-check" style="font-size: 1.3em;"></i> Registro: <?php echo strftime('%e de %b del %Y', strtotime($filas[0]['fecha_creacion'])); ?></li>
+                </ul>
+                <!-- Botón subir receta -->
+                <div class="titulo mb-2">
+                    <a class="btn btn-outline-success" href="vista-subir-receta.php"><i class="bi bi-plus-square m-1"> </i> Subir receta</a>
                 </div>
-                <div class="text-center px-3 py-2 bg-white seguidores-card" style="border:none; box-shadow:none;">
-                    <a href="#" data-bs-toggle="modal" data-bs-target="#modalSeguidos" class="text-decoration-none text-dark">
-                    <div class="mb-1"><i class="bi bi-person-check-fill fs-3 text-success"></i></div>
-                    <div class="fw-bold fs-5"><?php echo number_format($seguidos); ?></div>
-                    <div class="small text-muted" style="font-size:0.7em;">Seguidos</div>
-                    </a>
+                <!-- Seguidores, seguidos y publicaciones -->
+                <div class="seguidores-seguidos titulo mt-3">
+                    <div class="d-flex justify-content-center align-items-center gap-4 flex-wrap">
+                        <?php
+                        $totalPublicaciones = count($recetas);
+                        ?>
+                        <div class="text-center px-3 py-2 bg-white seguidores-card" style="border:none; box-shadow:none;">
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#modalSeguidores" class="text-decoration-none text-dark">
+                                <div class="mb-1"><i class="bi bi-people-fill fs-3 text-primary"></i></div>
+                                <div class="fw-bold fs-5"><?php echo number_format($seguidores); ?></div>
+                                <div class="small text-muted" style="font-size:0.7em;">Seguidores</div>
+                            </a>
+                        </div>
+                        <div class="text-center px-3 py-2 bg-white seguidores-card" style="border:none; box-shadow:none;">
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#modalSeguidos" class="text-decoration-none text-dark">
+                                <div class="mb-1"><i class="bi bi-person-check-fill fs-3 text-success"></i></div>
+                                <div class="fw-bold fs-5"><?php echo number_format($seguidos); ?></div>
+                                <div class="small text-muted" style="font-size:0.7em;">Seguidos</div>
+                            </a>
+                        </div>
+                        <div class="text-center px-3 py-2 bg-white seguidores-card" style="border:none; box-shadow:none;">
+                            <div class="mb-1"><i class="bi bi-journal-text fs-3 text-warning"></i></div>
+                            <div class="fw-bold fs-5"><?php echo $totalPublicaciones; ?></div>
+                            <div class="small text-muted" style="font-size:0.7em;">Publicaciones</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="text-center px-3 py-2 bg-white seguidores-card" style="border:none; box-shadow:none;">
-                    <div class="mb-1"><i class="bi bi-journal-text fs-3 text-warning"></i></div>
-                    <div class="fw-bold fs-5"><?php echo $totalPublicaciones; ?></div>
-                    <div class="small text-muted" style="font-size:0.7em;">Publicaciones</div>
-                </div>
-                </div>
-            </div>
             </div>
         </div>
 
         <style>
             .seguidores-card {
-            border: none !important;
-            box-shadow: none !important;
-            background: transparent !important;
+                border: none !important;
+                box-shadow: none !important;
+                background: transparent !important;
             }
         </style>
     </section>
@@ -530,11 +540,21 @@ function generar_estrellas($promedio)
                         <h4>Enlaces</h4>
                         <div class="contact_info">
                             <ul>
-                                <li><a href="#">Inicio</a></li>
-                                <li><a href="#">Nosotros</a></li>
-                                <li><a href="#">Categorías</a></li>
-                                <li><a href="#">Subir Recetas</a></li>
-                                <li><a href="#">Perfil</a></li>
+                                <li><a href="index.php">Inicio</a></li>
+                                <li><a href="vista-nosotros.php">Nosotros</a></li>
+                                <li><a href="vista-categoria.php">Categorías</a></li>
+
+
+                                <?php if (!isset($_SESSION['id_usuario'])): ?>
+                                    <li><a href="#" class="subir-receta-no-logeado">Subir Recetas</a></li>
+                                <?php else: ?>
+                                    <li><a href="vista-subir-receta.php">Subir Recetas</a></li>
+                                <?php endif; ?>
+
+                                <?php if (isset($_SESSION['id_usuario'])) : ?>
+                                    <li><a href="vista-perfil.php">Perfil</a></li>
+                                <?php endif; ?>
+
                             </ul>
                         </div>
                     </div>

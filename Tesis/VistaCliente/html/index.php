@@ -58,7 +58,7 @@ while ($comentario = $resultComentarios->fetch_assoc()) {
 }
 
 // Obtener todas las categorías
-$sql_categorias = "SELECT * FROM categoria";
+$sql_categorias = "SELECT * FROM categoria WHERE estado = 'habilitado'";
 $result_categorias = $conexion->query($sql_categorias);
 
 $categorias = [];
@@ -164,6 +164,7 @@ $conexion->close();
 <meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
 
 <head>
+    <link rel="stylesheet" href="../css/themify-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="../css/boton-naranja.css">
     <!-- Required meta tags -->
@@ -191,6 +192,8 @@ $conexion->close();
     <!-- style CSS -->
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/themify-icons@0.1.2/css/themify-icons.css">
 </head>
 
 <body>
@@ -253,13 +256,25 @@ $conexion->close();
                             </ul>
                         </div>
 
-                        <div class="menu_btn">
+
+
+
+
+                        <div class="menu_btn d-flex align-items-center">
                             <?php if (!isset($_SESSION['id_usuario'])): ?>
                                 <a href="../../VistaAdmin/html/Login.php" class="btn-naranja d-none d-sm-block">Iniciar sesión</a>
                             <?php else: ?>
-                                <a href="cerrar_sesion.php" class="btn-naranja d-none d-sm-block">Cerrar sesión</a>
+
+
+                                <span class="d-none d-sm-inline align-middle" style="font-weight: 500; margin-right: 2rem;">
+                                    <i class="bi bi-person-circle" style="font-size: 1.3em; vertical-align: middle;"></i>
+                                    <?= htmlspecialchars($_SESSION['nombre'] . ' ' . $_SESSION['apellido']) ?>
+                                </span>
+
+                                <a href="cerrar_sesion.php" class="btn-naranja d-none d-sm-block ms-1">Cerrar sesión</a>
                             <?php endif; ?>
                         </div>
+
                     </nav>
                 </div>
             </div>
@@ -276,9 +291,11 @@ $conexion->close();
                     <div class="banner_text">
                         <div class="banner_text_iner">
                             <h1 style="font-size: 2.7rem; font-weight: 700; color: #222;">
-                                ¡Bienvenido a ChefClass!  
+                                ¡Bienvenido a ChefClass!
                                 <br>
-                                <span><h2 style="color: #ff6600;">Comparte, descubre y disfruta el sabor de la comunidad</h2></span>
+                                <span>
+                                    <h2 style="color: #ff6600;">Comparte, descubre y disfruta el sabor de la comunidad</h2>
+                                </span>
                             </h1>
                             <p style="font-size: 1.25rem; color: #444; margin-top: 1.2rem;">
                                 Nos alegra tenerte aquí. ChefClass es tu espacio para inspirarte, aprender y conectar con personas apasionadas por la cocina.<br>
@@ -468,8 +485,7 @@ $conexion->close();
                         <h2>¿Tienes una receta especial? ¡Publícala y hazla famosa!</h2>
                         <h4>Inspira a otros, comparte tus secretos culinarios y sé parte de nuestra comunidad</h4>
                         <p>En ChefClass, cada receta cuenta una historia. Anímate a compartir tus mejores platos, ayuda a otros a descubrir nuevos sabores y deja tu huella en nuestra comunidad. ¡Tu receta puede ser la próxima favorita de todos!</p>
-                        <a href="vista-subir-receta.php" class="btn_3">Subir mi receta <img src="../img/icon/left_2.svg" alt=""></a>
-                    </div>
+                        
                 </div>
             </div>
         </div>
@@ -707,29 +723,19 @@ $conexion->close();
                         <div class="single_blog_text text-center">
                             <h3>Lucas Salvatierra</h3>
                             <p>Desarrollador de Software</p>
-                            <div class="social_icon">
-                                <a href="#"> <i class="ti-facebook"></i> </a>
-                                <a href="#"> <i class="ti-twitter-alt"></i> </a>
-                                <a href="#"> <i class="ti-instagram"></i> </a>
-                                <a href="#"> <i class="ti-skype"></i> </a>
-                            </div>
+
                         </div>
                     </div>
                 </div>
                 <div class="col-sm-6 col-lg-4">
                     <div class="single_blog_item">
                         <div class="single_blog_img">
-                            <img src="../../Elemy.jpg" alt="">
+                            <img src="../img/team/chefs_2.png" alt="">
                         </div>
                         <div class="single_blog_text text-center">
-                            <h3>Emiliano Olivera Herrera</h3>
+                            <h3>Emiliano Olivera</h3>
                             <p>Desarrollador de Software</p>
-                            <div class="social_icon">
-                                <a href="#"> <i class="ti-facebook"></i> </a>
-                                <a href="#"> <i class="ti-twitter-alt"></i> </a>
-                                <a href="#"> <i class="ti-instagram"></i> </a>
-                                <a href="#"> <i class="ti-skype"></i> </a>
-                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -758,13 +764,13 @@ $conexion->close();
                                 </div>
                                 <div class="client_review_text media-body">
                                     <h4 style="font-size: 1.1rem; font-weight: bold; margin-bottom: 0.2rem;">
-                                        <?php echo htmlspecialchars($comentario['nombre_usuario']); ?>
+                                        👤 <?php echo htmlspecialchars($comentario['nombre_usuario']); ?>
                                     </h4>
                                     <span style="font-size: 1rem; color: #ff6600; font-weight: 500; display: block; margin-bottom: 0.7rem;">
-                                        <?php echo htmlspecialchars($comentario['receta_titulo']); ?>
+                                        🍽️ <?php echo htmlspecialchars($comentario['receta_titulo']); ?>
                                     </span>
                                     <p style="font-size: 1.25rem; font-weight: 600; color: #222; background: #fffbe8; border-radius: 8px; padding: 1rem 1.2rem; margin-bottom: 0;">
-                                        <?php echo htmlspecialchars($comentario['comentario']); ?>
+                                        💬 <?php echo htmlspecialchars($comentario['comentario']); ?>
                                     </p>
                                 </div>
                             </div>
@@ -888,11 +894,21 @@ $conexion->close();
                         <h4>Enlaces</h4>
                         <div class="contact_info">
                             <ul>
-                                <li><a href="#">Inicio</a></li>
-                                <li><a href="#">Nosotros</a></li>
-                                <li><a href="#">Categorías</a></li>
-                                <li><a href="#">Subir Recetas</a></li>
-                                <li><a href="#">Perfil</a></li>
+                                <li><a href="index.php">Inicio</a></li>
+                                <li><a href="vista-nosotros.php">Nosotros</a></li>
+                                <li><a href="vista-categoria.php">Categorías</a></li>
+
+
+                                <?php if (!isset($_SESSION['id_usuario'])): ?>
+                                    <li><a href="#" class="subir-receta-no-logeado">Subir Recetas</a></li>
+                                <?php else: ?>
+                                    <li><a href="vista-subir-receta.php">Subir Recetas</a></li>
+                                <?php endif; ?>
+
+                                <?php if (isset($_SESSION['id_usuario'])) : ?>
+                                    <li><a href="vista-perfil.php">Perfil</a></li>
+                                <?php endif; ?>
+
                             </ul>
                         </div>
                     </div>
@@ -916,8 +932,10 @@ $conexion->close();
                                     <div class="input-group-append">
                                         <!-- <a href="#" class="single_page_btn d-none d-sm-block">Iniciar Sesión</a> -->
                                         <?php if (!isset($_SESSION['id_usuario'])): ?>
+
                                             <a href="../../VistaAdmin/html/Login.php" class="btn-naranja d-none d-sm-block">Iniciar sesión</a>
                                         <?php else: ?>
+
                                             <a href="cerrar_sesion.php" class="btn-naranja d-none d-sm-block">Cerrar sesión</a>
                                         <?php endif; ?>
                                     </div>
@@ -930,16 +948,17 @@ $conexion->close();
             <div class="copyright_part_text">
                 <div class="row">
                     <div class="col-lg-8">
-                        <p class="footer-text m-0">ChefClass | Proyecto realizado por <a href="#" target="_blank">Lucas Salvatierra, Emiliano Olivera.</a></p>
+                        <p class="footer-text m-0">
+                            ChefClass | Proyecto realizado por
+                            <a href="#" target="_blank" id="creditos-link">Lucas Salvatierra, Emiliano Olivera.</a>
+                        </p>
+                        <script>
+                            document.getElementById('creditos-link').addEventListener('click', function(e) {
+                                e.preventDefault();
+                            });
+                        </script>
                     </div>
-                    <div class="col-lg-4">
-                        <div class="copyright_social_icon text-right">
-                            <a href="#"><i class="fab fa-facebook-f"></i></a>
-                            <a href="#"><i class="fab fa-twitter"></i></a>
-                            <a href="#"><i class="fab fa-whatsapp"></i></a>
-                            <a href="#"><i class="ti-instagram"></i></a>
-                        </div>
-                    </div>
+
                 </div>
             </div>
         </div>
@@ -976,6 +995,8 @@ $conexion->close();
                         text: 'Por favor, inicia sesión para poder subir una receta.',
                         confirmButtonText: 'Iniciar sesión',
                         showCancelButton: true,
+                        confirmButtonColor: '#007bff', // Azul 
+                        cancelButtonColor: '#d33', // Rojo
                         cancelButtonText: 'Cancelar'
                     }).then((result) => {
                         if (result.isConfirmed) {

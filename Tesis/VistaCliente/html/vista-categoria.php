@@ -10,7 +10,7 @@ if (isset($_SESSION['id_usuario'])) {
 include('conexion.php');
 
 // Obtener todas las categorías
-$sql_categorias = "SELECT * FROM categoria";
+$sql_categorias = "SELECT * FROM categoria WHERE estado = 'habilitado'";
 $result_categorias = $conexion->query($sql_categorias);
 
 $categorias = [];
@@ -128,7 +128,7 @@ function generar_estrellas($promedio)
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>ChefClass - Inicio</title>
+    <title>ChefClass - Categoría</title>
     <link rel="icon" href="../img/chefclassFinal.png">
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="../css/bootstrap.min.css">
@@ -199,21 +199,31 @@ function generar_estrellas($promedio)
                                     <a class="nav-link <?= basename($_SERVER['PHP_SELF']) == 'vista-categoria.php' ? 'active' : '' ?>" href="vista-categoria.php">Categorías</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link <?= basename($_SERVER['PHP_SELF']) == 'vista-subir-receta.php' ? 'active' : '' ?>" href="<?php echo isset($_SESSION['id_usuario']) ? 'vista-subir-receta.php' : '../../VistaAdmin/html/Login.php'; ?>">Subir recetas</a>
+                                    <?php if (!isset($_SESSION['id_usuario'])): ?>
+                                        <a class="nav-link subir-receta-no-logeado" href="#">Subir recetas</a>
+                                    <?php else: ?>
+                                        <a class="nav-link <?= basename($_SERVER['PHP_SELF']) == 'vista-subir-receta.php' ? 'active' : '' ?>" href="vista-subir-receta.php">Subir recetas</a>
+                                    <?php endif; ?>
+                                    <?php if (isset($_SESSION['id_usuario'])): ?>
+                                <li class="nav-item">
+                                    <a class="nav-link <?= basename($_SERVER['PHP_SELF']) == 'vista-perfil.php' ? 'active' : '' ?>" href="vista-perfil.php">Perfil</a>
                                 </li>
-                                <?php if (isset($_SESSION['id_usuario'])): ?>
-                                    <li class="nav-item">
-                                        <a class="nav-link <?= basename($_SERVER['PHP_SELF']) == 'vista-perfil.php' ? 'active' : '' ?>" href="vista-perfil.php">Perfil</a>
-                                    </li>
-                                <?php endif; ?>
+                            <?php endif; ?>
                             </ul>
                         </div>
 
-                        <div class="menu_btn">
+                        <div class="menu_btn d-flex align-items-center">
                             <?php if (!isset($_SESSION['id_usuario'])): ?>
                                 <a href="../../VistaAdmin/html/Login.php" class="btn-naranja d-none d-sm-block">Iniciar sesión</a>
                             <?php else: ?>
-                                <a href="cerrar_sesion.php" class="btn-naranja d-none d-sm-block">Cerrar sesión</a>
+
+
+                                <span class="d-none d-sm-inline align-middle" style="font-weight: 500; margin-right: 2rem;">
+                                    <i class="bi bi-person-circle" style="font-size: 1.3em; vertical-align: middle;"></i>
+                                    <?= htmlspecialchars($_SESSION['nombre'] . ' ' . $_SESSION['apellido']) ?>
+                                </span>
+
+                                <a href="cerrar_sesion.php" class="btn-naranja d-none d-sm-block ms-1">Cerrar sesión</a>
                             <?php endif; ?>
                         </div>
                     </nav>
@@ -587,11 +597,21 @@ function generar_estrellas($promedio)
                         <h4>Enlaces</h4>
                         <div class="contact_info">
                             <ul>
-                                <li><a href="#">Inicio</a></li>
-                                <li><a href="#">Nosotros</a></li>
-                                <li><a href="#">Categorías</a></li>
-                                <li><a href="#">Subir Recetas</a></li>
-                                <li><a href="#">Perfil</a></li>
+                                <li><a href="index.php">Inicio</a></li>
+                                <li><a href="vista-nosotros.php">Nosotros</a></li>
+                                <li><a href="vista-categoria.php">Categorías</a></li>
+
+
+                                <?php if (!isset($_SESSION['id_usuario'])): ?>
+                                    <li><a href="#" class="subir-receta-no-logeado">Subir Recetas</a></li>
+                                <?php else: ?>
+                                    <li><a href="vista-subir-receta.php">Subir Recetas</a></li>
+                                <?php endif; ?>
+
+                                <?php if (isset($_SESSION['id_usuario'])) : ?>
+                                    <li><a href="vista-perfil.php">Perfil</a></li>
+                                <?php endif; ?>
+
                             </ul>
                         </div>
                     </div>
@@ -629,16 +649,17 @@ function generar_estrellas($promedio)
             <div class="copyright_part_text">
                 <div class="row">
                     <div class="col-lg-8">
-                        <p class="footer-text m-0">ChefClass | Proyecto realizado por <a href="#" target="_blank">Lucas Salvatierra, Emiliano Olivera.</a></p>
+                        <p class="footer-text m-0">
+                            ChefClass | Proyecto realizado por
+                            <a href="#" target="_blank" id="creditos-link">Lucas Salvatierra, Emiliano Olivera.</a>
+                        </p>
+                        <script>
+                            document.getElementById('creditos-link').addEventListener('click', function(e) {
+                                e.preventDefault();
+                            });
+                        </script>
                     </div>
-                    <div class="col-lg-4">
-                        <div class="copyright_social_icon text-right">
-                            <a href="#"><i class="fab fa-facebook-f"></i></a>
-                            <a href="#"><i class="fab fa-twitter"></i></a>
-                            <a href="#"><i class="fab fa-whatsapp"></i></a>
-                            <a href="#"><i class="ti-instagram"></i></a>
-                        </div>
-                    </div>
+
                 </div>
             </div>
         </div>
@@ -666,7 +687,29 @@ function generar_estrellas($promedio)
     <script src="../js/jquery.nice-select.min.js"></script>
     <!-- custom js -->
     <script src="../js/custom.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // SweetAlert para "Subir recetas"
+        document.querySelectorAll('.subir-receta-no-logeado').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Debes iniciar sesión',
+                    text: 'Por favor, inicia sesión para poder subir una receta.',
+                    confirmButtonText: 'Iniciar sesión',
+                    showCancelButton: true,
+                    confirmButtonColor: '#007bff', // Azul 
+                    cancelButtonColor: '#d33', // Rojo
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '../../VistaAdmin/html/Login.php';
+                    }
+                });
+            });
+        });
+    </script>
 
 </body>
 

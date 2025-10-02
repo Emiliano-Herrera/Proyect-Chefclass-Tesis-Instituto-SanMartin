@@ -38,7 +38,7 @@ $receta = $result_receta->fetch_assoc();
 $sql_medias = "
     SELECT i.url_imagen AS url, CASE 
         WHEN i.url_imagen LIKE '%.jpg' OR i.url_imagen LIKE '%.jpeg' OR i.url_imagen LIKE '%.png' OR i.url_imagen LIKE '%.gif' THEN 'imagen'
-        WHEN i.url_imagen LIKE '%.mp4' OR i.url_imagen LIKE '%.webm' OR i.url_imagen LIKE '%.ogg' THEN 'video'
+        WHEN i.url_imagen LIKE '%.mp4' OR i.url_imagen LIKE '%.web' OR i.url_imagen LIKE '%.ogg' THEN 'video'
         ELSE 'unknown'
     END AS tipo
     FROM img_recetas i
@@ -76,7 +76,7 @@ $result_usuario = $stmt_usuario->get_result();
 $usuario = $result_usuario->fetch_assoc();
 
 // Otras consultas relacionadas
-$sql_ingredientes = "SELECT i.nombre, ri.cantidad 
+$sql_ingredientes = "SELECT i.nombre, ri.cantidad, ri.unidad 
     FROM ingredientes i 
     JOIN recetas_ingredientes ri ON i.id_ingrediente = ri.ingrediente_id 
     WHERE ri.receta_id = ?";
@@ -243,11 +243,19 @@ $conexion->close();
                             </ul>
                         </div>
 
-                        <div class="menu_btn">
+                        <div class="menu_btn d-flex align-items-center">
                             <?php if (!isset($_SESSION['id_usuario'])): ?>
                                 <a href="../../VistaAdmin/html/Login.php" class="btn-naranja d-none d-sm-block">Iniciar sesión</a>
                             <?php else: ?>
-                                <a href="cerrar_sesion.php" class="btn-naranja d-none d-sm-block">Cerrar sesión</a>
+
+
+
+                                <span class="d-none d-sm-inline align-middle" style="font-weight: 500; margin-right: 2rem; color: #212529;">
+                                    <i class="bi bi-person-circle" style="font-size: 1.3em; vertical-align: middle;"></i>
+                                    <?= htmlspecialchars($_SESSION['nombre'] . ' ' . $_SESSION['apellido']) ?>
+                                </span>
+
+                                <a href="cerrar_sesion.php" class="btn-naranja d-none d-sm-block ms-1">Cerrar sesión</a>
                             <?php endif; ?>
                         </div>
                     </nav>
@@ -281,7 +289,7 @@ $conexion->close();
                         <form class="ms-3 mt-2 mt-sm-0" id="seguir-form" action="seguir-usuario.php" method="post">
                             <input type="hidden" name="usuario_id" value="<?php echo $usuario['id_usuario']; ?>">
                             <?php if ($ya_sigue): ?>
-                                <button type="button" class="btn btn-success btn-sm" id="seguir-button" disabled>Ya lo sigues</button>
+                                <button type="button" class="btn btn-success btn-sm" id="seguir-button" disabled>Siguiendo</button>
                             <?php else: ?>
                                 <button type="submit" class="btn btn-outline-primary btn-sm" id="seguir-button">Seguir</button>
                             <?php endif; ?>
@@ -444,6 +452,11 @@ $conexion->close();
                             font-size: 1.5rem;
                         }
                     }
+
+                    /* Quitar subrayado a los enlaces del footer */
+                    .footer-area .single-footer-widget.footer_2 ul li a {
+                        text-decoration: none !important;
+                    }
                 </style>
 
                 <!-- //!ACCIONES DE LA RECETA ======================================================== -->
@@ -463,6 +476,9 @@ $conexion->close();
                     <div class="right-actions">
                         <button type="button" class="action-btn btn p-0" id="guardar-button">
                             <i class="bi bi-bookmark" style="font-size: 1.5rem;"></i>
+                        </button>
+                        <button type="button" class="action-btn btn p-0 ms-2" id="descargar-pdf-button" title="Descargar receta en PDF">
+                            <i class="bi bi-download" style="font-size: 1.5rem; color: #d32f2f;"></i>
                         </button>
                     </div>
                 </div>
@@ -548,6 +564,7 @@ $conexion->close();
                                             <tr>
                                                 <th>Ingrediente</th>
                                                 <th>Cantidad</th>
+                                                <th>Unidad</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -555,6 +572,7 @@ $conexion->close();
                                                 <tr>
                                                     <td><?php echo $ingrediente['nombre']; ?></td>
                                                     <td><?php echo $ingrediente['cantidad']; ?></td>
+                                                    <td><?php echo $ingrediente['unidad']; ?></td>
                                                 </tr>
                                             <?php endwhile; ?>
                                         </tbody>
@@ -588,12 +606,47 @@ $conexion->close();
                         <div class="tab-pane fade" id="comentarios" role="tabpanel" aria-labelledby="comentarios-tab">
                             <div class="comment-section">
                                 <h2 class="section-title">Comentarios</h2>
-                                <?php while ($comentario = $result_comentarios->fetch_assoc()): ?>
-                                    <div class="comment">
-                                        <p><strong><?php echo $comentario['nombre'] . ' ' . $comentario['apellido']; ?>:</strong> <?php echo $comentario['comentario']; ?></p>
-                                        <p class="text-muted"><small><?php echo $comentario['fecha_comentario']; ?></small></p>
+
+
+                                <!-- Carrusel de comentarios (5 por slide) -->
+                                <div id="comentariosCarousel" class="carousel slide" data-bs-ride="carousel">
+                                    <div class="carousel-inner">
+                                        <?php
+                                        $result_comentarios->data_seek(0);
+                                        $comentarios_array = [];
+                                        while ($comentario = $result_comentarios->fetch_assoc()) {
+                                            $comentarios_array[] = $comentario;
+                                        }
+                                        $total = count($comentarios_array);
+                                        $por_slide = 5;
+                                        $num_slides = ceil($total / $por_slide);
+                                        for ($i = 0; $i < $num_slides; $i++): ?>
+                                            <div class="carousel-item <?= $i === 0 ? 'active' : '' ?>">
+                                                <?php for ($j = $i * $por_slide; $j < min(($i + 1) * $por_slide, $total); $j++): ?>
+                                                    <div class="comment border rounded p-2 mb-2 bg-light">
+                                                        <p class="mb-1"><strong><?= $comentarios_array[$j]['nombre'] . ' ' . $comentarios_array[$j]['apellido']; ?>:</strong> <?= $comentarios_array[$j]['comentario']; ?></p>
+                                                        <p class="text-muted mb-0"><small><?= $comentarios_array[$j]['fecha_comentario']; ?></small></p>
+                                                    </div>
+                                                <?php endfor; ?>
+                                            </div>
+                                        <?php endfor; ?>
                                     </div>
-                                <?php endwhile; ?>
+                                    <!-- Paginado con puntitos -->
+                                    <div class="carousel-indicators">
+                                        <?php for ($i = 0; $i < $num_slides; $i++): ?>
+                                            <button type="button" data-bs-target="#comentariosCarousel" data-bs-slide-to="<?= $i ?>" class="<?= $i === 0 ? 'active' : '' ?>" aria-current="<?= $i === 0 ? 'true' : 'false' ?>" aria-label="Comentario <?= ($i * $por_slide) + 1 ?>"></button>
+                                        <?php endfor; ?>
+                                    </div>
+                                    <!-- Controles opcionales (flechas) -->
+                                    <button class="carousel-control-prev" type="button" data-bs-target="#comentariosCarousel" data-bs-slide="prev">
+                                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                        <span class="visually-hidden">Anterior</span>
+                                    </button>
+                                    <button class="carousel-control-next" type="button" data-bs-target="#comentariosCarousel" data-bs-slide="next">
+                                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                        <span class="visually-hidden">Siguiente</span>
+                                    </button>
+                                </div>
                                 <div class="comment-form mt-4">
                                     <h4>Deja un comentario</h4>
                                     <form action="enviar_comentario.php" method="post">
@@ -686,11 +739,21 @@ $conexion->close();
                         <h4>Enlaces</h4>
                         <div class="contact_info">
                             <ul>
-                                <li><a href="#">Inicio</a></li>
-                                <li><a href="#">Nosotros</a></li>
-                                <li><a href="#">Categorías</a></li>
-                                <li><a href="#">Subir Recetas</a></li>
-                                <li><a href="#">Perfil</a></li>
+                                <li><a href="index.php">Inicio</a></li>
+                                <li><a href="vista-nosotros.php">Nosotros</a></li>
+                                <li><a href="vista-categoria.php">Categorías</a></li>
+
+
+                                <?php if (!isset($_SESSION['id_usuario'])): ?>
+                                    <li><a href="#" class="subir-receta-no-logeado">Subir Recetas</a></li>
+                                <?php else: ?>
+                                    <li><a href="vista-subir-receta.php">Subir Recetas</a></li>
+                                <?php endif; ?>
+
+                                <?php if (isset($_SESSION['id_usuario'])) : ?>
+                                    <li><a href="vista-perfil.php">Perfil</a></li>
+                                <?php endif; ?>
+
                             </ul>
                         </div>
                     </div>
@@ -728,16 +791,17 @@ $conexion->close();
             <div class="copyright_part_text">
                 <div class="row">
                     <div class="col-lg-8">
-                        <p class="footer-text m-0">ChefClass | Proyecto realizado por <a href="#" target="_blank">Lucas Salvatierra, Emiliano Olivera.</a></p>
+                        <p class="footer-text m-0">
+                            ChefClass | Proyecto realizado por
+                            <a href="#" target="_blank" id="creditos-link">Lucas Salvatierra, Emiliano Olivera.</a>
+                        </p>
+                        <script>
+                            document.getElementById('creditos-link').addEventListener('click', function(e) {
+                                e.preventDefault();
+                            });
+                        </script>
                     </div>
-                    <div class="col-lg-4">
-                        <div class="copyright_social_icon text-right">
-                            <a href="#"><i class="fab fa-facebook-f"></i></a>
-                            <a href="#"><i class="fab fa-twitter"></i></a>
-                            <a href="#"><i class="fab fa-whatsapp"></i></a>
-                            <a href="#"><i class="ti-instagram"></i></a>
-                        </div>
-                    </div>
+
                 </div>
             </div>
         </div>
@@ -862,8 +926,6 @@ $conexion->close();
 
     <!-- Funcion para expandir el video en grande -->
     <script>
-        //Funcion para poder ver el video en grande
-
         function expandVideo(videoElement) {
             if (videoElement.requestFullscreen) {
                 videoElement.requestFullscreen();
@@ -962,8 +1024,116 @@ $conexion->close();
                     });
             });
         });
+
+
+
+        <?php if (isset($_GET['comentado']) && $_GET['comentado'] == 'ok'): ?>
+            Swal.fire({
+                icon: 'success',
+                title: '¡Comentario enviado!',
+                text: 'Tu comentario fue publicado correctamente.',
+                confirmButtonText: 'Aceptar'
+            });
+        <?php endif; ?>
     </script>
 
+    <!--Para descargar una receta-->
+    <script>
+        document.getElementById('descargar-pdf-button').addEventListener('click', function() {
+            const {
+                jsPDF
+            } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Título
+            const titulo = document.querySelector('h4 strong').innerText;
+            doc.setFontSize(18);
+            doc.text(titulo, 10, 20);
+
+            // Imagen principal (si existe)
+            const imgElement = document.querySelector('.carousel-item.active img');
+            if (imgElement) {
+                html2canvas(imgElement, {
+                    scale: 0.5
+                }).then(canvas => {
+                    const imgData = canvas.toDataURL('image/jpeg');
+                    doc.addImage(imgData, 'JPEG', 10, 25, 60, 45);
+
+                    agregarTexto();
+                });
+            } else {
+                agregarTexto();
+            }
+
+            function agregarTexto() {
+                // Si hay imagen, deja más espacio antes de la descripción
+                const imgElement = document.querySelector('.carousel-item.active img');
+                let y = imgElement ? 85 : 75; // Más espacio si hay imagen
+                const margenInferior = 280; // Margen inferior para salto de página
+
+                // Descripción
+                const descElem = document.querySelector('.info-text');
+                const descripcion = descElem ? descElem.innerText : 'Sin descripción';
+                doc.setFontSize(12);
+                doc.text('Descripción:', 10, y);
+                y += 7;
+                let descLines = doc.splitTextToSize(descripcion, 180);
+                descLines.forEach(line => {
+                    if (y > margenInferior) {
+                        doc.addPage();
+                        y = 20;
+                    }
+                    doc.text(line, 10, y);
+                    y += 7;
+                });
+
+                // Salto de línea extra entre descripción e ingredientes
+                y += 8;
+
+                // Ingredientes
+                doc.setFontSize(14);
+                doc.text('Ingredientes:', 10, y);
+                y += 7;
+                doc.setFontSize(12);
+                document.querySelectorAll('#ingredientes tbody tr').forEach(tr => {
+                    const cols = tr.querySelectorAll('td');
+                    const texto = `${cols[0].innerText} - ${cols[1].innerText} ${cols[2].innerText}`;
+                    if (y > margenInferior) {
+                        doc.addPage();
+                        y = 20;
+                    }
+                    doc.text(texto, 10, y);
+                    y += 7;
+                });
+
+                // Salto de línea extra entre ingredientes e instrucciones
+                y += 8;
+
+                // Instrucciones
+                doc.setFontSize(14);
+                doc.text('Instrucciones:', 10, y);
+                y += 7;
+                doc.setFontSize(12);
+                document.querySelectorAll('#instrucciones tbody tr').forEach(tr => {
+                    const paso = tr.querySelectorAll('td')[0].innerText;
+                    const desc = tr.querySelectorAll('td')[1].innerText;
+                    let lines = doc.splitTextToSize(`${paso}. ${desc}`, 180);
+                    lines.forEach(line => {
+                        if (y > margenInferior) {
+                            doc.addPage();
+                            y = 20;
+                        }
+                        doc.text(line, 10, y);
+                        y += 7;
+                    });
+                });
+
+                doc.save(`${titulo}.pdf`);
+            }
+        });
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js" integrity="sha384-cuYeSxntonz0PPNlHhBs68uyIAVpIIOZZ5JqeqvYYIcEL727kskC66kF92t6Xl2V" crossorigin="anonymous"></script>
 </body>

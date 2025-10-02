@@ -86,17 +86,35 @@ if (isset($_SESSION['mensaje_error'])) {
     unset($_SESSION['mensaje_error']); // Eliminar el mensaje después de mostrarlo
 }
 
+
+
 $sqlRecetasUsuario = "
-    SELECT R.*, RI.url_imagen, AVG(C.calificacion) as promedio_calificacion, U.nombre_usuario
-    FROM recetas R 
-    LEFT JOIN imagenes_recetas IR ON R.id_receta = IR.recetas_id 
-    LEFT JOIN img_recetas RI ON IR.img_id = RI.id_img 
-    LEFT JOIN calificaciones C ON R.id_receta = C.receta_id
-    LEFT JOIN usuarios U ON R.usuario_id = U.id_usuario
-    WHERE R.usuario_id = ? AND RI.url_imagen IS NOT NULL
-    AND R.estado = 'habilitado'
-    GROUP BY R.id_receta
-    ORDER BY R.fecha_creacion DESC
+    SELECT 
+    R.*, 
+    (
+        SELECT RI.url_imagen
+        FROM imagenes_recetas IR
+        INNER JOIN img_recetas RI ON IR.img_id = RI.id_img
+        WHERE IR.recetas_id = R.id_receta
+          AND (
+            RI.url_imagen LIKE '%.jpg' OR
+            RI.url_imagen LIKE '%.jpeg' OR
+            RI.url_imagen LIKE '%.png' OR
+            RI.url_imagen LIKE '%.gif' OR
+            RI.url_imagen LIKE '%.webp'
+          )
+        ORDER BY IR.img_id ASC
+        LIMIT 1
+    ) AS url_imagen,
+    AVG(C.calificacion) as promedio_calificacion, 
+    U.nombre_usuario
+FROM recetas R
+LEFT JOIN calificaciones C ON R.id_receta = C.receta_id
+LEFT JOIN usuarios U ON R.usuario_id = U.id_usuario
+WHERE R.usuario_id = ? 
+  AND R.estado = 'habilitado'
+GROUP BY R.id_receta
+ORDER BY R.fecha_creacion DESC
 ";
 $statementRecetas = $conexion->prepare($sqlRecetasUsuario);
 $statementRecetas->bind_param("i", $ID_Usuario);
@@ -250,11 +268,19 @@ function generar_estrellas($promedio)
                             </ul>
                         </div>
 
-                        <div class="menu_btn">
+                        <div class="menu_btn d-flex align-items-center">
                             <?php if (!isset($_SESSION['id_usuario'])): ?>
                                 <a href="../../VistaAdmin/html/Login.php" class="btn-naranja d-none d-sm-block">Iniciar sesión</a>
                             <?php else: ?>
-                                <a href="cerrar_sesion.php" class="btn-naranja d-none d-sm-block">Cerrar sesión</a>
+
+
+
+                                <span class="d-none d-sm-inline align-middle" style="font-weight: 500; margin-right: 2rem; color: #212529;">
+                                    <i class="bi bi-person-circle" style="font-size: 1.3em; vertical-align: middle;"></i>
+                                    <?= htmlspecialchars($_SESSION['nombre'] . ' ' . $_SESSION['apellido']) ?>
+                                </span>
+
+                                <a href="cerrar_sesion.php" class="btn-naranja d-none d-sm-block ms-1">Cerrar sesión</a>
                             <?php endif; ?>
                         </div>
                     </nav>
@@ -275,10 +301,18 @@ function generar_estrellas($promedio)
                         <i class="bi bi-list" style="font-size: 1.2rem; line-height: 1;"></i>Más
                     </button>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="vista-editar-perfil.php"><i class="bi bi-pencil-square"></i> Editar perfil</a></li>
+                        <li>
+                            <a class="dropdown-item" href="editar-perfil.php">
+                                <i class="bi bi-pencil-square"></i> Editar perfil
+                            </a>
+                        </li>
                         <li><a class="dropdown-item" href="vista-actividad.php"><i class="bi bi-activity"></i> Tú actividad</a></li>
                         <li><a class="dropdown-item" href="vista-guardados.php"><i class="bi bi-bookmark"></i> Guardado</a></li>
-                        <li><a class="dropdown-item" href="../../VistaAdmin/perfil2.php"><i class="bi bi-gear"></i> Admin</a></li>
+                        <?php
+                        if (isset($_SESSION['id_usuario']) && !in_array('Cliente', $roles)) :
+                        ?>
+                            <li><a class="dropdown-item" href="../../VistaAdmin/html/admin.php"><i class="bi bi-box-arrow-up-right"></i> Ir al admin</a></li>
+                        <?php endif; ?>
                     </ul>
                 </div>
             </div>
@@ -290,9 +324,11 @@ function generar_estrellas($promedio)
                 <p class="titulo" style="font-size: 1.1rem;"><?php echo $filas[0]['nombre'], ' ', $filas[0]['apellido'] ?></p>
                 <!-- Datos de contacto -->
                 <ul class="lista-datos" style="font-size: 1em;">
-                    <li><i class="bi bi-telephone" style="font-size: 1.3em;"></i> Teléfono: 
+                    <li><i class="bi bi-telephone" style="font-size: 1.3em;"></i> Teléfono:
                         <?php if (!empty($telefonos)): ?>
-                            <?php foreach ($telefonos as $telefono) { echo " $telefono" . " - "; } ?> 
+                            <?php foreach ($telefonos as $telefono) {
+                                echo " $telefono" . " - ";
+                            } ?>
                         <?php endif; ?>
                     </li>
                     <li><i class="bi bi-envelope" style="font-size: 1.3em;"></i> Email: <?php echo $filas[0]['user_email'] ?></li>
@@ -308,7 +344,7 @@ function generar_estrellas($promedio)
                 <div class="seguidores-seguidos titulo mt-3">
                     <div class="d-flex justify-content-center align-items-center gap-4 flex-wrap">
                         <?php
-                            $totalPublicaciones = count($recetas);
+                        $totalPublicaciones = count($recetas);
                         ?>
                         <div class="text-center px-3 py-2 bg-white seguidores-card" style="border:none; box-shadow:none;">
                             <a href="#" data-bs-toggle="modal" data-bs-target="#modalSeguidores" class="text-decoration-none text-dark">
@@ -384,7 +420,7 @@ function generar_estrellas($promedio)
                                             <small><?php echo $seguidor['nombre'] . ' ' . $seguidor['apellido']; ?></small>
                                         </div>
                                     </div>
-                                    <button class="btn btn-secondary btn-sm eliminar-seguidor" data-id="<?php echo $seguidor['id_usuario']; ?>">Eliminar</button>
+                                    <button class="btn btn-danger btn-sm eliminar-seguidor" data-id="<?php echo $seguidor['id_usuario']; ?>">Eliminar</button>
                                 </li>
                             <?php endwhile; ?>
                         </ul>
@@ -395,70 +431,79 @@ function generar_estrellas($promedio)
     </div>
 
     <style>
-    .seguidores-seguidos .d-flex {
-        gap: 1.2rem !important;
-        flex-wrap: wrap;
-    }
-    .seguidores-seguidos .text-center {
-        transition: box-shadow 0.2s, transform 0.2s;
-        cursor: pointer;
-    }
-    .seguidores-seguidos .text-center:hover {
-        box-shadow: 0 4px 16px rgba(0,0,0,0.10);
-        transform: translateY(-4px) scale(1.04);
-        background: #f8f9fa;
-    }
-    .seguidores-seguidos .fw-bold {
-        font-size: 1.2rem;
-    }
-    .seguidores-seguidos .small {
-        font-size: 0.7em !important;
-        color: #888 !important;
-        letter-spacing: 0.01em;
-    }
-    .seguidores-seguidos .small.text-muted {
-        font-size: 0.7em !important;
-        color: #888 !important;
-        letter-spacing: 0.01em;
-    }
-    /* Responsivo para los cuadros */
-    .seguidores-card {
-        width: 120px;
-        min-width: 100px !important;
-        max-width: 160px !important;
-        height: 100px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        box-sizing: border-box;
-        font-size: 0.95em;
-    }
-    @media (max-width: 900px) {
-        .seguidores-card {
-            width: 100px;
-            min-width: 90px !important;
-            max-width: 120px !important;
-            height: 90px;
-            font-size: 0.9em;
-        }
-    }
-    @media (max-width: 600px) {
-        .seguidores-card {
-            width: 90vw;
-            min-width: 0 !important;
-            max-width: 100vw !important;
-            height: 70px;
-            font-size: 0.85em;
-            margin-bottom: 10px;
-        }
         .seguidores-seguidos .d-flex {
-            gap: 0.7rem !important;
+            gap: 1.2rem !important;
+            flex-wrap: wrap;
         }
-    }
+
+        .seguidores-seguidos .text-center {
+            transition: box-shadow 0.2s, transform 0.2s;
+            cursor: pointer;
+        }
+
+        .seguidores-seguidos .text-center:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.10);
+            transform: translateY(-4px) scale(1.04);
+            background: #f8f9fa;
+        }
+
+        .seguidores-seguidos .fw-bold {
+            font-size: 1.2rem;
+        }
+
+        .seguidores-seguidos .small {
+            font-size: 0.7em !important;
+            color: #888 !important;
+            letter-spacing: 0.01em;
+        }
+
+        .seguidores-seguidos .small.text-muted {
+            font-size: 0.7em !important;
+            color: #888 !important;
+            letter-spacing: 0.01em;
+        }
+
+        /* Responsivo para los cuadros */
+        .seguidores-card {
+            width: 120px;
+            min-width: 100px !important;
+            max-width: 160px !important;
+            height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
+            font-size: 0.95em;
+        }
+
+        @media (max-width: 900px) {
+            .seguidores-card {
+                width: 100px;
+                min-width: 90px !important;
+                max-width: 120px !important;
+                height: 90px;
+                font-size: 0.9em;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .seguidores-card {
+                width: 90vw;
+                min-width: 0 !important;
+                max-width: 100vw !important;
+                height: 70px;
+                font-size: 0.85em;
+                margin-bottom: 10px;
+            }
+
+            .seguidores-seguidos .d-flex {
+                gap: 0.7rem !important;
+            }
+        }
     </style>
 
-    
+
 
 
     <!-- //* Seguidos ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
@@ -509,7 +554,7 @@ function generar_estrellas($promedio)
                                             <small><?php echo $seguido['nombre'] . ' ' . $seguido['apellido']; ?></small>
                                         </div>
                                     </div>
-                                    <button class="btn btn-secondary btn-sm dejar-seguir" data-id="<?php echo $seguido['id_usuario']; ?>">Dejar de seguir</button>
+                                    <button class="btn btn-danger btn-sm dejar-seguir" data-id="<?php echo $seguido['id_usuario']; ?>">Dejar de seguir</button>
                                 </li>
                             <?php endwhile; ?>
                         </ul>
@@ -665,9 +710,18 @@ function generar_estrellas($promedio)
                         <div class="col-md-6 mb-3 receta-item">
                             <div class="card mb-3 h-100 shadow-lg border-0 rou">
                                 <div class="row g-0">
+
+
                                     <div class="col-md-5 position-relative">
-                                        <img src="<?= $receta['imagenes'][0] ?>" class="img-fluid rounded-start custom-img" alt="...">
-                                        <button class="btn btn-outline-light btn-eliminar position-absolute" style="top: 10px; left: 30px; padding: 5px 10px;" data-id="<?php echo $receta['id_receta']; ?>" data-titulo="<?php echo $receta['titulo']; ?>"><i class="bi bi-trash"></i></button>
+                                        <?php if (!empty($receta['url_imagen'])): ?>
+                                            <img src="<?= $receta['url_imagen'] ?>" class="img-fluid rounded-start custom-img" alt="Imagen de receta">
+                                            <button class="btn btn-outline-light btn-eliminar position-absolute"
+                                                style="top: 10px; left: 30px; padding: 5px 10px;"
+                                                data-id="<?= $receta['id_receta']; ?>"
+                                                data-titulo="<?= htmlspecialchars($receta['titulo']); ?>">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        <?php endif; ?>
                                     </div>
                                     <div class="col-md-7">
                                         <div class="card-body d-flex flex-column justify-content-between">
@@ -687,7 +741,7 @@ function generar_estrellas($promedio)
                         </div>
                     <?php endforeach; ?>
                 <?php else: ?>
-                    <p>No hay recetas disponibles en esta categoría.</p>
+                    <p>No hay recetas disponibles.</p>
                 <?php endif; ?>
             </div>
 
@@ -824,11 +878,21 @@ function generar_estrellas($promedio)
                         <h4>Enlaces</h4>
                         <div class="contact_info">
                             <ul>
-                                <li><a href="#">Inicio</a></li>
-                                <li><a href="#">Nosotros</a></li>
-                                <li><a href="#">Categorías</a></li>
-                                <li><a href="#">Subir Recetas</a></li>
-                                <li><a href="#">Perfil</a></li>
+                                <li><a href="index.php">Inicio</a></li>
+                                <li><a href="vista-nosotros.php">Nosotros</a></li>
+                                <li><a href="vista-categoria.php">Categorías</a></li>
+
+
+                                <?php if (!isset($_SESSION['id_usuario'])): ?>
+                                    <li><a href="#" class="subir-receta-no-logeado">Subir Recetas</a></li>
+                                <?php else: ?>
+                                    <li><a href="vista-subir-receta.php">Subir Recetas</a></li>
+                                <?php endif; ?>
+
+                                <?php if (isset($_SESSION['id_usuario'])) : ?>
+                                    <li><a href="vista-perfil.php">Perfil</a></li>
+                                <?php endif; ?>
+
                             </ul>
                         </div>
                     </div>
@@ -866,16 +930,17 @@ function generar_estrellas($promedio)
             <div class="copyright_part_text">
                 <div class="row">
                     <div class="col-lg-8">
-                        <p class="footer-text m-0">ChefClass | Proyecto realizado por <a href="#" target="_blank">Lucas Salvatierra, Emiliano Olivera.</a></p>
+                        <p class="footer-text m-0">
+                            ChefClass | Proyecto realizado por
+                            <a href="#" target="_blank" id="creditos-link">Lucas Salvatierra, Emiliano Olivera.</a>
+                        </p>
+                        <script>
+                            document.getElementById('creditos-link').addEventListener('click', function(e) {
+                                e.preventDefault();
+                            });
+                        </script>
                     </div>
-                    <div class="col-lg-4">
-                        <div class="copyright_social_icon text-right">
-                            <a href="#"><i class="fab fa-facebook-f"></i></a>
-                            <a href="#"><i class="fab fa-twitter"></i></a>
-                            <a href="#"><i class="fab fa-whatsapp"></i></a>
-                            <a href="#"><i class="ti-instagram"></i></a>
-                        </div>
-                    </div>
+
                 </div>
             </div>
         </div>
@@ -930,6 +995,31 @@ function generar_estrellas($promedio)
                     });
                 });
             });
+        });
+    </script>
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Obtener el parámetro status de la URL
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('status') === 'success') {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Datos actualizados!',
+                    text: 'Tus datos se guardaron correctamente.',
+                    confirmButtonColor: '#3085d6'
+                });
+            }
+            if (params.get('status') === 'error') {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudieron guardar los cambios. Intenta nuevamente.',
+                    confirmButtonColor: '#d33'
+                });
+            }
         });
     </script>
 </body>

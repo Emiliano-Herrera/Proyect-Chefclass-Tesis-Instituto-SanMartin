@@ -25,13 +25,29 @@ $paginaActualRecetas = isset($_GET['paginaRecetas']) ? (int)$_GET['paginaRecetas
 $offsetRecetas = ($paginaActualRecetas - 1) * $recetasPorPagina;
 
 // Consulta para obtener las recetas guardadas por el usuario con paginación
+
 $sqlRecetasGuardadas = "
-    SELECT R.id_receta, R.titulo, RI.url_imagen
+    SELECT 
+        R.id_receta, 
+        R.titulo, 
+        (
+            SELECT RI.url_imagen
+            FROM imagenes_recetas IR
+            INNER JOIN img_recetas RI ON IR.img_id = RI.id_img
+            WHERE IR.recetas_id = R.id_receta
+              AND (
+                RI.url_imagen LIKE '%.jpg' OR
+                RI.url_imagen LIKE '%.jpeg' OR
+                RI.url_imagen LIKE '%.png' OR
+                RI.url_imagen LIKE '%.gif' OR
+                RI.url_imagen LIKE '%.webp'
+              )
+            ORDER BY IR.img_id ASC
+            LIMIT 1
+        ) AS url_imagen
     FROM recetas R
-    LEFT JOIN imagenes_recetas IR ON R.id_receta = IR.recetas_id
-    LEFT JOIN img_recetas RI ON IR.img_id = RI.id_img
     LEFT JOIN recetas_favoritas RF ON R.id_receta = RF.receta_id
-    WHERE RF.usuario_id = ? AND RI.url_imagen IS NOT NULL
+    WHERE RF.usuario_id = ?
     GROUP BY R.id_receta
     ORDER BY R.fecha_creacion DESC
     LIMIT ? OFFSET ?
@@ -77,7 +93,7 @@ $totalPaginasRecetas = ceil($totalRecetasGuardadas / $recetasPorPagina);
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>ChefClass - Actividad</title>
+    <title>ChefClass - Guardados</title>
     <link rel="icon" href="../img/chefclassFinal.png">
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="../css/bootstrap.min.css">
@@ -149,6 +165,25 @@ $totalPaginasRecetas = ceil($totalRecetasGuardadas / $recetasPorPagina);
                                 color: #ff6600;
                                 font-weight: bold;
                             }
+
+                            /* Estilo de paginación naranja */
+                            .pagination .page-link {
+                                color: #ff6426;
+                                border: 1px solid #ff6426;
+                                background: #fff;
+                                transition: background 0.2s, color 0.2s;
+                            }
+
+                            .pagination .page-link:hover {
+                                background: #ff6426;
+                                color: #fff;
+                            }
+
+                            .pagination .page-item.active .page-link {
+                                background-color: #ff6426;
+                                border-color: #ff6426;
+                                color: #fff;
+                            }
                         </style>
 
                         <div class="collapse navbar-collapse main-menu-item justify-content-end" id="navbarSupportedContent">
@@ -173,21 +208,32 @@ $totalPaginasRecetas = ceil($totalRecetasGuardadas / $recetasPorPagina);
                             </ul>
                         </div>
 
-                        <div class="menu_btn">
+                        <div class="menu_btn d-flex align-items-center">
                             <?php if (!isset($_SESSION['id_usuario'])): ?>
                                 <a href="../../VistaAdmin/html/Login.php" class="btn-naranja d-none d-sm-block">Iniciar sesión</a>
                             <?php else: ?>
-                                <a href="cerrar_sesion.php" class="btn-naranja d-none d-sm-block">Cerrar sesión</a>
+
+
+
+                                <span class="d-none d-sm-inline align-middle" style="font-weight: 500; margin-right: 2rem; color: #212529;">
+                                    <i class="bi bi-person-circle" style="font-size: 1.3em; vertical-align: middle;"></i>
+                                    <?= htmlspecialchars($_SESSION['nombre'] . ' ' . $_SESSION['apellido']) ?>
+                                </span>
+
+                                <a href="cerrar_sesion.php" class="btn-naranja d-none d-sm-block ms-1">Cerrar sesión</a>
                             <?php endif; ?>
                         </div>
                     </nav>
                 </div>
+                </nav>
             </div>
+        </div>
         </div>
     </header>
     <!-- Header part end-->
 
     <!-- breadcrumb start-->
+
     <section class="breadcrumb breadcrumb_bg">
         <div class="container">
             <div class="row">
@@ -195,8 +241,10 @@ $totalPaginasRecetas = ceil($totalRecetasGuardadas / $recetasPorPagina);
                     <div class="breadcrumb_iner text-center">
                         <div class="breadcrumb_iner_item">
                             <h2>G U A R D A D O S</h2>
-                            <h4 class="py-3 mb-4">
-                                <h4 class="text-muted fw-light"><a class="text-muted" href="vista-perfil.php">Perfil /</a> Guardados</h4>
+                            <h4>
+                                <h4 class="text-white fw-light">
+                                    <a class="text-white" href="vista-perfil.php" style="text-decoration: none;">Perfil </a>/ Guardados
+                                </h4>
                             </h4>
                         </div>
                     </div>
@@ -311,20 +359,15 @@ $totalPaginasRecetas = ceil($totalRecetasGuardadas / $recetasPorPagina);
                             <p>No hay recetas guardadas.</p>
                         <?php endif; ?>
                     </div>
+
                     <!-- Paginación -->
-                    <nav aria-label="...">
-                        <ul class="pagination">
-                            <li class="page-item <?= $paginaActualRecetas <= 1 ? 'disabled' : '' ?>">
-                                <a class="page-link" href="?paginaRecetas=<?= $paginaActualRecetas - 1 ?>">Anterior</a>
-                            </li>
+                    <nav aria-label="Paginación">
+                        <ul class="pagination justify-content-center">
                             <?php for ($i = 1; $i <= $totalPaginasRecetas; $i++): ?>
                                 <li class="page-item <?= $i == $paginaActualRecetas ? 'active' : '' ?>">
                                     <a class="page-link" href="?paginaRecetas=<?= $i ?>"><?= $i ?></a>
                                 </li>
                             <?php endfor; ?>
-                            <li class="page-item <?= $paginaActualRecetas >= $totalPaginasRecetas ? 'disabled' : '' ?>">
-                                <a class="page-link" href="?paginaRecetas=<?= $paginaActualRecetas + 1 ?>">Siguiente</a>
-                            </li>
                         </ul>
                     </nav>
                 </div>
@@ -353,11 +396,21 @@ $totalPaginasRecetas = ceil($totalRecetasGuardadas / $recetasPorPagina);
                         <h4>Enlaces</h4>
                         <div class="contact_info">
                             <ul>
-                                <li><a href="#">Inicio</a></li>
-                                <li><a href="#">Nosotros</a></li>
-                                <li><a href="#">Categorías</a></li>
-                                <li><a href="#">Subir Recetas</a></li>
-                                <li><a href="#">Perfil</a></li>
+                                <li><a href="index.php">Inicio</a></li>
+                                <li><a href="vista-nosotros.php">Nosotros</a></li>
+                                <li><a href="vista-categoria.php">Categorías</a></li>
+
+
+                                <?php if (!isset($_SESSION['id_usuario'])): ?>
+                                    <li><a href="#" class="subir-receta-no-logeado">Subir Recetas</a></li>
+                                <?php else: ?>
+                                    <li><a href="vista-subir-receta.php">Subir Recetas</a></li>
+                                <?php endif; ?>
+
+                                <?php if (isset($_SESSION['id_usuario'])) : ?>
+                                    <li><a href="vista-perfil.php">Perfil</a></li>
+                                <?php endif; ?>
+
                             </ul>
                         </div>
                     </div>
@@ -395,16 +448,17 @@ $totalPaginasRecetas = ceil($totalRecetasGuardadas / $recetasPorPagina);
             <div class="copyright_part_text">
                 <div class="row">
                     <div class="col-lg-8">
-                        <p class="footer-text m-0">ChefClass | Proyecto realizado por <a href="#" target="_blank">Lucas Salvatierra, Emiliano Olivera.</a></p>
+                        <p class="footer-text m-0">
+                            ChefClass | Proyecto realizado por
+                            <a href="#" target="_blank" id="creditos-link">Lucas Salvatierra, Emiliano Olivera.</a>
+                        </p>
+                        <script>
+                            document.getElementById('creditos-link').addEventListener('click', function(e) {
+                                e.preventDefault();
+                            });
+                        </script>
                     </div>
-                    <div class="col-lg-4">
-                        <div class="copyright_social_icon text-right">
-                            <a href="#"><i class="fab fa-facebook-f"></i></a>
-                            <a href="#"><i class="fab fa-twitter"></i></a>
-                            <a href="#"><i class="fab fa-whatsapp"></i></a>
-                            <a href="#"><i class="ti-instagram"></i></a>
-                        </div>
-                    </div>
+
                 </div>
             </div>
         </div>

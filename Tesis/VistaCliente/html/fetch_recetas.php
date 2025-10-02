@@ -53,7 +53,7 @@ $total_recetas = $result_total->fetch_assoc()['total'];
 
 $total_pages = ceil($total_recetas / $recipes_per_page);
 
-$response['recetas'] = array_values($recetas); // Asegúrate de que sea un arreglo indexado
+$response['recetas'] = array_values($recetas); // Se asegura de que sea un arreglo indexado
 $response['total_pages'] = $total_pages;
 
 header('Content-Type: application/json');
