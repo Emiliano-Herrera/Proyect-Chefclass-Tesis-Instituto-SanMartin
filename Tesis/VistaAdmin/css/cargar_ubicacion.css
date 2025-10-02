@@ -1,0 +1,105 @@
+/* Asegúrate de que el contenedor principal ocupe toda la altura de la pantalla */
+body,
+html {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f5; /* Color de fondo opcional */
+}
+
+/* Contenedor principal */
+.container {
+    display: flex;
+    flex-direction: row; /* Coloca el mapa y el formulario uno al lado del otro */
+    align-items: flex-start; /* Alinea los elementos al inicio verticalmente */
+    justify-content: space-between; /* Espacia los elementos horizontalmente */
+    width: 100%;
+    max-width: 1200px; /* Ancho máximo del contenedor */
+    margin: 0 auto; /* Centra el contenedor horizontalmente */
+    padding: 20px;
+    box-sizing: border-box;
+    gap: 20px; /* Espaciado entre el mapa y el formulario */
+}
+
+/* Estilo del mapa */
+#map {
+    flex: 0 0 60%; /* El mapa ocupa el 60% del ancho del contenedor */
+    max-width: 60%; /* Asegura que el mapa no crezca más del 60% */
+    height: 500px; /* Altura fija del mapa */
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+/* Contenedor del formulario */
+.form-container {
+    flex: 0 0 35%; /* El formulario ocupa el 35% del ancho del contenedor */
+    max-width: 35%; /* Asegura que el formulario no crezca más del 35% */
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 20px; /* Espaciado entre el título y los campos del formulario */
+}
+
+/* Campos del formulario */
+.form-fields {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Espaciado entre los inputs */
+}
+
+.form-fields input {
+    width: 100%;
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-sizing: border-box;
+    font-size: 16px;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+/* Ajustes para pantallas pequeñas (tamaño de teléfono) */
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column; /* Apila el mapa y el formulario verticalmente */
+        align-items: center; /* Centra los elementos horizontalmente */
+        padding: 10px;
+    }
+
+    #map {
+        width: 100%; /* El mapa ocupa todo el ancho disponible */
+        height: 250px; /* Reduce la altura del mapa en pantallas pequeñas */
+        margin-bottom: 20px; /* Espaciado debajo del mapa */
+    }
+
+    .form-container {
+        width: 100%; /* El formulario ocupa todo el ancho disponible */
+        max-width: none; /* Permite que el formulario crezca según el contenido */
+    }
+
+    .form-fields input {
+        font-size: 14px; /* Reduce el tamaño de fuente para pantallas pequeñas */
+    }
+
+    button {
+        font-size: 14px; /* Reduce el tamaño de los botones */
+    }
+}

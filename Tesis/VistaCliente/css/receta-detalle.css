@@ -1,0 +1,240 @@
+.receta-container {
+    border: 2px solid #D2691E;
+    /* Recuadro con borde naranja oscuro */
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 40px;
+    /* Margen superior */
+    margin-bottom: 40px;
+    /* Margen inferior */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    /* Hacer más ancho */
+    position: relative;
+    /* Para posicionar el botón de guardar */
+}
+
+.carousel-container {
+    flex: 1;
+    /* Para que ocupe espacio dentro del div flex */
+    max-width: 50%;
+    /* Ajustar el ancho del carrusel */
+}
+
+.carousel-item img {
+    border-radius: 10px;
+    max-width: 100%;
+    height: auto;
+}
+
+.recipe-header {
+    flex: 1;
+    padding: 15px;
+}
+
+.recipe-header h2 {
+    font-size: 2.5rem;
+    margin: 0;
+}
+
+.recipe-header p {
+    font-size: 1.2rem;
+}
+
+.action-buttons {
+    margin-top: 10px;
+    /* Margen superior */
+    display: flex;
+    gap: 10px;
+    /* Espacio entre los botones */
+}
+
+.action-buttons .btn {
+    border: none;
+    background: none;
+    font-size: 1.5rem;
+    color: #D2691E;
+}
+
+.action-buttons .btn:hover {
+    color: #FF8C00;
+}
+
+.ingredients-table {
+    border: 2px solid #FF8C00;
+    /* Bordes naranja oscuro */
+}
+
+.ingredients-table th,
+.ingredients-table td {
+    color: #000000;
+}
+
+.section-title {
+    font-size: 2rem;
+    margin-top: 40px;
+    /* Espacio adicional */
+    color: #D2691E;
+    /* Color naranja oscuro */
+    text-align: left;
+}
+
+.recipe-section {
+    display: flex;
+    align-items: flex-start;
+    /* Alinear al inicio */
+}
+
+.comment-section {
+    margin-top: 20px;
+}
+
+.comment {
+    margin-bottom: 15px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+}
+
+.comment-form {
+    margin-top: 40px;
+    border: 2px solid #D2691E;
+    padding: 15px;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+}
+
+.comment-form h4 {
+    color: #D2691E;
+}
+
+.nav-tabs .nav-link.active {
+    background-color: #D2691E;
+    color: white;
+}
+
+.nav-tabs .nav-link {
+    color: #D2691E;
+}
+
+.action-buttons {
+    margin-top: 10px;
+    /* Margen superior */
+    display: flex;
+    gap: 10px;
+    /* Espacio entre los botones */
+}
+
+.action-buttons .btn {
+    border: none;
+    background: none;
+    font-size: 2rem;
+    /* Tamaño más grande */
+    color: gray;
+    /* Color gris por defecto */
+    cursor: pointer;
+    /* Cursor de mano al pasar el ratón */
+}
+
+.action-buttons .btn:hover {
+    color: orange;
+    /* Cambiar a color naranja al pasar el ratón */
+}
+
+#guardar-button.active {
+    color: yellow;
+    /* Color amarillo si se ha hecho clic */
+}
+
+#like-button.active {
+    color: pink;
+    /* Color rosa si se ha hecho clic */
+}
+
+.action-buttons .btn:focus {
+    outline: none;
+    /* Eliminar el contorno al hacer clic */
+}
+
+.receta-apartado {
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-top: 1px solid #ddd;
+    margin-top: 20px;
+}
+
+.receta-apartado h3 {
+    font-size: 24px;
+    color: #333;
+}
+
+.usuario-container {
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-top: 1px solid #ddd;
+    margin-top: 20px;
+}
+
+.usuario-container h2 {
+    font-size: 24px;
+    color: #333;
+}
+
+.usuario-info {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.usuario-info img.usuario-img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.usuario-info p {
+    margin: 0;
+    font-size: 16px;
+    color: #555;
+}
+
+/*Parte para la seccion del usuario en vista-detalle-receta*/
+.recipe-header,
+.usuario-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    /* Asegura que ambos contenedores utilicen el 100% del ancho disponible */
+}
+
+.usuario-container {
+    border-top: 1px solid #ddd;
+    padding-top: 20px;
+    margin-top: 20px;
+    margin-bottom: 40px;
+    /* Espacio entre el div y el footer */
+    justify-content: center;
+    /* Centra el contenido horizontalmente */
+    text-align: center;
+    /* Centra el texto */
+}
+
+.usuario-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    /* Ajusta el contenido para ocupar el espacio disponible */
+    width: 100%;
+}
+
+.usuario-img {
+    width: 150px;
+    /* Ajusta el tamaño de la imagen según el diseño */
+    height: 150px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-right: 15px;
+}

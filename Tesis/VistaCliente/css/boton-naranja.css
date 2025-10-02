@@ -1,0 +1,21 @@
+
+.btn-naranja {
+    background-color: #fff;
+    color: #ff6426;
+    border: 2px solid #fff; /* Bordes de color blanco */
+    border-radius: 50px;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none; /* Quitar subrayado */
+    display: inline-block;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.btn-naranja:hover {
+    background-color: #ff6426 !important; /* Fondo naranja */
+    color: #fff !important; /* Texto blanco */
+    border: 2px solid #ff6426; /* Bordes naranja */
+    text-decoration: none !important;  /* Asegurar que sigue sin subrayado en hover */
+}
+

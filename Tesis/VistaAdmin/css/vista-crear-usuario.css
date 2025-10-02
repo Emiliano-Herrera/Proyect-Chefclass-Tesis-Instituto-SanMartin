@@ -1,0 +1,279 @@
+/* Color naranja para botones y elementos activos */
+.btn-primary {
+    background-color: #ff7b00;
+    border-color: #ff7b00;
+}
+
+.btn-primary:hover {
+    background-color: #e66d00;
+    border-color: #e66d00;
+}
+
+.step.active .step-number {
+    background-color: #ff7b00;
+    color: white;
+}
+
+.step.active .step-title {
+    color: #ff7b00;
+    font-weight: 500;
+}
+
+.gender-option:hover {
+    border-color: #ff7b00;
+}
+
+.gender-option.selected {
+    border-color: #ff7b00;
+    background-color: rgba(255, 123, 0, 0.1);
+}
+
+.gender-option.selected i {
+    color: #ff7b00;
+}
+
+/* Contenedor principal más ancho */
+.container-xxl.wider {
+    max-width: 1200px;
+}
+
+/* Tarjeta más ancha */
+.authentication-inner.wider {
+    max-width: 1000px;
+    width: 100%;
+}
+
+.card.wider {
+    width: 100%;
+}
+
+/* Indicador de pasos más ancho */
+.step-indicator {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    position: relative;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Línea decorativa del indicador de pasos */
+.step-indicator::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: #e9ecef;
+    z-index: 1;
+}
+
+/* Estilos para cada paso */
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+    flex: 1;
+}
+
+/* Círculo del número del paso */
+.step-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #e9ecef;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+/* Paso completado (verde) */
+.step.completed .step-number {
+    background-color: #71dd37;
+    color: white;
+}
+
+/* Título del paso */
+.step-title {
+    font-size: 0.9rem;
+    color: #6c757d;
+    text-align: center;
+}
+
+/* Contenido del formulario más ancho */
+.step-content {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* Campos de formulario más anchos */
+.form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.form-group {
+    flex: 1 1 calc(50% - 1rem);
+    min-width: 250px;
+}
+
+.form-group-full {
+    flex: 1 1 100%;
+}
+
+/* Campo de contraseña con toggle */
+.password-field {
+    position: relative;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #6c757d;
+}
+
+/* Selector de género mejorado */
+.gender-selector {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.gender-option {
+    flex: 1;
+    text-align: center;
+    padding: 1rem;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+/* reCAPTCHA */
+.recaptcha-container {
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    padding: 1rem;
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.recaptcha-placeholder {
+    display: inline-block;
+    background-color: #e9ecef;
+    padding: 10px;
+    border-radius: 4px;
+    margin-top: 10px;
+}
+
+/* Mapa de ubicación */
+.location-map {
+    height: 200px;
+    background-color: #e9ecef;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1rem;
+    color: #6c757d;
+}
+
+/* Botones de navegación */
+.nav-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e9ecef;
+}
+
+/* Títulos de sección */
+.form-section-title {
+    color: #212529;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    font-size: 1.5rem;
+    text-align: center;
+}
+
+.form-section-subtitle {
+    color: #6c757d;
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+    text-align: center;
+}
+
+/* Responsividad mejorada */
+@media (max-width: 992px) {
+    .container-xxl.wider {
+        max-width: 100%;
+        padding: 0 15px;
+    }
+
+    .form-group {
+        flex: 1 1 100%;
+    }
+
+    .gender-selector {
+        flex-direction: column;
+    }
+
+    .step-indicator {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .step-title {
+        font-size: 0.8rem;
+    }
+
+    .step-number {
+        width: 35px;
+        height: 35px;
+    }
+
+    .gender-option {
+        padding: 0.75rem;
+    }
+
+    .gender-option i {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .step-indicator::before {
+        top: 17px;
+    }
+
+    .step-title {
+        font-size: 0.7rem;
+    }
+
+    .step-number {
+        width: 30px;
+        height: 30px;
+        font-size: 0.9rem;
+    }
+
+    .form-section-title {
+        font-size: 1.3rem;
+    }
+
+    .form-section-subtitle {
+        font-size: 0.9rem;
+    }
+}

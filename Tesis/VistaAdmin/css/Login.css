@@ -1,0 +1,830 @@
+@import url("https://fonts.googleapis.com/css?family=Cardo:400,400i,700|Lora:400,400i,700,700i");
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Montserrat', sans-serif;
+}
+
+body {
+    background-color: #c9d6ff;
+    background: linear-gradient(to right, #e2e2e2, #c9d6ff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.container {
+    background-color: #fff;
+    border-radius: 30px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.35);
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    /* Ancho completo en pantallas pequeñas */
+    max-width: 900px;
+    min-height: 700px;
+    padding: 50px;
+}
+
+
+.container p {
+    font-size: 14px;
+    line-height: 20px;
+    letter-spacing: 0.3px;
+    margin: 20px 0;
+}
+
+.container span {
+    font-size: 12px;
+}
+
+.container a {
+    color: #333;
+    font-size: 13px;
+    text-decoration: none;
+    margin: 15px 0 10px;
+}
+
+.container button {
+    background-color: #ff6426  ;
+    color: #fff;
+    font-size: 12px;
+    padding: 10px 45px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+.container button:hover {
+    background-color: #e06b45  !important; /* Un color más oscuro que #ff7f50 */
+}
+
+.container button.hidden {
+    background-color: transparent;
+    border-color: #fff;
+}
+
+.container form {
+    background-color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 0 60px;
+    /* Incrementar el padding horizontal */
+    height: 100%;
+}
+
+.container input {
+    background-color: #eee;
+    border: none;
+    margin: 8px 0;
+    padding: 15px 25px;
+    /* Incrementar el padding */
+    font-size: 16px;
+    /* Incrementar el tamaño de fuente */
+    border-radius: 8px;
+    width: 100%;
+    outline: none;
+}
+
+.form-container {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    transition: all 0.6s ease-in-out;
+}
+
+.sign-in {
+    left: 0;
+    width: 50%;
+    z-index: 2;
+}
+
+.container.active .sign-in {
+    transform: translateX(100%);
+}
+
+.sign-up {
+    left: 0;
+    width: 50%;
+    opacity: 0;
+    z-index: 1;
+}
+
+.container.active .sign-up {
+    transform: translateX(100%);
+    opacity: 1;
+    z-index: 5;
+    animation: move 0.6s;
+}
+
+@keyframes move {
+
+    0%,
+    49.99% {
+        opacity: 0;
+        z-index: 1;
+    }
+
+    50%,
+    100% {
+        opacity: 1;
+        z-index: 5;
+    }
+}
+
+.social-icons {
+    margin: 20px 0;
+}
+
+.social-icons a {
+    border: 1px solid #ccc;
+    border-radius: 20%;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 3px;
+    width: 40px;
+    height: 40px;
+}
+
+.toggle-container {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 50%;
+    height: 100%;
+    overflow: hidden;
+    transition: all 0.6s ease-in-out;
+    border-radius: 150px 0 0 100px;
+    z-index: 1000;
+}
+
+.container.active .toggle-container {
+    transform: translateX(-100%);
+    border-radius: 0 150px 100px 0;
+}
+
+.toggle {
+    background-color: #ff6426  ;
+    height: 100%;
+    background: linear-gradient(to right, #ff6426  , #ff6426  );
+    color: #fff;
+    position: relative;
+    left: -100%;
+    height: 100%;
+    width: 200%;
+    transform: translateX(0);
+    transition: all 0.6s ease-in-out;
+}
+
+.container.active .toggle {
+    transform: translateX(50%);
+}
+
+.toggle-panel {
+    background-color: #ff6426   !important;
+    position: absolute;
+    width: 50%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 0 30px;
+    text-align: center;
+    top: 0;
+    transform: translateX(0);
+    transition: all 0.6s ease-in-out;
+}
+
+.toggle-left {
+    transform: translateX(-200%);
+}
+
+.container.active .toggle-left {
+    transform: translateX(0);
+}
+
+.toggle-right {
+    right: 0;
+    transform: translateX(0);
+}
+
+.container.active .toggle-right {
+    transform: translateX(200%);
+}
+
+/* Esto es para las notificaciones del login (Por si está mal la contraseña o el correo) */
+.invalid-feedback {
+    color: #e74c3c;
+    /* Rojo para los errores */
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.alert {
+    padding: 0.75rem 1.25rem;
+    margin-bottom: 1rem;
+    border: 1px solid transparent;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+}
+
+.alert-danger {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+}
+
+.alert-primary {
+    color: #004085;
+    background-color: #cce5ff;
+    border-color: #b8daff;
+}
+
+.alert-warning {
+    color: #856404;
+    background-color: #fff3cd;
+    border-color: #ffeeba;
+}
+
+/* Para el ojito de la contraseña */
+.input-group {
+    position: relative;
+    width: 100%;
+}
+
+.input-group .form-control {
+    width: calc(100% - 3rem);
+    /* Ajustar el tamaño del input para mantener el ícono dentro del mismo espacio */
+}
+
+.input-group .input-group-text {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    border: none;
+    background: none;
+}
+
+.input-group .input-group-text i {
+    font-size: 1.5rem;
+    /* Incrementar el tamaño del ícono */
+}
+
+/* Estilo para el select */
+.form-input {
+    background-color: #eee;
+    border: none;
+    margin: 8px 0;
+    padding: 10px 15px;
+    font-size: 13px;
+    border-radius: 8px;
+    width: 100%;
+    outline: none;
+}
+
+/* Estilos para los mensajes */
+.alert {
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+}
+
+.alert-success {
+    color: green;
+    border-color: green;
+    font-weight: bold;
+}
+
+.alert-danger {
+    color: red;
+    border-color: red;
+    font-weight: bold;
+}
+
+/* Estilo para sweetAlert */
+.border-red {
+    border: 2px solid red;
+}
+
+.border-green {
+    border: 2px solid green;
+}
+
+
+
+
+
+/* Estilos responsivos */
+@media (max-width: 768px) {
+    .container {
+        width: 100%;
+        padding: 20px;
+        min-height: 100vh;
+    }
+
+    .form-container {
+        width: 100%;
+        position: relative;
+    }
+
+    .sign-in,
+    .sign-up {
+        width: 100%;
+        left: 0;
+    }
+
+    .toggle-container {
+        width: 100%;
+        left: 0;
+        top: auto;
+        bottom: 0;
+        height: 50px;
+        border-radius: 0;
+        transition: none;
+    }
+
+    .container.active .toggle-container {
+        transform: translateY(-100%);
+    }
+
+    .toggle {
+        height: 50px;
+        width: 100%;
+        transform: translateX(0);
+        transition: none;
+    }
+
+    .container.active .toggle {
+        transform: translateY(100%);
+    }
+
+    .toggle-panel {
+        width: 100%;
+        height: 50px;
+        padding: 0 10px;
+        flex-direction: row;
+        justify-content: space-around;
+    }
+
+    .toggle-left,
+    .toggle-right {
+        transform: translateX(0);
+    }
+
+    .container.active .toggle-left {
+        transform: translateY(100%);
+    }
+
+    .container.active .toggle-right {
+        transform: translateY(0);
+    }
+
+    .toggle-container {
+        display: none;
+        /* Ocultar la animación del toggle en pantallas pequeñas */
+    }
+
+    .container.active .sign-in {
+        transform: translateX(0);
+    }
+
+    .container.active .sign-up {
+        transform: translateX(0);
+        opacity: 1;
+        z-index: 2;
+    }
+
+    .toggle {
+        display: none;
+        /* Ocultar la animación del toggle en pantallas pequeñas */
+    }
+}
+
+/* Estilos responsivos */
+@media (max-width: 768px) {
+    .toggle-container {
+        display: none;
+    }
+
+    .sign-up {
+        display: none;
+    }
+
+    .register-button {
+        display: block;
+        margin-top: 20px;
+    }
+
+    .container.active .sign-up {
+        display: block;
+        width: 100%;
+    }
+
+    .container.active .sign-in {
+        display: none;
+    }
+}
+
+@media (min-width: 768px) {
+    .register-button {
+        display: none;
+    }
+}
+
+
+/* Ajustar el tamaño del reCAPTCHA en pantallas pequeñas */
+@media only screen and (max-width:700px){
+    .g-recaptcha {
+        transform: scale(0.85);
+        -webkit-transform: scale(0.85);
+        -moz-transform: scale(0.85);
+        -o-transform: scale(0.85);
+        transform-origin: 0 0;
+        margin: 10px 0;
+    }
+}
+
+/* Ajustar el tamaño del reCAPTCHA en pantallas medianas */
+@media only screen and (max-width: 768px) {
+    .g-recaptcha {
+        transform: scale(0.9);
+        -webkit-transform: scale(0.9);
+        -moz-transform: scale(0.9);
+        -o-transform: scale(0.9);
+        transform-origin: 0 0;
+        margin: 10px 0;
+    }
+}
+
+/* Ocultar el botón "Iniciar sesión" en pantallas grandes */
+@media (min-width: 768px) {
+    .small-screen-sign-in {
+        display: none !important;
+    }
+}
+
+/* Mostrar el botón "Iniciar sesión" en pantallas pequeñas */
+@media (max-width: 767px) {
+    .small-screen-sign-in {
+        display: block !important;
+    }
+}
+
+/* Ocultar la sección de características de la contraseña en pantallas grandes */
+@media (min-width: 768px) {
+    .password-criteria-inline {
+        display: none !important;
+    }
+}
+
+/* Mostrar la sección de características de la contraseña en pantallas pequeñas */
+@media (max-width: 767px) {
+    .password-criteria-inline {
+        display: block !important;
+    }
+}
+
+/* Alinear las características de la contraseña en línea con comas */
+.password-criteria-inline p {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.password-criteria-inline span {
+    margin-right: 10px;
+    /* Espacio entre características */
+}
+
+/* Alinear las características de la contraseña en línea con comas */
+.password-criteria-inline p {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.password-criteria-inline span {
+    margin-right: 10px;
+    /* Espacio entre características */
+}
+
+/* Ajustar el tamaño del título */
+.password-criteria-inline h5 {
+    font-size: 14px;
+    /* Tamaño de fuente más pequeño */
+    margin-bottom: 10px;
+    /* Espacio debajo del título */
+}
+
+
+
+/* Evitar el scroll en el body */
+body {
+    overflow: hidden;
+    /* Evitar el scroll en toda la página */
+}
+
+/* Ajustar contenedor para evitar scroll interno */
+.container {
+    height: auto;
+    /* Ajustar automáticamente a su contenido */
+    max-height: 100vh;
+    /* Asegurarse de que no exceda la altura de la ventana */
+    overflow: hidden;
+    /* Evitar el scroll dentro del contenedor */
+    padding: 20px;
+    /* Ajustar padding para asegurar espacio interno suficiente */
+}
+
+/* Estilos para las secciones del formulario en pantallas pequeñas */
+@media (max-width: 768px) {
+    .form-container {
+        height: auto;
+        /* Ajustar automáticamente a su contenido */
+        overflow: hidden;
+        /* Evitar el scroll dentro del contenedor */
+    }
+}
+
+/* Estilo para los li dentro de password-criteria con contorno blanco */
+.password-criterion {
+    border: 2px solid white;
+    /* Contorno blanco */
+    padding: 5px;
+    border-radius: 5px;
+    transition: border-color 0.3s;
+    /* Suavizar la transición del color del borde */
+    display: inline-block;
+    /* Mostrar en línea */
+    margin-right: 5px;
+    /* Espacio entre los elementos */
+    color: white;
+    /* Color del texto blanco */
+}
+
+/* Cambiar el contorno a verde cuando la entrada es válida */
+.password-criterion.valid {
+    border-color: green;
+    /* Contorno verde */
+    color: green;
+    /* Cambiar el color del texto a verde */
+}
+
+/* Cambiar el contorno a rojo cuando la entrada no es válida */
+.password-criterion.invalid {
+    border-color: red;
+    /* Contorno rojo */
+    color: red;
+    /* Cambiar el color del texto a rojo */
+}
+
+
+
+/* Ajustar el tamaño del título */
+.toggle-panel h1 {
+    font-size: 18px;
+    /* Tamaño de fuente más pequeño */
+    margin-bottom: 10px;
+    /* Espacio debajo del título */
+}
+
+/* Estilo para el fondo del toggle-panel */
+.toggle-panel {
+    background-color: #f0f0f0;
+    /* Fondo claro */
+    padding: 20px;
+    border-radius: 10px;
+}
+
+/* Estilos generales */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f7f7f7;
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.form-container {
+    background-color: #fff;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+.input-group {
+    position: relative;
+}
+
+.input-group .input-group-text {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    cursor: pointer;
+}
+
+/* Estilos específicos para botones */
+button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border: none;
+    background-color: #007bff;
+    color: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+/* Media queries para pantallas pequeñas */
+@media (max-width: 768px) {
+    .password-criteria-inline {
+        display: block;
+    }
+}
+
+
+/* Estilo para los li dentro de password-criteria con contorno blanco */
+.password-req {
+
+    border: 2px solid white !important;
+    /* Contorno blanco */
+    padding: 5px !important;
+    border-radius: 5px !important;
+    transition: border-color 0.3s, color 0.3s !important;
+    /* Suavizar la transición del color del borde y del texto */
+    display: inline-block !important;
+    /* Mostrar en línea */
+    margin-right: 5px !important;
+    /* Espacio entre los elementos */
+    color: black !important;
+    background-color: white;
+    /* Color del texto blanco */
+}
+
+/* Cambiar el contorno a verde cuando la entrada es válida */
+.password-req.valid {
+    background-color: white;
+    border-color: green !important;
+    /* Contorno verde */
+    color: green !important;
+    /* Cambiar el color del texto a verde */
+}
+
+/* Cambiar el contorno a rojo cuando la entrada no es válida */
+.password-req.invalid {
+    background-color: white;
+    border-color: white !important;
+    /* Contorno rojo */
+    color: red !important;
+    /* Cambiar el color del texto a rojo */
+}
+
+@media (max-width: 768px) {
+    body {
+        overflow-y: auto;
+        /* Habilitar el scroll vertical solo en pantallas pequeñas */
+    }
+
+    .container {
+        width: 100%;
+        padding: 20px;
+        min-height: 100vh;
+        overflow-y: auto;
+        /* Habilitar el scroll vertical dentro del contenedor solo en pantallas pequeñas */
+        max-height: none;
+        /* Eliminar restricción de altura */
+    }
+
+    .form-container {
+        width: 100%;
+        position: relative;
+    }
+
+    .sign-in,
+    .sign-up {
+        width: 100%;
+        left: 0;
+    }
+
+    .toggle-container {
+        width: 100%;
+        left: 0;
+        top: auto;
+        bottom: 0;
+        height: auto;
+        border-radius: 0;
+        transition: none;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    .container.active .toggle-container {
+        transform: translateY(0);
+    }
+
+    .toggle {
+        height: auto;
+        width: 48%;
+        /* Ancho del 48% para cada panel */
+        margin: 1%;
+        /* Espacio entre los paneles */
+        padding: 10px;
+        border-radius: 10px;
+        overflow-y: auto;
+        /* Habilitar el scroll vertical en los paneles */
+    }
+
+    .toggle-panel {
+        padding: 10px;
+        text-align: center;
+        font-size: 14px;
+    }
+
+    .toggle-panel h1 {
+        font-size: 14px;
+        /* Reducir el tamaño del título */
+        margin-bottom: 10px;
+    }
+
+    .toggle-panel p {
+        font-size: 12px;
+        margin-bottom: 10px;
+    }
+
+    .toggle-panel button {
+        font-size: 14px;
+        padding: 5px 20px;
+    }
+
+    /* Ajuste para las características de la contraseña */
+    .password-criteria-inline {
+        display: flex;
+        flex-wrap: wrap;
+        /* Permitir que las características se envuelvan */
+        align-items: center;
+        /* Alinear verticalmente en el centro */
+        gap: 5px;
+        /* Espacio entre los elementos */
+    }
+
+    .password-criteria-inline p {
+        display: inline-block;
+        /* Para que los elementos estén alineados en una sola línea */
+        font-size: 10px;
+        /* Aumentar un poco el tamaño del texto */
+        padding: 3px;
+        border: 1px solid #ff6426  ;
+        /* Bordes morados */
+        border-radius: 5px;
+        background-color: white;
+        color: #ff6426  ;
+        /* Texto morado */
+        margin: 0;
+        /* Eliminar el margen adicional */
+    }
+
+    .password-criteria-inline h5 {
+        font-size: 12px;
+        margin-bottom: 10px;
+    }
+
+    /* Esconder el ícono 'x' */
+    .password-criteria-inline i {
+        display: none;
+    }
+}

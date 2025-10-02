@@ -1,0 +1,50 @@
+.usuario-container {
+    border-top: 1px solid #ddd;
+    padding-top: 40px;
+    margin-top: 40px;
+    margin-bottom: 80px;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    width: 100%;
+}
+
+.recipe-header h2 {
+    margin-bottom: 40px;
+    font-size: 2.5em !important;
+}
+
+.usuario-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    width: 100%;
+}
+
+.usuario-img-container {
+    width: 300px;
+    height: 300px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.usuario-img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.usuario-detalles {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    font-size: 1.5em;
+}
+
+.usuario-detalles p {
+    font-size: 1.0em !important;
+}
+
+

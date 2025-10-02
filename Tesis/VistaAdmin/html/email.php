@@ -1,0 +1,791 @@
+<?php
+
+session_start();
+
+// Verificar si las variables de sesión están definidas antes de acceder a ellas
+if (isset($_SESSION['ID_Usuario'])) {
+    $ID_Usuario = $_SESSION['ID_Usuario'];
+    $Nombre = $_SESSION['Nombre'];
+    $Apellido = $_SESSION['Apellido'];
+} else {
+    // Redirigir a la página de inicio de sesión si no hay una sesión activa
+    header("Location: Login.php");
+    exit();
+}
+
+?>
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<!DOCTYPE html>
+
+
+<html lang="en" class="light-style layout-menu-fixed" dir="ltr" data-theme="theme-default" data-assets-path="../assets/" data-template="vertical-menu-template-free">
+
+<head>
+    <!-- cnd Bootstrap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+
+    <title>Email</title>
+
+    <meta name="description" content="" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="../assets/img/favicon/favicon.ico" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet" />
+
+    <!-- Icons. Uncomment required icon fonts -->
+    <link rel="stylesheet" href="../assets/vendor/fonts/boxicons.css" />
+
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="../assets/vendor/css/core.css" class="template-customizer-core-css" />
+    <link rel="stylesheet" href="../assets/vendor/css/theme-default.css" class="template-customizer-theme-css" />
+    <link rel="stylesheet" href="../assets/css/demo.css" />
+
+    <!-- Vendors CSS -->
+    <link rel="stylesheet" href="../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
+
+    <link rel="stylesheet" href="../assets/vendor/libs/apex-charts/apex-charts.css" />
+
+    <!-- Page CSS -->
+
+    <!-- Helpers -->
+    <script src="../assets/vendor/js/helpers.js"></script>
+
+    <!--! Template customizer & Theme config files MUST be included after core stylesheets and helpers.js in the <head> section -->
+    <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
+    <script src="../assets/js/config.js"></script>
+</head>
+
+<body>
+    <!-- Layout wrapper -->
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <!-- //! Menu DASHBOARD=============================================================================================================== -->
+
+            <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
+                <div class="app-brand demo">
+                    <a href="admin.php" class="app-brand-link">
+                        <span class="app-brand-logo demo">
+                            <svg width="25" viewBox="0 0 25 42" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                                <defs>
+                                    <path d="M13.7918663,0.358365126 L3.39788168,7.44174259 C0.566865006,9.69408886 -0.379795268,12.4788597 0.557900856,15.7960551 C0.68998853,16.2305145 1.09562888,17.7872135 3.12357076,19.2293357 C3.8146334,19.7207684 5.32369333,20.3834223 7.65075054,21.2172976 L7.59773219,21.2525164 L2.63468769,24.5493413 C0.445452254,26.3002124 0.0884951797,28.5083815 1.56381646,31.1738486 C2.83770406,32.8170431 5.20850219,33.2640127 7.09180128,32.5391577 C8.347334,32.0559211 11.4559176,30.0011079 16.4175519,26.3747182 C18.0338572,24.4997857 18.6973423,22.4544883 18.4080071,20.2388261 C17.963753,17.5346866 16.1776345,15.5799961 13.0496516,14.3747546 L10.9194936,13.4715819 L18.6192054,7.984237 L13.7918663,0.358365126 Z" id="path-1"></path>
+                                    <path d="M5.47320593,6.00457225 C4.05321814,8.216144 4.36334763,10.0722806 6.40359441,11.5729822 C8.61520715,12.571656 10.0999176,13.2171421 10.8577257,13.5094407 L15.5088241,14.433041 L18.6192054,7.984237 C15.5364148,3.11535317 13.9273018,0.573395879 13.7918663,0.358365126 C13.5790555,0.511491653 10.8061687,2.3935607 5.47320593,6.00457225 Z" id="path-3"></path>
+                                    <path d="M7.50063644,21.2294429 L12.3234468,23.3159332 C14.1688022,24.7579751 14.397098,26.4880487 13.008334,28.506154 C11.6195701,30.5242593 10.3099883,31.790241 9.07958868,32.3040991 C5.78142938,33.4346997 4.13234973,34 4.13234973,34 C4.13234973,34 2.75489982,33.0538207 2.37032616e-14,31.1614621 C-0.55822714,27.8186216 -0.55822714,26.0572515 -4.05231404e-15,25.8773518 C0.83734071,25.6075023 2.77988457,22.8248993 3.3049379,22.52991 C3.65497346,22.3332504 5.05353963,21.8997614 7.50063644,21.2294429 Z" id="path-4"></path>
+                                    <path d="M20.6,7.13333333 L25.6,13.8 C26.2627417,14.6836556 26.0836556,15.9372583 25.2,16.6 C24.8538077,16.8596443 24.4327404,17 24,17 L14,17 C12.8954305,17 12,16.1045695 12,15 C12,14.5672596 12.1403557,14.1461923 12.4,13.8 L17.4,7.13333333 C18.0627417,6.24967773 19.3163444,6.07059163 20.2,6.73333333 C20.3516113,6.84704183 20.4862915,6.981722 20.6,7.13333333 Z" id="path-5"></path>
+                                </defs>
+                                <g id="g-app-brand" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                    <g id="Brand-Logo" transform="translate(-27.000000, -15.000000)">
+                                        <g id="Icon" transform="translate(27.000000, 15.000000)">
+                                            <g id="Mask" transform="translate(0.000000, 8.000000)">
+                                                <mask id="mask-2" fill="white">
+                                                    <use xlink:href="#path-1"></use>
+                                                </mask>
+                                                <use fill="#696cff" xlink:href="#path-1"></use>
+                                                <g id="Path-3" mask="url(#mask-2)">
+                                                    <use fill="#696cff" xlink:href="#path-3"></use>
+                                                    <use fill-opacity="0.2" fill="#FFFFFF" xlink:href="#path-3"></use>
+                                                </g>
+                                                <g id="Path-4" mask="url(#mask-2)">
+                                                    <use fill="#696cff" xlink:href="#path-4"></use>
+                                                    <use fill-opacity="0.2" fill="#FFFFFF" xlink:href="#path-4"></use>
+                                                </g>
+                                            </g>
+                                            <g id="Triangle" transform="translate(19.000000, 11.000000) rotate(-300.000000) translate(-19.000000, -11.000000) ">
+                                                <use fill="#696cff" xlink:href="#path-5"></use>
+                                                <use fill-opacity="0.2" fill="#FFFFFF" xlink:href="#path-5"></use>
+                                            </g>
+                                        </g>
+                                    </g>
+                                </g>
+                            </svg>
+                        </span>
+                        <span class="app-brand-text demo menu-text fw-bolder ms-2"></span>
+                    </a>
+
+                    <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto d-block d-xl-none">
+                        <i class="bx bx-chevron-left bx-sm align-middle"></i>
+                    </a>
+                </div>
+
+                <div class="menu-inner-shadow"></div>
+                <!-- TODO MENÚ LATERAL=========================================================================================================== -->
+                <!-- TODO MENÚ LATERAL=========================================================================================================== -->
+                <!-- TODO MENÚ LATERAL=========================================================================================================== -->
+                <ul class="menu-inner py-1">
+                    <!-- INICIO -->
+                    <li class="menu-item">
+                        <a href="admin.php" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-home-circle"></i>
+                            <div data-i18n="Analytics">Incio</div>
+                        </a>
+                    </li>
+
+                    <!-- //!MI PERFIL================================================================================================== -->
+
+                    <li class="menu-item">
+                        <a href="perfil.php" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-user"></i>
+                            <div class="text-truncate" data-i18n="Users">Mi perfil</div>
+                        </a>
+                    </li>
+
+                    <!-- //!GESTION DE REGISTROS -->
+                    <li class="menu-header small text-uppercase">
+                        <span class="menu-header-text">Gestión</span>
+                    </li>
+                    <li class="menu-item">
+                        <a href="vista-archivos.php" class="menu-link">
+                            <i class='menu-icon bx bx-archive'></i>
+                            <div data-i18n="Account Settings">Archivos</div>
+                        </a>
+                    </li>
+                    <li class="menu-item ">
+                        <a href="vista-img-usuarios.php" class="menu-link">
+                            <i class='menu-icon bx bx-image'></i>
+                            <div data-i18n="Account Settings">Img</div>
+                        </a>
+                    </li>
+
+                    <!-- //!======================================================================================================= -->
+
+                    <?php
+                    if ($ID_Usuario == 1) {
+                    ?>
+
+                        <li class="menu-header small text-uppercase">
+                            <span class="menu-header-text">Admin</span>
+                        </li>
+
+                        <!-- //! ADMIN -->
+                        <li class="menu-item active">
+                            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                                <i class='menu-icon bx bx-wrench'></i>
+                                <div data-i18n="Form Elements">Administracion</div>
+                            </a>
+
+                            <ul class="menu-sub">
+
+                                <li class="menu-item ">
+                                    <a href="personas.php" class="menu-link">
+
+                                        <div data-i18n="Account Settings">Personas</div>
+                                    </a>
+                                </li>
+
+
+
+
+
+
+                                <li class="menu-item">
+                                    <a href="generos.php" class="menu-link">
+                                        <div data-i18n="Basic Inputs">Generos</div>
+                                    </a>
+                                </li>
+                                <li class="menu-item">
+                                    <a href="telefonos.php" class="menu-link">
+                                        <div data-i18n="Basic Inputs">Telefonos</div>
+                                    </a>
+                                </li>
+                                <li class="menu-item active">
+                                    <a href="email.php" class="menu-link">
+                                        <div data-i18n="Basic Inputs">Email</div>
+                                    </a>
+                                </li>
+                                <li class="menu-item">
+                                    <a href="roles.php" class="menu-link">
+                                        <div data-i18n="Input groups">Roles</div>
+                                    </a>
+                                </li>
+                                <li class="menu-item ">
+                                    <a href="usuarios.php" class="menu-link">
+                                        <div data-i18n="Basic Inputs">Usuarios</div>
+                                    </a>
+                                </li>
+
+                            <?php
+                        };
+                            ?>
+
+
+
+                            </ul>
+                        </li>
+
+
+                </ul>
+            </aside>
+            <!-- //TODO MENÚ LATERAL=========================================================================================================== -->
+            <!-- //TODO MENÚ LATERAL=========================================================================================================== -->
+            <!-- //TODO MENÚ LATERAL=========================================================================================================== -->
+            <!-- //! Menu=============================================================================================================== -->
+
+            <!-- Layout container -->
+            <div class="layout-page">
+                <!-- Navbar -->
+
+                <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme" id="layout-navbar">
+                    <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
+                        <a class="nav-item nav-link px-0 me-xl-4" href="javascript:void(0)">
+                            <i class="bx bx-menu bx-sm"></i>
+                        </a>
+                    </div>
+                    <!-- //?Search =============================================-->
+                    <!-- //?NAV MENÚ =============================================-->
+                    <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
+                        <!-- Search -->
+                        <div class="navbar-nav align-items-center">
+                            <div class="nav-item d-flex align-items-center">
+
+                            </div>
+                        </div>
+
+                        <ul class="navbar-nav flex-row align-items-center ms-auto">
+                            <!-- //?User ========================================================================================================-->
+                            <li class="nav-item navbar-dropdown dropdown-user dropdown">
+                                <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
+                                    <div class="avatar avatar-online">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                                            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
+                                            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1" />
+                                        </svg>
+
+                                    </div>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item" href="#">
+                                            <div class="d-flex">
+                                                <div class="flex-shrink-0 me-3">
+                                                    <div class="avatar avatar-online">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                                                            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
+                                                            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1" />
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <span class="fw-semibold d-block"><?php echo $Nombre ?></span>
+                                                    <small class="text-muted"><?php echo $Apellido ?></small>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <div class="dropdown-divider"></div>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="perfil.php">
+                                            <i class="bx bx-user me-2"></i>
+                                            <span class="align-middle">Mi perfil</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <div class="dropdown-divider"></div>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="todasDirecciones.php">
+                                            <i class="bx bx-user me-2"></i>
+                                            <span class="align-middle">Mapa</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <div class="dropdown-divider"></div>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="./cerrar-sesion.php">
+                                            <i class="bx bx-power-off me-2"></i>
+                                            <span class="align-middle">Cerrar sesión</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <!-- //?User ========================================================================================================-->
+                        </ul>
+                    </div>
+                </nav>
+
+                <!-- / Navbar -->
+                <?php
+
+                include "conexion.php";
+
+                if (!$conexion) {
+                    die("Error de conexión: " . mysqli_connect_error());
+                }
+
+
+                // Configuración de la paginación
+                $resultadosPorPagina = 15; // Establece la cantidad de resultados por página
+                $totalResultados = $conexion->query("SELECT COUNT(*) as total FROM emails_usuarios ")->fetch_assoc()['total'];
+                $totalPaginas = ceil($totalResultados / $resultadosPorPagina);
+
+                // Obtiene la página actual, si no se establece, se asume la página 1
+                $paginaActual = isset($_GET['page']) ? $_GET['page'] : 1;
+
+                // Calcula el índice de inicio para la consulta
+                $inicio = ($paginaActual - 1) * $resultadosPorPagina;
+
+                /* //?----------------------------------------------------------------- */
+                // Obtén el término de búsqueda si está presente en la URL
+                $term = isset($_GET['search']) ? $_GET['search'] : '';
+
+                // Añade la condición WHERE para filtrar por nombre o apellido y el estado habilitado
+                $whereCondition = "WHERE E.Estado_Email='habilitado'"; // Condición base para estado habilitado
+
+                if (!empty($term)) {
+                    // Si hay un término de búsqueda, agrega la búsqueda por nombre o apellido
+                    $whereCondition .= " AND (Email LIKE '%$term%' )";
+                }
+
+                $sql = "SELECT U.*, P.*, E.*
+FROM usuarios U 
+INNER JOIN personas P ON U.ID_Persona = P.ID_Persona 
+INNER JOIN emails_usuarios E ON U.ID_Usuario = E.ID_Usuario 
+
+        $whereCondition
+        LIMIT $inicio, $resultadosPorPagina";
+
+
+
+
+                $result = $conexion->query($sql);
+                // Si el botón de búsqueda se presionó sin introducir un término o no se encontraron coincidencias
+                if (isset($_GET['search'])) {
+                    if (empty($term)) {
+                        // Si el campo de búsqueda está vacío
+                        echo "<script>alert('Por favor ingresa un Email  para buscar.'); window.location.href='usuarios.php';</script>";
+                        exit;
+                    } elseif ($result->num_rows == 0) {
+                        // Si no se encontraron resultados
+                        echo "<script>alert('No se encontró ningún Email con ese nombre.'); window.location.href='email.php';</script>";
+                        exit;
+                    }
+                }
+
+                if (!$result) {
+                    die("Error en la consulta: " . $conexion->error);
+                }
+
+                if ($result->num_rows > 0) {
+                    // Procesar los resultados y mostrar en la tabla
+                ?>
+                    <!-- //!Content wrapper MAIN MENÚ==================================================================================== -->
+                    <div class="content-wrapper">
+                        <!-- Content -->
+                        <!-- //!AQUÍ COMIENZA EL CONTENIDO DEL MAIN====================================================================================== -->
+                        <!-- //!AQUÍ COMIENZA EL CONTENIDO DEL MAIN====================================================================================== -->
+                        <!-- //!AQUÍ COMIENZA EL CONTENIDO DEL MAIN====================================================================================== -->
+                        <div class="container-xxl flex-grow-1 container-p-y">
+                            <h4 class="py-3 mb-4">
+                                <span class="text-muted fw-light">Administracion /</span> Lista de Emails
+                            </h4>
+                            <!-- Hoverable Table rows -->
+                            <div class="card">
+
+
+
+                                <div class="card-header border-bottom">
+
+                                    <h6 class="card-title">Añadir un Email</h6>
+                                    <a href="./vista-registrar-email.php" class="btn btn-success">Añadir <i class="bi bi-person-add"></i></a>
+                                    <br>
+                                    <hr>
+                                    <h6 class="card-title">Buscar Email</h6>
+                                    <form action="" method="GET" class="row g-3">
+                                        <div class="col-auto">
+                                            <input type="text" name="search" id="search" class="form-control mx-2" placeholder="Nombre de Email">
+
+                                        </div>
+                                        <div class="col-auto">
+                                            <button type="submit" class="btn btn-primary">Buscar</button>
+                                        </div>
+                                        <?php if (isset($_GET['search']) && !empty($_GET['search'])): ?>
+                                            <div class="col-auto">
+                                                <a href="email.php" class="btn btn-info">Ver todos</a>
+                                            </div>
+                                        <?php endif; ?>
+                                    </form>
+
+                                </div>
+
+                                <!-- //!funcion para  la confirmacion de eliminacion================================================= -->
+                                <script>
+                                    function confirmacion() {
+                                        var respuesta = confirm(" ¿ Desea realmente eliminar ?")
+                                        if (respuesta == true) {
+                                            return true
+                                        } else {
+                                            return false
+                                        }
+                                    }
+                                </script>
+                                <!-- fin de funcion -->
+
+
+                                <hr>
+                                <!-- //!TABLA================================================= -->
+                                <!-- Ahora va un nav bard -->
+                                <div class="table-responsive text-nowrap">
+                                    <table class="table table-hover" id="tabla-empleados">
+                                        <thead>
+                                            <tr>
+
+                                                <th>Email</th>
+
+
+                                                <th>Persona</th>
+                                               
+                                                <th>Nombre de Usuario</th>
+                                                <th>Dni</th>
+                                                <th>Cuil</th>
+
+                                                <th>Estado</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class='table-border-bottom-0'>
+                                            <?php while ($row = $result->fetch_assoc()) : ?>
+                                                <tr>
+
+                                                    <td><?= $row['Email'] ?></td>
+
+                                                    <td>
+                                                        <ul class='list-unstyled users-list m-0 avatar-group d-flex align-items-center'>
+                                                            <li data-bs-toggle='tooltip' data-popup='tooltip-custom' data-bs-placement='top' class='avatar avatar pull-up me-3' title='<?= $row['nombre'] . " " . $row['apellido'] ?>'>
+                                                                <?php
+                                                                //$imgPath = $row['img_usuario'];
+                                                                if (!empty($imgPath) && file_exists("../ruta/donde/guardas/las/imagenes/$imgPath")) {
+                                                                    // Si hay una imagen y existe en el sistema de archivos, muestra la imagen del usuario
+                                                                    echo "<img src='./img_usuario/$imgPath' alt='Avatar' class='rounded-circle' />";
+                                                                } else {
+                                                                    // Si no hay imagen o no se encuentra, muestra un icono de usuario predeterminado
+                                                                    echo "<svg xmlns='http://www.w3.org/2000/svg' width='38' height='38' fill='currentColor' class='bi bi-person-fill' viewBox='0 0 16 16'>
+                                                                    <path d='M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6'/> </svg>";
+                                                                }
+                                                                ?>
+                                                            </li>
+                                                            <div class='d-flex flex-column'>
+                                                                <strong class='fw-medium'><?= $row['Nombre'] ?></strong>
+                                                                <small class='text-muted'><?= $row['Apellido'] ?></small>
+                                                            </div>
+                                                        </ul>
+                                                    </td>
+                                                    
+                                                    <td><?= $row['nombre_usuario'] ?></td>
+
+                                                    <td><?= $row['Dni'] ?></td>
+                                                    <td><?= $row['Cuil'] ?></td>
+
+
+
+
+                                                    <td><?= $row['Estado_Email'] ?></td>
+                                                    <td>
+                                                        <div class="dropdown">
+                                                            <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                                                <i class="bx bx-dots-vertical-rounded"></i>
+                                                            </button>
+                                                            <div class="dropdown-menu">
+
+                                                                <a class="dropdown-item" href="vista-editar-email.php?Id=<?php echo $row['ID_Email'] ?>"><i class="bx bx-edit-alt me-1"></i>Editar</a>
+                                                                <a class="dropdown-item" href="eliminar-email.php?id=<?php echo $row['ID_Email'] ?>"><i class="bx bx-trash me-1"></i> Eliminar</a>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            <?php endwhile; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <!--/ Hoverable Table rows -->
+                            <?php
+
+                            $paginationUrl = !empty($term) ? "&search=$term" : '';
+
+                            // Muestra la paginación dentro del div
+                            echo "<div class='d-flex justify-content-center'>";
+                            echo "<ul class='pagination'>";
+
+                            // Botón "Anterior"
+                            echo "<li class='page-item " . ($paginaActual == 1 ? 'disabled' : '') . "'>";
+                            /* echo "<a class='page-link' href='?page=" . ($paginaActual - 1) . "' aria-label='Previous'>"; */
+                            echo "<a class='page-link' href='?page=" . ($paginaActual - 1) . "$paginationUrl' aria-label='Previous'>";
+                            echo "<span aria-hidden='true'>&laquo;</span>";
+                            echo "</a>";
+                            echo "</li>";
+
+                            // Muestra solo 5 páginas a la vez
+                            $inicioPaginacion = max(1, $paginaActual - 2);
+                            $finPaginacion = min($inicioPaginacion + 4, $totalPaginas);
+
+                            for ($i = $inicioPaginacion; $i <= $finPaginacion; $i++) {
+                                $activeClass = ($i == $paginaActual) ? 'active' : '';
+                                echo "<li class='page-item $activeClass'><a class='page-link' href='?page=$i'>$i</a></li>";
+                            }
+
+                            echo "<li class='page-item " . ($paginaActual == $totalPaginas ? 'disabled' : '') . "'>";
+                            /* echo "<a class='page-link' href='?page=" . ($paginaActual + 1) . "' aria-label='Next'>"; */
+                            echo "<a class='page-link' href='?page=" . ($paginaActual + 1) . "$paginationUrl' aria-label='Next'>";
+                            echo "<span aria-hidden='true'>&raquo;</span>";
+                            echo "</a>";
+                            echo "</li>";
+
+                            echo "</ul>";
+                            echo "</div>";
+
+
+                            ?>
+
+                        </div>
+                        <!-- / Content -->
+
+
+
+                        <!-- Content -->
+                        <!-- //!AQUÍ COMIENZA EL CONTENIDO DEL MAIN====================================================================================== -->
+                        <!-- //!AQUÍ COMIENZA EL CONTENIDO DEL MAIN====================================================================================== -->
+                        <!-- //!AQUÍ COMIENZA EL CONTENIDO DEL MAIN====================================================================================== -->
+                        <div class="container-xxl flex-grow-1 container-p-y">
+                            <h4 class="py-3 mb-4">
+                                <span class="text-muted fw-light">Administracion /</span> Lista de Emails deshabilitados
+                            </h4>
+                            <!-- Hoverable Table rows -->
+
+                            <?php
+
+
+                            // Configuración de la paginación
+                            $resultadosPorPagina = 15; // Establece la cantidad de resultados por página
+                            $totalResultados = $conexion->query("SELECT COUNT(*) as total FROM usuarios WHERE estado='deshabilitado'")->fetch_assoc()['total'];
+                            $totalPaginas = ceil($totalResultados / $resultadosPorPagina);
+
+                            // Obtiene la página actual, si no se establece, se asume la página 1
+                            $paginaActual = isset($_GET['page']) ? $_GET['page'] : 1;
+
+                            // Calcula el índice de inicio para la consulta
+                            $inicio = ($paginaActual - 1) * $resultadosPorPagina;
+
+                            /* //?----------------------------------------------------------------- */
+                            // Obtén el término de búsqueda si está presente en la URL
+                            $term = isset($_GET['search']) ? $_GET['search'] : '';
+
+                            // Añade la condición WHERE para filtrar por nombre o apellido y el estado habilitado
+                            $whereCondition = "WHERE E.Estado_Email='deshabilitado'"; // Condición base para estado habilitado
+
+                            if (!empty($term)) {
+                                // Si hay un término de búsqueda, agrega la búsqueda por nombre o apellido
+                                //$whereCondition .= " AND (Nombre LIKE '%$term%' OR Apellido LIKE '%$term%')";
+                            }
+
+                            $sql = "SELECT U.*, P.*, E.*
+                            FROM usuarios U 
+                            INNER JOIN personas P ON U.ID_Persona = P.ID_Persona 
+                            INNER JOIN emails_usuarios E ON U.ID_Usuario = E.ID_Usuario 
+                          
+                            $whereCondition
+                            LIMIT $inicio, $resultadosPorPagina";
+
+
+
+
+                            $result2 = $conexion->query($sql);
+
+                            ?>
+                            <div class="card">
+
+
+
+                                <div class="card-header border-bottom">
+
+
+
+                                </div>
+
+                                <!-- //!funcion para  la confirmacion de eliminacion================================================= -->
+                                <script>
+                                    function confirmacion() {
+                                        var respuesta = confirm(" ¿ Desea realmente eliminar ?")
+                                        if (respuesta == true) {
+                                            return true
+                                        } else {
+                                            return false
+                                        }
+                                    }
+                                </script>
+                                <!-- fin de funcion -->
+
+
+                                <hr>
+                                <!-- //!TABLA================================================= -->
+                                <!-- Ahora va un nav bard -->
+                                <div class="table-responsive text-nowrap">
+                                    <table class="table table-hover" id="tabla-empleados">
+                                        <thead>
+                                            <tr>
+
+                                                <th>Email</th>
+
+                                                <th>Persona</th>
+                                               
+                                                <th>Nombre de Usuario</th>
+                                                <th>Dni</th>
+                                                <th>Cuil</th>
+
+                                                <th>Estado</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class='table-border-bottom-0'>
+                                            <?php while ($row = $result2->fetch_assoc()) : ?>
+                                                <tr>
+
+                                                    <td><?= $row['Email'] ?></td>
+
+                                                    <td>
+                                                        <ul class='list-unstyled users-list m-0 avatar-group d-flex align-items-center'>
+                                                            <li data-bs-toggle='tooltip' data-popup='tooltip-custom' data-bs-placement='top' class='avatar avatar pull-up me-3' title='<?= $row['nombre'] . " " . $row['apellido'] ?>'>
+                                                                <?php
+                                                                //$imgPath = $row['img_usuario'];
+                                                                if (!empty($imgPath) && file_exists("../ruta/donde/guardas/las/imagenes/$imgPath")) {
+                                                                    // Si hay una imagen y existe en el sistema de archivos, muestra la imagen del usuario
+                                                                    echo "<img src='./img_usuario/$imgPath' alt='Avatar' class='rounded-circle' />";
+                                                                } else {
+                                                                    // Si no hay imagen o no se encuentra, muestra un icono de usuario predeterminado
+                                                                    echo "<svg xmlns='http://www.w3.org/2000/svg' width='38' height='38' fill='currentColor' class='bi bi-person-fill' viewBox='0 0 16 16'>
+                                                                    <path d='M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6'/> </svg>";
+                                                                }
+                                                                ?>
+                                                            </li>
+                                                            <div class='d-flex flex-column'>
+                                                                <strong class='fw-medium'><?= $row['Nombre'] ?></strong>
+                                                                <small class='text-muted'><?= $row['Apellido'] ?></small>
+                                                            </div>
+                                                        </ul>
+                                                    </td>
+                                                    <td><?= $row['nombre_usuario'] ?></td>
+                                                   
+                                                    <td><?= $row['Dni'] ?></td>
+                                                    <td><?= $row['Cuil'] ?></td>
+
+
+
+                                                    <td><?= $row['Fecha_Nacimiento'] ?></td>
+                                                    <td><?= $row['Estado_Email'] ?></td>
+                                                    <td>
+                                                        <div class="dropdown">
+                                                            <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                                                <i class="bx bx-dots-vertical-rounded"></i>
+                                                            </button>
+                                                            <div class="dropdown-menu">
+                                                                <a class="dropdown-item" href="habilitar-email.php?id=<?php echo $row['ID_Email']; ?>"><i class="bi bi-eye-fill me-1"></i>Habilitar</a>
+
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            <?php endwhile; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <!--/ Hoverable Table rows -->
+
+                        </div>
+
+                        <div class="content-backdrop fade"></div>
+                    </div>
+                    <!-- //!======================================================================================================== -->
+
+                <?php
+                } else {
+
+                    echo '<div class="col-auto">
+                    <span>No se encontraron Email con el nombre que ingresaste en la base de datos.</span>
+                    <a href="email.php" class="btn btn-info mx-2">Ver todos</a>
+                  </div>';
+                }
+                $paginationUrl = !empty($term) ? "&search=$term" : '';
+
+                // Muestra la paginación dentro del div
+                echo "<div class='d-flex justify-content-center'>";
+                echo "<ul class='pagination'>";
+
+                // Botón "Anterior"
+                echo "<li class='page-item " . ($paginaActual == 1 ? 'disabled' : '') . "'>";
+                /* echo "<a class='page-link' href='?page=" . ($paginaActual - 1) . "' aria-label='Previous'>"; */
+                echo "<a class='page-link' href='?page=" . ($paginaActual - 1) . "$paginationUrl' aria-label='Previous'>";
+                echo "<span aria-hidden='true'>&laquo;</span>";
+                echo "</a>";
+                echo "</li>";
+
+                // Muestra solo 5 páginas a la vez
+                $inicioPaginacion = max(1, $paginaActual - 2);
+                $finPaginacion = min($inicioPaginacion + 4, $totalPaginas);
+
+                for ($i = $inicioPaginacion; $i <= $finPaginacion; $i++) {
+                    $activeClass = ($i == $paginaActual) ? 'active' : '';
+                    echo "<li class='page-item $activeClass'><a class='page-link' href='?page=$i'>$i</a></li>";
+                }
+
+                echo "<li class='page-item " . ($paginaActual == $totalPaginas ? 'disabled' : '') . "'>";
+                /* echo "<a class='page-link' href='?page=" . ($paginaActual + 1) . "' aria-label='Next'>"; */
+                echo "<a class='page-link' href='?page=" . ($paginaActual + 1) . "$paginationUrl' aria-label='Next'>";
+                echo "<span aria-hidden='true'>&raquo;</span>";
+                echo "</a>";
+                echo "</li>";
+
+                echo "</ul>";
+                echo "</div>";
+
+                $conexion->close();
+                ?>
+
+
+
+
+
+
+                <!-- Content wrapper -->
+            </div>
+            <!-- / Layout page -->
+        </div>
+
+        <!-- Overlay -->
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div>
+    <!-- / Layout wrapper -->
+
+
+
+    <!-- Core JS -->
+    <!-- build:js assets/vendor/js/core.js -->
+    <script src="../assets/vendor/libs/jquery/jquery.js"></script>
+    <script src="../assets/vendor/libs/popper/popper.js"></script>
+    <script src="../assets/vendor/js/bootstrap.js"></script>
+    <script src="../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+
+    <script src="../assets/vendor/js/menu.js"></script>
+    <!-- endbuild -->
+
+    <!-- Vendors JS -->
+    <script src="../assets/vendor/libs/apex-charts/apexcharts.js"></script>
+
+    <!-- Main JS -->
+    <script src="../assets/js/main.js"></script>
+
+    <!-- Page JS -->
+    <script src="../assets/js/dashboards-analytics.js"></script>
+
+    <!-- Place this tag in your head or just before your close body tag. -->
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,18 @@
+.btn_2 {
+    display: inline-block;
+    padding: 9.5px 28px;
+    border-radius: 50px;
+    background-color: #fff;
+    font-size: 14px;
+    font-weight: 400;
+    color: #ff6426;
+    -webkit-transition: 0.5s;
+    transition: 0.5s;
+    text-transform: capitalize;
+  }
+  
+  /* line 34, E:/169 Dingo Restaurant/169 Dingo Restaurant/169_Dingo_Restautent_html/sass/_button.scss */
+  .btn_2:hover {
+    color: #ff6426;
+    background-color: #ff6426;
+  }
