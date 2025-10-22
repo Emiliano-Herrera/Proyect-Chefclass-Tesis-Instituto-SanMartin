@@ -1,14 +1,18 @@
-<!--Espacio para traer las recetas desde la base de datos-->
 <?php
+// Incluir archivo de conexión a la base de datos
 include("conexion.php");
 
+// Iniciar sesión para obtener datos del usuario logueado
 session_start();
 if (isset($_SESSION['id_usuario'])) {
     $ID_Usuario = $_SESSION['id_usuario'];
     $Nombre = $_SESSION['nombre'];
     $Apellido = $_SESSION['apellido'];
 }
-// Para obtener las últimas recetas con promedio de calificación y nombre del usuario
+
+// ============================================================================
+// CONSULTA 1: OBTENER LAS 3 ÚLTIMAS RECETAS CREADAS
+// ============================================================================
 $sqlUltimasRecetas = "
     SELECT R.*, RI.url_imagen, AVG(C.calificacion) as promedio_calificacion, U.nombre_usuario
     FROM recetas R 
@@ -20,29 +24,43 @@ $sqlUltimasRecetas = "
     AND R.estado = 'habilitado'
     GROUP BY R.id_receta
     ORDER BY R.fecha_creacion DESC 
-    LIMIT 3
-";
+    LIMIT 3";
+
+// Ejecutar consulta de últimas recetas
 $result = $conexion->query($sqlUltimasRecetas);
+
+// Procesar resultados: organizar recetas con sus imágenes
 $recetas = [];
 while ($receta = $result->fetch_assoc()) {
+    // Si es la primera vez que encontramos esta receta, inicializamos su estructura
     if (!isset($recetas[$receta['id_receta']])) {
         $recetas[$receta['id_receta']] = $receta;
         $recetas[$receta['id_receta']]['imagenes'] = [];
     }
+    // Agregar la imagen al array de imágenes de la receta
     $recetas[$receta['id_receta']]['imagenes'][] = $receta['url_imagen'];
 }
+
+// ============================================================================
+// FUNCIÓN: LIMITAR LONGITUD DE DESCRIPCIÓN
+// ============================================================================
 function limitar_descripcion($descripcion, $limite = 15)
 {
+    // Dividir la descripción en palabras individuales
     $palabras = explode(' ', $descripcion);
+    
+    // Si hay más palabras que el límite, recortar y agregar "..."
     if (count($palabras) > $limite) {
         return implode(' ', array_slice($palabras, 0, $limite)) . '...';
     } else {
+        // Si está dentro del límite, devolver la descripción completa
         return $descripcion;
     }
 }
 
-
-// Para obtener comentarios
+// ============================================================================
+// CONSULTA 2: OBTENER LOS 3 ÚLTIMOS COMENTARIOS
+// ============================================================================
 $sqlComentarios = "
     SELECT C.comentario, C.fecha_comentario, U.nombre_usuario, R.titulo AS receta_titulo
     FROM comentarios C
@@ -51,13 +69,17 @@ $sqlComentarios = "
     ORDER BY C.fecha_comentario DESC
     LIMIT 3
 ";
+
+// Ejecutar y procesar comentarios
 $resultComentarios = $conexion->query($sqlComentarios);
 $comentarios = [];
 while ($comentario = $resultComentarios->fetch_assoc()) {
     $comentarios[] = $comentario;
 }
 
-// Obtener todas las categorías
+// ============================================================================
+// CONSULTA 3: OBTENER TODAS LAS CATEGORÍAS HABILITADAS
+// ============================================================================
 $sql_categorias = "SELECT * FROM categoria WHERE estado = 'habilitado'";
 $result_categorias = $conexion->query($sql_categorias);
 
@@ -68,10 +90,16 @@ if ($result_categorias->num_rows > 0) {
     }
 }
 
-// Obtener recetas e imágenes para cada categoría
+// ============================================================================
+// CONSULTA 4: OBTENER RECETAS POR CATEGORÍA (3 POR CADA CATEGORÍA)
+// ============================================================================
 $recetas_por_categoria = [];
+
+// Recorrer cada categoría para obtener sus recetas
 foreach ($categorias as $categoria) {
     $categoria_id = $categoria['id_categoria'];
+    
+    // Consulta preparada para seguridad (evita inyección SQL)
     $sql_recetas = "
         SELECT R.id_receta, R.titulo, R.descripcion, R.dificultad, RI.url_imagen, U.nombre_usuario, R.fecha_creacion, AVG(C.calificacion) as promedio_calificacion
         FROM recetas R 
@@ -86,13 +114,17 @@ foreach ($categorias as $categoria) {
         GROUP BY R.id_receta
         LIMIT 3
     ";
+    
+    // Preparar y ejecutar consulta con parámetro seguro
     $stmt = $conexion->prepare($sql_recetas);
-    $stmt->bind_param("i", $categoria_id);
+    $stmt->bind_param("i", $categoria_id);  // "i" indica que es un parámetro integer
     $stmt->execute();
     $result_recetas = $stmt->get_result();
 
+    // Procesar recetas de esta categoría
     if ($result_recetas->num_rows > 0) {
         while ($row = $result_recetas->fetch_assoc()) {
+            // Organizar recetas por categoría y por ID de receta
             if (!isset($recetas_por_categoria[$categoria_id][$row['id_receta']])) {
                 $recetas_por_categoria[$categoria_id][$row['id_receta']] = $row;
                 $recetas_por_categoria[$categoria_id][$row['id_receta']]['imagenes'] = [];
@@ -102,8 +134,9 @@ foreach ($categorias as $categoria) {
     }
 }
 
-// Para ver las recetas de mejores calificaciones 
-// Consulta para obtener las 3 recetas mejor calificadas 
+// ============================================================================
+// CONSULTA 5: OBTENER LAS 3 MEJORES RECETAS CALIFICADAS
+// ============================================================================
 $sql_mejores_recetas = "
     SELECT r.id_receta,r.estado, r.titulo, r.descripcion, i.url_imagen, AVG(c.calificacion) as promedio_calificacion, COUNT(c.id_calificacion) as total_calificaciones, u.nombre_usuario, r.fecha_creacion
     FROM recetas r
@@ -114,10 +147,11 @@ $sql_mejores_recetas = "
     WHERE r.estado = 'habilitado'
     GROUP BY r.id_receta
     ORDER BY promedio_calificacion DESC, total_calificaciones DESC
-    LIMIT 3;
+    LIMIT 3
 ";
+
+// Ejecutar y procesar mejores recetas
 $result_mejores_recetas = $conexion->query($sql_mejores_recetas);
-// Verifica si hay resultados 
 $mejores_recetas = [];
 if ($result_mejores_recetas->num_rows > 0) {
     while ($row = $result_mejores_recetas->fetch_assoc()) {
@@ -125,31 +159,37 @@ if ($result_mejores_recetas->num_rows > 0) {
     }
 }
 
-//Funcion para generar las estrellas segun la calificacion de la receta
+// ============================================================================
+// FUNCIÓN: GENERAR ESTRELLAS DE CALIFICACIÓN VISUAL
+// ============================================================================
 function generar_estrellas($promedio)
 {
+    // Calcular estrellas completas (parte entera del promedio)
     $estrellas_completas = floor($promedio);
+    
+    // Determinar si necesita media estrella
     $mitad_estrella = ($promedio - $estrellas_completas >= 0.5) ? true : false;
+    
     $estrellas_html = '';
 
+    // Generar 5 estrellas (máxima calificación)
     for ($i = 0; $i < 5; $i++) {
         if ($i < $estrellas_completas) {
+            // Estrella completa
             $estrellas_html .= '<span class="fa fa-star checked"></span>';
         } elseif ($mitad_estrella && $i == $estrellas_completas) {
+            // Media estrella
             $estrellas_html .= '<span class="fa fa-star-half-alt checked"></span>';
-            $mitad_estrella = false; // Para que solo una estrella pueda ser media
+            $mitad_estrella = false; // Solo una media estrella permitida
         } else {
+            // Estrella vacía
             $estrellas_html .= '<span class="fa fa-star"></span>';
         }
     }
     return $estrellas_html;
 }
 
-
-
-
-
-
+// Cerrar conexión a la base de datos
 $conexion->close();
 ?>
 

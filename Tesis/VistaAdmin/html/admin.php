@@ -31,13 +31,18 @@ if (isset($_SESSION['id_usuario'])) {
 
 
 //Sql para obtener las mejores recetas segun las calificaciones 
-$sql_mejores_recetas_admin = "SELECT r.id_receta, r.titulo, COALESCE(COUNT(DISTINCT l.id_like), 0) as total_likes, AVG(c.calificacion) as promedio_calificacion, COUNT(DISTINCT c.id_calificacion) as total_calificaciones
-                             FROM recetas r
-                             LEFT JOIN calificaciones c ON r.id_receta = c.receta_id
-                             LEFT JOIN likes l ON r.id_receta = l.receta_id
-                             GROUP BY r.id_receta
-                             ORDER BY total_likes DESC, promedio_calificacion DESC, total_calificaciones DESC
-                             LIMIT 6;";
+$sql_mejores_recetas_admin = "SELECT 
+    r.id_receta, 
+    r.titulo, 
+    AVG(c.calificacion) AS promedio_calificacion, 
+    COUNT(c.id_calificacion) AS total_calificaciones
+FROM recetas r
+LEFT JOIN calificaciones c ON r.id_receta = c.receta_id
+WHERE r.estado = 'habilitado'
+GROUP BY r.id_receta
+HAVING total_calificaciones > 0
+ORDER BY promedio_calificacion DESC, total_calificaciones DESC
+LIMIT 6;;";
 $result_mejores_recetas_admin = $conexion->query($sql_mejores_recetas_admin);
 $mejores_recetas_admin = [];
 if ($result_mejores_recetas_admin->num_rows > 0) {
@@ -61,9 +66,11 @@ $sql_mas_guardadas = "
         FROM calificaciones
         GROUP BY receta_id
     ) calificaciones ON r.id_receta = calificaciones.receta_id
+     WHERE r.estado = 'habilitado'
     ORDER BY guardados.total_guardados DESC, calificaciones.promedio_calificacion DESC, calificaciones.total_calificaciones DESC
     LIMIT 6;
 ";
+
 $result_mas_guardadas = $conexion->query($sql_mas_guardadas);
 $mas_guardadas = [];
 if ($result_mas_guardadas->num_rows > 0) {
@@ -75,9 +82,10 @@ if ($result_mas_guardadas->num_rows > 0) {
 
 //Sql para saber los usuarios que mas subieron recetas
 $sql_usuarios_mas_recetas = "
-    SELECT u.id_usuario, u.nombre_usuario, COUNT(r.id_receta) as total_recetas
+    SELECT u.id_usuario, u.nombre_usuario, r.estado, COUNT(r.id_receta) as total_recetas
     FROM usuarios u
     JOIN recetas r ON u.id_usuario = r.usuario_id
+    WHERE r.estado = 'habilitado'
     GROUP BY u.id_usuario
     ORDER BY total_recetas DESC
     LIMIT 6;
@@ -104,13 +112,20 @@ $colores = [
   'bg-dark',
 ];
 
+
+
 $sql_popularidad = "
-    SELECT cat.nombre, AVG(cal.calificacion) AS popularidad
+    SELECT 
+        cat.nombre, 
+        AVG(cal.calificacion) AS popularidad,
+        COUNT(cal.id_calificacion) AS total_calificaciones
     FROM categoria cat
     JOIN recetas_categorias rc ON cat.id_categoria = rc.categoria_id
     JOIN recetas r ON rc.receta_id = r.id_receta
     LEFT JOIN calificaciones cal ON r.id_receta = cal.receta_id
     GROUP BY cat.id_categoria
+    HAVING popularidad IS NOT NULL
+    ORDER BY popularidad DESC
 ";
 $result_popularidad = $conexion->query($sql_popularidad);
 
@@ -363,11 +378,7 @@ if ($result_popularidad->num_rows > 0) {
                           </p>
                         </div>
                       </div>
-                      <div class="col-sm-5 text-center text-sm-left">
-                        <div class="card-body pb-0 px-0 px-md-4">
-                          <img src="../assets/img/illustrations/man-with-laptop-light.png" height="140" alt="View Badge User" data-app-dark-img="illustrations/man-with-laptop-dark.png" data-app-light-img="illustrations/man-with-laptop-light.png" />
-                        </div>
-                      </div>
+
                     </div>
                   </div>
                 </div>
@@ -395,49 +406,39 @@ if ($result_popularidad->num_rows > 0) {
               <!-- Agrupar los 4 bloques en una sola fila -->
               <div class="row">
                 <!-- Popularidad por categoría -->
+
+                <!-- Promedio de calificación por categoría (tipo mejores recetas) -->
                 <div class="col-12 col-md-6 col-xl-3 mb-4 d-flex align-items-stretch">
                   <div class="card h-100 w-100">
-                    <div class="card-header">
+                    <div class="card-header d-flex align-items-center justify-content-between">
                       <div class="card-title mb-0">
-                        <h5 class="m-0">Popularidad por categoría</h5>
+                        <h5 class="m-0 me-2">Categorías mejor valoradas</h5>
                       </div>
                     </div>
                     <div class="card-body">
-                      <div class="d-none d-lg-flex vehicles-progress-labels mb-3">
-                        <?php foreach ($categorias as $index => $categoria): ?>
-                          <div class="vehicles-progress-label" style="width: <?= round($categoria['popularidad'], 1) ?>%;"></div>
+                      <ul class="p-0 m-0">
+                        <?php
+                        $colores = ['bg-label-primary', 'bg-label-info', 'bg-label-success', 'bg-label-warning', 'bg-label-danger', 'bg-label-secondary'];
+                        foreach ($categorias as $index => $categoria): ?>
+                          <li class="d-flex mb-4 pb-1">
+                            <div class="avatar flex-shrink-0 me-3">
+                              <span class="avatar-initial rounded <?= $colores[$index % count($colores)] ?>"><i class='bx bx-category'></i></span>
+                            </div>
+                            <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                              <div class="me-2">
+                                <h6 class="mb-1 fw-normal"><?= htmlspecialchars($categoria['nombre']) ?></h6>
+
+                                <div class="text-muted small mt-1">
+                                  ⭐ <?= number_format($categoria['popularidad'], 2) ?> (<?= $categoria['total_calificaciones'] ?> calificaciones)
+                                </div>
+                              </div>
+                            </div>
+                          </li>
                         <?php endforeach; ?>
-                      </div>
-                      <div class="vehicles-overview-progress progress rounded-2 mb-3" style="height: 46px;">
-                        <?php foreach ($categorias as $index => $categoria): ?>
-                          <div class="progress-bar fs-big fw-medium text-start <?= $colores[$index % count($colores)] ?> px-1 px-lg-3 <?= $index == 0 ? 'rounded-start' : ($index == count($categorias) - 1 ? 'rounded-end' : '') ?>" role="progressbar" style="width: <?= round($categoria['popularidad'], 1) ?>%;" aria-valuenow="<?= round($categoria['popularidad'], 1) ?>" aria-valuemin="0" aria-valuemax="100"><?= round($categoria['popularidad'], 1) ?>%</div>
-                        <?php endforeach; ?>
-                      </div>
-                      <div class="table-responsive">
-                        <table class="table card-table">
-                          <tbody class="table-border-bottom-0">
-                            <?php foreach ($categorias as $index => $categoria): ?>
-                              <tr>
-                                <td class="w-50 ps-0">
-                                  <div class="d-flex justify-content-start align-items-center">
-                                    <div class="me-2">
-                                      <div class="<?= $colores[$index % count($colores)] ?>" style="width: 16px; height: 16px; background-color: currentColor; border-radius: 3px;"></div>
-                                    </div>
-                                    <h6 class="mb-0 fw-normal"><?= htmlspecialchars($categoria['nombre']) ?></h6>
-                                  </div>
-                                </td>
-                                <td class="text-end pe-0 text-nowrap">
-                                  <h6 class="mb-0"><?= round($categoria['popularidad'], 1) ?>%</h6>
-                                </td>
-                              </tr>
-                            <?php endforeach; ?>
-                          </tbody>
-                        </table>
-                      </div>
+                      </ul>
                     </div>
                   </div>
                 </div>
-
                 <!-- Mejores recetas -->
                 <div class="col-12 col-md-6 col-xl-3 mb-4 d-flex align-items-stretch">
                   <div class="card h-100 w-100">
@@ -453,14 +454,14 @@ if ($result_popularidad->num_rows > 0) {
                         foreach ($mejores_recetas_admin as $index => $receta): ?>
                           <li class="d-flex mb-4 pb-1">
                             <div class="avatar flex-shrink-0 me-3">
-                              <span class="avatar-initial rounded <?= $colores[$index % count($colores)] ?>"><i class='bx bx-heart'></i></span>
+                              <span class="avatar-initial rounded <?= $colores[$index % count($colores)] ?>"><i class='bx bx-star'></i></span>
                             </div>
                             <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
                               <div class="me-2">
                                 <h6 class="mb-1 fw-normal"><?= htmlspecialchars($receta['titulo']) ?></h6>
-                              </div>
-                              <div class="user-progress">
-                                <h6 class="mb-0"><?= htmlspecialchars($receta['total_likes']) ?> </h6>
+                                <div class="text-muted small mt-1">
+                                  ⭐ <?= number_format($receta['promedio_calificacion'], 2) ?> (<?= $receta['total_calificaciones'] ?> calificaciones)
+                                </div>
                               </div>
                             </div>
                           </li>
@@ -512,6 +513,8 @@ if ($result_popularidad->num_rows > 0) {
                       <ul class="p-0 m-0">
                         <?php
                         $colores = ['bg-label-primary', 'bg-label-info', 'bg-label-success', 'bg-label-warning', 'bg-label-danger', 'bg-label-secondary'];
+
+
                         foreach ($usuarios_mas_recetas as $index => $usuario): ?>
                           <li class="d-flex mb-4 pb-1">
                             <div class="avatar flex-shrink-0 me-3">
@@ -520,13 +523,14 @@ if ($result_popularidad->num_rows > 0) {
                             <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
                               <div class="me-2">
                                 <h6 class="mb-1 fw-normal"><?= htmlspecialchars($usuario['nombre_usuario']) ?></h6>
-                              </div>
-                              <div class="user-progress">
-                                <h6 class="mb-0"><i class='bx bx-restaurant'></i> <?= htmlspecialchars($usuario['total_recetas']) ?></h6>
+                                <div class="text-muted small mt-1">
+                                  <i class='bx bx-restaurant'></i> <?= htmlspecialchars($usuario['total_recetas']) ?>
+                                </div>
                               </div>
                             </div>
                           </li>
                         <?php endforeach; ?>
+
                       </ul>
                     </div>
                   </div>
