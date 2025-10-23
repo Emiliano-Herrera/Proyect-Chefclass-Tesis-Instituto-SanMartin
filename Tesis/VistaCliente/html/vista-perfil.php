@@ -692,7 +692,7 @@ function generar_estrellas($promedio)
 
 
 
-    <!-- //! post subidos ===================================================================================== -->
+    <!-- //! publicación subidos ===================================================================================== -->
     <section class="seccion-publicaciones-usuario mt-5">
         <div class="container mt-5">
             <div class="row" id="recetas-container">
@@ -715,12 +715,36 @@ function generar_estrellas($promedio)
                                     <div class="col-md-5 position-relative">
                                         <?php if (!empty($receta['url_imagen'])): ?>
                                             <img src="<?= $receta['url_imagen'] ?>" class="img-fluid rounded-start custom-img" alt="Imagen de receta">
-                                            <button class="btn btn-outline-light btn-eliminar position-absolute"
-                                                style="top: 10px; left: 30px; padding: 5px 10px;"
-                                                data-id="<?= $receta['id_receta']; ?>"
-                                                data-titulo="<?= htmlspecialchars($receta['titulo']); ?>">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
+
+                                            <!-- Botón con menú desplegable -->
+                                            <div class="dropdown position-absolute" style="top: 10px; left: 30px;">
+                                                <button class="btn btn-outline-light dropdown-toggle"
+                                                    type="button"
+                                                    id="dropdownMenuButton<?= $receta['id_receta']; ?>"
+                                                    data-bs-toggle="dropdown"
+                                                    aria-expanded="false"
+                                                    style="padding: 5px 10px;">
+                                                    <i class="bi bi-three-dots"></i>
+                                                </button>
+
+                                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton<?= $receta['id_receta']; ?>">
+                                                    <li>
+                                                        <a class="dropdown-item" href="vista-editar-receta.php?id_receta=<?= $receta['id_receta']; ?>">
+                                                            <i class="bi bi-pencil me-2"></i>Editar
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <hr class="dropdown-divider">
+                                                    </li>
+                                                    <li>
+                                                        <button class="dropdown-item text-danger btn-eliminar"
+                                                            data-id="<?= $receta['id_receta']; ?>"
+                                                            data-titulo="<?= htmlspecialchars($receta['titulo']); ?>">
+                                                            <i class="bi bi-trash me-2"></i>Eliminar
+                                                        </button>
+                                                    </li>
+                                                </ul>
+                                            </div>
                                         <?php endif; ?>
                                     </div>
                                     <div class="col-md-7">

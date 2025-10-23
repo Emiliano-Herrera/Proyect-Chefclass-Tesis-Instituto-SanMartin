@@ -276,7 +276,7 @@ while ($fila = $resultado_imagenes->fetch_assoc()) {
                                     <li>
                                         <a class="dropdown-item" href="#">
                                             <div class="d-flex">
-                                                <div class="flex-shrink-0 me-3">
+                                                <div class="shrink-0 me-3">
                                                     <div class="avatar avatar-online">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
                                                             <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
@@ -284,7 +284,7 @@ while ($fila = $resultado_imagenes->fetch_assoc()) {
                                                         </svg>
                                                     </div>
                                                 </div>
-                                                <div class="flex-grow-1">
+                                                <div class="grow">
                                                     <span class="fw-semibold d-block"><?php echo $Nombre ?></span>
                                                     <small class="text-muted"><?php echo $Apellido ?></small>
                                                 </div>
@@ -332,7 +332,7 @@ while ($fila = $resultado_imagenes->fetch_assoc()) {
                     <!-- !AQUÍ COMIENZA EL CONTENIDO DEL MAIN====================================================================================== -->
                     <!-- !AQUÍ COMIENZA EL CONTENIDO DEL MAIN====================================================================================== -->
                     <!-- !AQUÍ COMIENZA EL CONTENIDO DEL MAIN====================================================================================== -->
-                    <div class="container-xxl flex-grow-1 container-p-y">
+                    <div class="container-xxl grow container-p-y">
 
                         <h4 class="py-3 mb-4">
                             <span class="text-muted fw-light">Administración / <a class="text-muted" href="vista-recetas.php">Recetas</a></span> / Editar Receta
@@ -705,13 +705,6 @@ while ($fila = $resultado_imagenes->fetch_assoc()) {
                         // Asignación del Evento de Validación al Formulario
                         /* document.getElementById('formValidationExamples').addEventListener('submit', validateForm); */
                     </script>
-
-
-
-
-
-
-
                     <div class="content-backdrop fade"></div>
                 </div>
 

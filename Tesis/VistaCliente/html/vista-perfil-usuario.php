@@ -82,7 +82,9 @@ $sqlRecetasUsuario = "
     LEFT JOIN img_recetas RI ON IR.img_id = RI.id_img 
     LEFT JOIN calificaciones C ON R.id_receta = C.receta_id
     LEFT JOIN usuarios U ON R.usuario_id = U.id_usuario
-    WHERE R.usuario_id = ? AND RI.url_imagen IS NOT NULL
+    WHERE R.usuario_id = ? 
+      AND R.estado = 'habilitado'
+      AND RI.url_imagen IS NOT NULL
     GROUP BY R.id_receta
     ORDER BY R.fecha_creacion DESC
 ";
