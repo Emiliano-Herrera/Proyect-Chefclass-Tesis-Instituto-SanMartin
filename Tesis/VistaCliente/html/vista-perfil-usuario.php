@@ -320,10 +320,7 @@ function generar_estrellas($promedio)
                 <ul class="lista-datos" style="font-size: 1em;">
                     <li><i class="bi bi-calendar-check" style="font-size: 1.3em;"></i> Registro: <?php echo strftime('%e de %b del %Y', strtotime($filas[0]['fecha_creacion'])); ?></li>
                 </ul>
-                <!-- Botón subir receta -->
-                <div class="titulo mb-2">
-                    <a class="btn btn-outline-success" href="vista-subir-receta.php"><i class="bi bi-plus-square m-1"> </i> Subir receta</a>
-                </div>
+                
                 <!-- Seguidores, seguidos y publicaciones -->
                 <div class="seguidores-seguidos titulo mt-3">
                     <div class="d-flex justify-content-center align-items-center gap-4 flex-wrap">

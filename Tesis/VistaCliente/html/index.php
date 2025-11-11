@@ -13,6 +13,8 @@ if (isset($_SESSION['id_usuario'])) {
 // ============================================================================
 // CONSULTA 1: OBTENER LAS 3 ÚLTIMAS RECETAS CREADAS
 // ============================================================================
+// Left join permiten mostrar recetas incluso si carecen de calificaciones, evitando pérdida de contenido válido
+// AVG(C.calificacion) calcula promedios en tiempo real
 $sqlUltimasRecetas = "
     SELECT R.*, RI.url_imagen, AVG(C.calificacion) as promedio_calificacion, U.nombre_usuario
     FROM recetas R 
@@ -589,6 +591,7 @@ $conexion->close();
             <div class="row justify-content-center">
                 <div class="col-lg-12">
                     <ul class="nav justify-content-center">
+                        <!-- menú de pestañas con los nombres de las categorías -->
                         <?php foreach ($categorias as $categoria): ?>
                             <li class="nav-item">
                                 <a class="nav-link <?= $categoria['id_categoria'] == 1 ? 'active' : '' ?>" id="categoria-<?= $categoria['id_categoria'] ?>-tab" data-toggle="tab" href="#categoria-<?= $categoria['id_categoria'] ?>" role="tab" aria-controls="categoria-<?= $categoria['id_categoria'] ?>" aria-selected="<?= $categoria['id_categoria'] == 1 ? 'true' : 'false' ?>">
@@ -648,13 +651,16 @@ $conexion->close();
                         <?php foreach ($categorias as $categoria): ?>
                             <div class="tab-pane fade <?= $categoria['id_categoria'] == 1 ? 'show active' : '' ?>" id="categoria-<?= $categoria['id_categoria'] ?>" role="tabpanel" aria-labelledby="categoria-<?= $categoria['id_categoria'] ?>-tab">
                                 <div class="row row-cols-1 row-cols-md-3 g-4">
+                                    <!-- Verifica si existen recetas para la categoría actual antes de intentar mostrarlas. -->
                                     <?php if (isset($recetas_por_categoria[$categoria['id_categoria']])): ?>
                                         <?php
+                                        /* Limitar la cantidad de recetas mostradas */
                                         $contador = 0;
                                         foreach ($recetas_por_categoria[$categoria['id_categoria']] as $receta):
-                                            if ($contador >= 6) break;
+                                            if ($contador >= 3) break;
                                             $contador++;
                                         ?>
+
                                             <div class="col mb-4">
                                                 <div class="card h-100 shadow-lg border-0 rou">
                                                     <img src="<?= $receta['imagenes'][0]; ?>" class="card-img-top" alt="Imagen de <?= $receta['titulo']; ?>">
@@ -677,7 +683,7 @@ $conexion->close();
                                                 </div>
                                             </div>
                                         <?php endforeach; ?>
-                                        <?php if (count($recetas_por_categoria[$categoria['id_categoria']]) > 6): ?>
+                                        <?php if (count($recetas_por_categoria[$categoria['id_categoria']]) > 3): ?>
                                             <div class="col-12 text-center mt-4">
                                                 <a href="vista-categoria.php?id=<?= $categoria['id_categoria'] ?>" class="btn_3">Ver más</a>
                                             </div>
@@ -695,9 +701,6 @@ $conexion->close();
 
         </div>
     </section>
-
-
-
 
     <!-- Fin de Style-->
     <!-- //! EQUIPO ------------------------------------------------------------------------------------------------------------------------------------------------------->
@@ -784,7 +787,7 @@ $conexion->close();
         </div>
     </section>
 
-    <!-- //! TESTIMONIO ---------------------------------------------------------------------------------------------------------------------------------------------------->
+    <!-- //! COMENTARIOS ---------------------------------------------------------------------------------------------------------------------------------------------------->
     <section class="review_part gray_bg section_padding">
         <div class="container">
             <div class="row">
@@ -821,8 +824,6 @@ $conexion->close();
         </div>
     </section>
     <!--::review_part end::-->
-
-
 
     <!--::exclusive_item_part start::-->
     <!-- //! ULTIMAS ---------------------------------------------------------------------------------------------------------------------------------------------------->

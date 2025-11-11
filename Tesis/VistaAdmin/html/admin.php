@@ -2,24 +2,29 @@
 session_start();
 include("conexion.php");
 // Verificar si las variables de sesión están definidas antes de acceder a ellas
-
+// Iniciar sesión para obtener datos del usuario logueado
 if (isset($_SESSION['id_usuario'])) {
   $ID_Usuario = $_SESSION['id_usuario'];
   $Nombre = $_SESSION['nombre'];
   $Apellido = $_SESSION['apellido'];
 
   // Traer el id_rol y nombre_rol del usuario (usa la columna correcta: "rol")
-  $sql = "SELECT r.id_rol, r.nombre_rol FROM usuarios u JOIN roles r ON u.rol = r.id_rol WHERE u.id_usuario = $ID_Usuario";
+  $sql = "SELECT r.id_rol, r.nombre_rol FROM usuarios u 
+  JOIN roles r ON u.rol = r.id_rol /* Une con tabla roles donde coincida el ID del rol */
+  WHERE u.id_usuario = $ID_Usuario"; /* filtramos por el usuario logeado */
+
+  // ejecutamos la consulta sql
   $result = $conexion->query($sql);
   $row = $result->fetch_assoc();
   $Rol = $row['nombre_rol'];
   $RolId = $row['id_rol'];
 
   // Traer las secciones permitidas para ese rol
-  $sql_permisos = "SELECT id_seccion FROM roles_permisos_secciones WHERE id_rol = $RolId";
+  $sql_permisos = "SELECT id_seccion FROM roles_permisos_secciones WHERE id_rol = $RolId"; //Busca todas las secciones a las que tiene acceso este rol
   $result_permisos = $conexion->query($sql_permisos);
   $secciones_permitidas = [];
   while ($row_permiso = $result_permisos->fetch_assoc()) {
+    // almacena las secciones permitidas
     $secciones_permitidas[] = $row_permiso['id_seccion'];
   }
 } else {
@@ -30,7 +35,7 @@ if (isset($_SESSION['id_usuario'])) {
 
 
 
-//Sql para obtener las mejores recetas segun las calificaciones 
+//Sql para obtener las mejores 6 recetas segun las calificaciones 
 $sql_mejores_recetas_admin = "SELECT 
     r.id_receta, 
     r.titulo, 
@@ -40,9 +45,9 @@ FROM recetas r
 LEFT JOIN calificaciones c ON r.id_receta = c.receta_id
 WHERE r.estado = 'habilitado'
 GROUP BY r.id_receta
-HAVING total_calificaciones > 0
-ORDER BY promedio_calificacion DESC, total_calificaciones DESC
-LIMIT 6;;";
+HAVING total_calificaciones > 0 /* Excluye las recetas si votos */
+ORDER BY promedio_calificacion DESC, total_calificaciones DESC /* cantidad de votos para desempate */
+LIMIT 6;";
 $result_mejores_recetas_admin = $conexion->query($sql_mejores_recetas_admin);
 $mejores_recetas_admin = [];
 if ($result_mejores_recetas_admin->num_rows > 0) {
@@ -53,6 +58,15 @@ if ($result_mejores_recetas_admin->num_rows > 0) {
 
 
 //Sql para obtener las recetas mas guardadas
+/* 
+guardados.total_guardados - Cuántas veces se guardó como favorita
+
+calificaciones.promedio_calificacion - Puntuación promedio
+
+calificaciones.total_calificaciones - Total de votos
+
+condición de unión entre la tabla principal y la subconsulta
+*/
 $sql_mas_guardadas = "
     SELECT r.id_receta, r.titulo, guardados.total_guardados, calificaciones.promedio_calificacion, calificaciones.total_calificaciones
     FROM recetas r
@@ -113,7 +127,15 @@ $colores = [
 ];
 
 
+/* 
+Descubrir qué categorías son más populares
 
+Filtra categorías que si tienen calificaciones
+
+AVG(cal.calificacion) - Promedio de todas las calificaciones de esa categoría
+
+COUNT(cal.id_calificacion) - Total de votos en esa categoría
+*/
 $sql_popularidad = "
     SELECT 
         cat.nombre, 
@@ -257,7 +279,9 @@ if ($result_popularidad->num_rows > 0) {
           ];
 
           // Mostrar solo las secciones permitidas para el rol
+          //Para cada elemento del array $secciones_menu, toma la key y guárdala en $id, y toma el valor y guárdalo en $info
           foreach ($secciones_menu as $id => $info) {
+            /* ¿El ID de esta sección del menú está dentro del array de secciones permitidas para el usuario? */
             if (in_array($id, $secciones_permitidas)) {
           ?>
               <li class="menu-item">
@@ -362,7 +386,7 @@ if ($result_popularidad->num_rows > 0) {
           <!-- !AQUÍ COMIENZA EL CONTENIDO DEL MAIN====================================================================================== -->
           <!-- !AQUÍ COMIENZA EL CONTENIDO DEL MAIN====================================================================================== -->
           <!-- !AQUÍ COMIENZA EL CONTENIDO DEL MAIN====================================================================================== -->
-          <div class="container-xxl flex-grow-1 container-p-y">
+          <div class="container-xxl grow container-p-y">
             <div class="row">
 
               <div class="row">
@@ -421,7 +445,7 @@ if ($result_popularidad->num_rows > 0) {
                         $colores = ['bg-label-primary', 'bg-label-info', 'bg-label-success', 'bg-label-warning', 'bg-label-danger', 'bg-label-secondary'];
                         foreach ($categorias as $index => $categoria): ?>
                           <li class="d-flex mb-4 pb-1">
-                            <div class="avatar flex-shrink-0 me-3">
+                            <div class="avatar shrink-0 me-3">
                               <span class="avatar-initial rounded <?= $colores[$index % count($colores)] ?>"><i class='bx bx-category'></i></span>
                             </div>
                             <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
@@ -517,7 +541,7 @@ if ($result_popularidad->num_rows > 0) {
 
                         foreach ($usuarios_mas_recetas as $index => $usuario): ?>
                           <li class="d-flex mb-4 pb-1">
-                            <div class="avatar flex-shrink-0 me-3">
+                            <div class="avatar shrink-0 me-3">
                               <span class="avatar-initial rounded <?= $colores[$index % count($colores)] ?>"><i class='bx bx-user'></i></span>
                             </div>
                             <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">

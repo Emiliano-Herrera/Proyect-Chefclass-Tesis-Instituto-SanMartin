@@ -2,615 +2,381 @@
 session_start();
 include("conexion.php");
 
-// Mostrar errores de PHP
+// Configuración de errores
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Verificar si se ha enviado el formulario de inicio de sesión
+// =============================================================================
+// PROCESAMIENTO DEL FORMULARIO DE LOGIN
+// =============================================================================
 if (isset($_POST['enviar'])) {
-    // Verificar reCAPTCHA
-    $recaptcha_response = $_POST['g-recaptcha-response'];
-    $secret = '6LeVg9kqAAAAANzb63CBr3IuAXJNk4_90wo-LoRG';  //  clave secreta
+    // 1. VALIDACIÓN DE CAMPOS INDIVIDUALES
+    // -------------------------------------------------------------------------
+    $email = trim($_POST['email'] ?? '');
+    $password = trim($_POST['password'] ?? '');
+    $recaptcha_response = $_POST['g-recaptcha-response'] ?? '';
+
+    // Validar email vacío
+    if (empty($email)) {
+        $_SESSION['login_email_error'] = "El campo email es obligatorio";
+        $_SESSION['active_tab'] = 'login';
+        header("Location: Login.php");
+        exit();
+    }
+
+    // Validar contraseña vacía
+    if (empty($password)) {
+        $_SESSION['login_contrasena_error'] = "El campo contraseña es obligatorio";
+        $_SESSION['login_email'] = $email;
+        $_SESSION['active_tab'] = 'login';
+        header("Location: Login.php");
+        exit();
+    }
+
+    // 2. VALIDACIÓN DE reCAPTCHA (SIEMPRE REQUERIDO)
+    // -------------------------------------------------------------------------
+    if (empty($recaptcha_response)) {
+        $_SESSION['login_captcha_error'] = "Por favor, complete el reCAPTCHA";
+        $_SESSION['login_email'] = $email;
+        $_SESSION['active_tab'] = 'login';
+        header("Location: Login.php");
+        exit();
+    }
+
+    // Validar reCAPTCHA con Google
+    $secret = '6LeVg9kqAAAAANzb63CBr3IuAXJNk4_90wo-LoRG';
     $response = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret=$secret&response=$recaptcha_response");
     $response_keys = json_decode($response, true);
 
     if (intval($response_keys["success"]) !== 1) {
-        $_SESSION['login_captcha_error'] = 'Por favor, complete el CAPTCHA.';
+        $_SESSION['login_captcha_error'] = "Error en la verificación reCAPTCHA. Intente nuevamente.";
+        $_SESSION['login_email'] = $email;
         $_SESSION['active_tab'] = 'login';
-        header("Location: login.php");
+        header("Location: Login.php");
         exit();
-    } else {
+    }
 
-        if (empty($_POST['email'])) {
-            $_SESSION['login_email_error'] = 'El email es obligatorio';
-            $_SESSION['active_tab'] = 'login';
-            header("Location: login.php");
-        } else {
-            if (empty($_POST['contrasena'])) {
-                $_SESSION['login_contrasena_error'] = 'La contraseña es obligatoria';
-                $_SESION['active_tab'] = 'login;';
-                header('Location:login.php');
-            }
-        }
-
-
-        // Lógica de verificación del login
-        $email = $_POST['email'];
-        $contrasena = $_POST['contrasena'];
-
-        // Consulta preparada para verificar el inicio de sesión 
-        $stmt = $conexion->prepare("SELECT U.id_usuario, U.nombre, U.apellido, R.nombre_rol, R.id_rol 
+    // 3. VERIFICACIÓN EN BASE DE DATOS
+    // -------------------------------------------------------------------------
+    try {
+        // Consulta unificada que incluye el estado 'habilitado'
+        $stmt = $conexion->prepare("SELECT U.id_usuario, U.nombre, U.apellido, U.contrasena, 
+                                           U.estado, R.nombre_rol, EU.email
                                     FROM usuarios U 
                                     INNER JOIN emails_usuarios EU ON U.id_usuario = EU.id_usuario 
                                     INNER JOIN roles R ON U.rol = R.id_rol 
-                                    WHERE EU.email = ? AND U.contrasena = ? AND U.estado='habilitado'");
-        $stmt->bind_param("ss", $email, $contrasena);
+                                    WHERE EU.email = ? AND U.contrasena = ? AND U.estado = 'habilitado'");
+        $stmt->bind_param("ss", $email, $password);
         $stmt->execute();
         $resultado = $stmt->get_result();
 
-        if ($resultado->num_rows > 0) {
-            $reg = $resultado->fetch_assoc();
-            $_SESSION['id_usuario'] = $reg['id_usuario'];
-            $_SESSION['nombre'] = $reg['nombre'];
-            $_SESSION['apellido'] = $reg['apellido'];
+        // 3.1. USUARIO NO ENCONTRADO O CREDENCIALES INCORRECTAS (si NO se encontró ningún usuario)
+        if ($resultado->num_rows === 0) {
+            // Verificar si el email existe pero la contraseña es incorrecta
+            $stmt_email = $conexion->prepare("SELECT U.estado FROM usuarios U 
+                                            INNER JOIN emails_usuarios EU ON U.id_usuario = EU.id_usuario 
+                                            WHERE EU.email = ?");
+            $stmt_email->bind_param("s", $email);
+            $stmt_email->execute();
+            $resultado_email = $stmt_email->get_result();
 
-            if ($resultado->num_rows > 0) {
-                $_SESSION['login_error'] = "Usuario o contraseña incorrectos.";
-                header("Location: login.php");
+            if ($resultado_email->num_rows > 0) {
+                $usuario_estado = $resultado_email->fetch_assoc();
+
+                // Verificar estado de la cuenta
+                if ($usuario_estado['estado'] === 'pendiente') {
+                    $_SESSION['login_cuenta_pendiente'] = "Su cuenta está pendiente de aprobación. Contacte al administrador.";
+                } elseif ($usuario_estado['estado'] === 'deshabilitado') {
+                    $_SESSION['login_cuenta_deshabilitada'] = "Su cuenta está deshabilitada. Contacte al administrador.";
+                } else {
+                    $_SESSION['login_contrasena_incorrecta'] = "Contraseña incorrecta";
+                }
+            } else {
+                $_SESSION['login_email_incorrecto'] = "El email ingresado no está registrado";
             }
 
-            // Verificar si el usuario fue redirigido desde un intento de ver una receta
-            if (isset($_GET['redirect_to']) && !empty($_GET['redirect_to'])) {
-                $redirectTo = $_GET['redirect_to'];
-                $idReceta = $_GET['id'] ?? '';
-                header("Location: $redirectTo?id=$idReceta");
-                exit();
-            }
+            $_SESSION['login_email'] = $email;
+            $_SESSION['active_tab'] = 'login';
+            header("Location: Login.php");
+            exit();
+        }
 
+        $usuario = $resultado->fetch_assoc();
 
-            // Redirigir según el rol
-            if (
-                $reg['nombre_rol'] == 'Administrador' || // Administrador
-                $reg['nombre_rol'] == 'Supervisor De Cuentas' ||
-                $reg['nombre_rol'] == 'Supervisor De Recetas'
-            ) {
-                header("Location: perfil2.php");
-                exit();
-            }
+        // 4. LOGIN EXITOSO - CREAR SESIÓN
+        // ---------------------------------------------------------------------
+        $_SESSION['id_usuario'] = $usuario['id_usuario'];
+        $_SESSION['nombre'] = $usuario['nombre'];
+        $_SESSION['apellido'] = $usuario['apellido'];
+        $_SESSION['email'] = $usuario['email'];
+        $_SESSION['rol'] = $usuario['nombre_rol'];
 
-            // Redirigir al index si no hay redirección específica
+        // Verificar si el usuario fue redirigido desde un intento de ver una receta
+        if (isset($_GET['redirect_to']) && !empty($_GET['redirect_to'])) {
+            $redirectTo = $_GET['redirect_to'];
+            $idReceta = $_GET['id'] ?? '';
+            header("Location: $redirectTo?id=$idReceta");
+            exit();
+        }
+
+        // Redirección según el rol
+        if (in_array($usuario['nombre_rol'], ['Administrador', 'Supervisor De Cuentas', 'Supervisor De Recetas'])) {
+            header("Location: perfil2.php");
+        } else {
             header("Location: ../../VistaCliente/html/index.php");
-            exit();
-        } else {
-            // Manejar errores de inicio de sesión
-            $_SESSION['login_error'] = "Usuario o contraseña incorrectos.";
-            header("Location: login.php");
-            exit();
         }
-    }
-}
-
-// Verificar si el usuario está pendiente o deshabilitado
-if (isset($_POST['enviar'])) {
-    $stmt = $conexion->prepare("SELECT * FROM usuarios U 
-                                INNER JOIN emails_usuarios EU ON U.id_usuario = EU.id_usuario 
-                                WHERE EU.email = ? AND U.estado = 'pendiente'");
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $resultado_pendiente = $stmt->get_result();
-
-    if ($resultado_pendiente->num_rows > 0) {
-        $_SESSION['login_cuenta_pendiente'] = 'Tu cuenta aún no ha sido habilitada. Por favor, espera al correo de confirmación.';
-    } else {
-        $stmt = $conexion->prepare("SELECT * FROM usuarios U 
-                                    INNER JOIN emails_usuarios EU ON U.id_usuario = EU.id_usuario 
-                                    WHERE EU.email = ? AND U.estado != 'habilitado'");
-        $stmt->bind_param("s", $email);
-        $stmt->execute();
-        $resultado_estado = $stmt->get_result();
-
-        if ($resultado_estado->num_rows > 0) {
-            $_SESSION['login_cuenta_deshabilitada'] = 'Tu cuenta está deshabilitada. Prueba con otra.';
-        } else {
-            $stmt = $conexion->prepare("SELECT * FROM emails_usuarios WHERE email = ?");
-            $stmt->bind_param("s", $email);
-            $stmt->execute();
-            $resultado_email = $stmt->get_result();
-
-            if ($resultado_email->num_rows == 0) {
-                $_SESSION['login_email_incorrecto'] = 'El correo electrónico ingresado es incorrecto.';
-            }
-
-            $stmt = $conexion->prepare("SELECT * FROM usuarios WHERE contrasena = ?");
-            $stmt->bind_param("s", $contrasena);
-            $stmt->execute();
-            $resultado_contrasena = $stmt->get_result();
-
-            if ($resultado_contrasena->num_rows == 0) {
-                $_SESSION['login_contrasena_incorrecta'] = 'La contraseña ingresada es incorrecta.';
-            }
-        }
-    }
-
-    $_SESSION['active_tab'] = 'login';
-    header("Location: login.php");
-    exit();
-}
-
-// Lógica para el registro de usuario (modificada para redirigir to login_cargar_usuario.php)
-if (isset($_POST['action']) && $_POST['action'] == 'register') {
-    // Verificar reCAPTCHA
-    $recaptcha_response = $_POST['g-recaptcha-response'];
-    $secret = '6LeVg9kqAAAAANzb63CBr3IuAXJNk4_90wo-LoRG';  // Tu nueva clave secreta
-    $response = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret=$secret&response=$recaptcha_response");
-    $response_keys = json_decode($response, true);
-
-    if (intval($response_keys["success"]) !== 1) {
-        $_SESSION['registro_captcha_error'] = 'Por favor, complete el CAPTCHA.';
-        $_SESSION['active_tab'] = 'register';
-        header("Location: login.php");
         exit();
-    } else {
-        // Validar otros campos aquí
-        $nombre = $_POST['nombre'];
-        $apellido = $_POST['apellido'];
-        $genero = $_POST['genero'];
-
-        // Guardar los datos en la sesión para pasarlos a login_cargar_usuario.php
-        $_SESSION['registro_nombre'] = $nombre;
-        $_SESSION['registro_apellido'] = $apellido;
-        $_SESSION['registro_genero'] = $genero;
-
-        // Redirigir a login_cargar_usuario.php
-        header("Location: login_cargar_usuario.php");
+    } catch (Exception $e) {
+        // Error en la consulta
+        $_SESSION['login_error'] = "Error del sistema. Intente nuevamente más tarde.";
+        $_SESSION['login_email'] = $email;
+        $_SESSION['active_tab'] = 'login';
+        header("Location: Login.php");
         exit();
     }
 }
 ?>
 
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en" class="light-style layout-wide customizer-hide" dir="ltr" data-theme="theme-default" data-assets-path="../../assets/" data-template="vertical-menu-template">
 
 <head>
-    <link rel="stylesheet" href="../css/Login.css">
-    <title>Crear Cuenta</title>
-    <link rel="icon" href="../../VistaCliente/img/chefclassFinal.png">
+    <!-- reCAPTCHA -->
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    <title>Login - Chefclass</title>
+    <meta name="description" content="Sistema de autenticación" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="../assets/img/favicon/favicon.ico" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet" />
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="../assets/vendor/fonts/boxicons.css" />
+
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="../assets/vendor/css/core.css" class="template-customizer-core-css" />
+    <link rel="stylesheet" href="../assets/vendor/css/theme-default.css" class="template-customizer-theme-css" />
+    <link rel="stylesheet" href="../assets/css/demo.css" />
+
+    <!-- Vendors CSS -->
+    <link rel="stylesheet" href="../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
+
+    <!-- Page CSS -->
+    <link rel="stylesheet" href="../assets/vendor/css/pages/page-auth.css" />
+
+    <!-- Helpers -->
+    <script src="../assets/vendor/js/helpers.js"></script>
+
+    <!-- Config -->
+    <script src="../assets/js/config.js"></script>
 </head>
 
 <body>
-    <div class="container" id="container">
-        <div class="form-container sign-up <?php if (isset($_SESSION['active_tab']) && $_SESSION['active_tab'] == 'register') echo 'active'; ?>" id="sign-up-form">
-            <form id="registerForm" action="login.php" method="POST" onsubmit="return validarRegistro()">
-                <h2>Crear cuenta</h2>
-                <!-- Mensajes de registro -->
-                <?php if (isset($_SESSION['registro_error'])) { ?>
-                    <div class="alert alert-danger" role="alert">
-                        <?php echo $_SESSION['registro_error']; ?>
+    <div class="container-xxl">
+        <div class="authentication-wrapper authentication-basic container-p-y">
+            <div class="authentication-inner">
+
+                <div class="card">
+                    <div class="card-body">
+
+                        <div class="app-brand justify-content-center">
+                            <a href="#" class="app-brand-link gap-2">
+                                <span class="app-brand-text demo text-body fw-bold">Iniciar sesión</span>
+                            </a>
+                        </div>
+
+                        <!-- MENSAJES DE ERROR ESPECÍFICOS -->
+                        <?php if (isset($_SESSION['login_email_error'])): ?>
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <strong>Error:</strong> <?php echo $_SESSION['login_email_error']; ?>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            <?php unset($_SESSION['login_email_error']); ?>
+                        <?php endif; ?>
+
+                        <?php if (isset($_SESSION['login_contrasena_error'])): ?>
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <strong>Error:</strong> <?php echo $_SESSION['login_contrasena_error']; ?>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            <?php unset($_SESSION['login_contrasena_error']); ?>
+                        <?php endif; ?>
+
+                        <?php if (isset($_SESSION['login_captcha_error'])): ?>
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <strong>Error:</strong> <?php echo $_SESSION['login_captcha_error']; ?>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            <?php unset($_SESSION['login_captcha_error']); ?>
+                        <?php endif; ?>
+
+                        <?php if (isset($_SESSION['login_email_incorrecto'])): ?>
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <strong>Error:</strong> <?php echo $_SESSION['login_email_incorrecto']; ?>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            <?php unset($_SESSION['login_email_incorrecto']); ?>
+                        <?php endif; ?>
+
+                        <?php if (isset($_SESSION['login_contrasena_incorrecta'])): ?>
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <strong>Error:</strong> <?php echo $_SESSION['login_contrasena_incorrecta']; ?>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            <?php unset($_SESSION['login_contrasena_incorrecta']); ?>
+                        <?php endif; ?>
+
+                        <?php if (isset($_SESSION['login_cuenta_pendiente'])): ?>
+                            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                                <strong>Atención:</strong> <?php echo $_SESSION['login_cuenta_pendiente']; ?>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            <?php unset($_SESSION['login_cuenta_pendiente']); ?>
+                        <?php endif; ?>
+
+                        <?php if (isset($_SESSION['login_cuenta_deshabilitada'])): ?>
+                            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                                <strong>Atención:</strong> <?php echo $_SESSION['login_cuenta_deshabilitada']; ?>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            <?php unset($_SESSION['login_cuenta_deshabilitada']); ?>
+                        <?php endif; ?>
+
+                        <?php if (isset($_SESSION['login_error'])): ?>
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <strong>Error:</strong> <?php echo $_SESSION['login_error']; ?>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            <?php unset($_SESSION['login_error']); ?>
+                        <?php endif; ?>
+
+                        <!-- FORMULARIO DE LOGIN -->
+                        <form id="formAuthentication" class="mb-3" action="Login.php" method="POST">
+
+                            <!-- CAMPO EMAIL -->
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" name="email"
+                                    placeholder="Ingrese su Email" autofocus
+                                    value="<?php echo isset($_SESSION['login_email']) ? htmlspecialchars($_SESSION['login_email']) : ''; ?>">
+                                <?php unset($_SESSION['login_email']); ?>
+                            </div>
+
+                            <!-- CAMPO CONTRASEÑA -->
+                            <div class="mb-3 form-password-toggle">
+                                <div class="d-flex justify-content-between">
+                                    <label class="form-label" for="password">Contraseña</label>
+                                    <a href="recuperar_contrasena.php">
+                                        <small>¿Olvidó su contraseña?</small>
+                                    </a>
+                                </div>
+                                <div class="input-group input-group-merge">
+                                    <input type="password" id="password" class="form-control" name="password"
+                                        placeholder="Ingrese su contraseña" aria-describedby="password" />
+                                    <span class="input-group-text cursor-pointer" onclick="togglePasswordVisibility()">
+                                        <i class="bx bx-hide"></i>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- reCAPTCHA (SIEMPRE PRESENTE) -->
+                            <div class="mb-3">
+                                <div class="g-recaptcha" data-sitekey="6LeVg9kqAAAAAIMcjLWNuyRhU1tdZUO55BFcIN0W"></div>
+                            </div>
+
+                            <!-- BOTÓN DE ENVÍO -->
+                            <div class="mb-3">
+                                <button class="btn btn-primary d-grid w-100" type="submit" name="enviar">
+                                    Iniciar sesión
+                                </button>
+                            </div>
+
+                        </form>
+
+                        <p class="text-center">
+                            <span>¿Es nuevo en la plataforma?</span>
+                            <a href="./vista-crear-usuario.php">
+                                <span>Crear una cuenta</span>
+                            </a>
+                        </p>
+
                     </div>
-                <?php unset($_SESSION['registro_error']);
-                } ?>
-                <?php if (isset($_SESSION['email_duplicado'])) { ?>
-                    <div class="alert alert-danger" role="alert">
-                        <?php echo $_SESSION['email_duplicado']; ?>
-                    </div>
-                <?php unset($_SESSION['email_duplicado']);
-                } ?>
-                <?php if (isset($_SESSION['registro_captcha_error'])) { ?>
-                    <div class="alert alert-warning" role="alert">
-                        <?php echo $_SESSION['registro_captcha_error']; ?>
-                    </div>
-                <?php unset($_SESSION['registro_captcha_error']);
-                } ?>
-
-                <?php if (isset($_SESSION['registro_captcha_success'])) { ?>
-                    <div class="alert alert-success" role="alert">
-                        <?php echo $_SESSION['registro_captcha_success']; ?>
-                    </div>
-                <?php unset($_SESSION['registro_captcha_success']);
-                } ?>
-
-
-
-                <div id="alert-container"></div> <!-- Contenedor para las alertas -->
-
-                <input type="text" placeholder="Nombre" name="nombre" id="nombre" oninput="validarNombre(this)"
-                    value="<?php echo isset($_SESSION['registro_nombre']) ? htmlspecialchars($_SESSION['registro_nombre']) : ''; ?>">
-
-                <input type="text" placeholder="Apellido" name="apellido" id="apellido" oninput="validarApellido(this)"
-                    value="<?php echo isset($_SESSION['registro_apellido']) ? htmlspecialchars($_SESSION['registro_apellido']) : ''; ?>">
-
-                <select class="form-input" name="genero" id="genero" required>
-                    <option value="">Selecciona un género</option>
-                    <?php
-                    $g = mysqli_query($conexion, "SELECT * FROM generos");
-                    $genero_sesion = isset($_SESSION['registro_genero']) ? $_SESSION['registro_genero'] : '';
-                    while ($opciones = mysqli_fetch_row($g)) { ?>
-                        <option value="<?php echo $opciones[0] ?>" <?php if ($genero_sesion == $opciones[0]) echo 'selected'; ?>>
-                            <?php echo $opciones[1] ?>
-                        </option>
-                    <?php } ?>
-                </select>
-
-                <div class="g-recaptcha" data-sitekey="6LeVg9kqAAAAAIMcjLWNuyRhU1tdZUO55BFcIN0W"></div>
-                <button type="submit" name="action" value="register" id="registrar">Siguiente</button>
-
-                <button type="button" class="small-screen-sign-in" onclick="showSignInForm();">Iniciar sesión</button>
-            </form>
-        </div>
-        <script>
-            document.addEventListener("DOMContentLoaded", function() {
-                function toggleSignInButton() {
-                    let screenWidth = window.innerWidth;
-                    let signInButton = document.querySelector('.small-screen-sign-in');
-
-                    if (screenWidth < 768) {
-                        signInButton.style.display = "block";
-                    } else {
-                        signInButton.style.display = "none";
-                    }
-                }
-
-                // Ejecutar la función al cargar la página y al cambiar el tamaño de la ventana
-                toggleSignInButton();
-                window.addEventListener("resize", toggleSignInButton);
-            });
-        </script>
-
-        <!--Script para las contraseñas y cambiar de color en la pantalla para celular -->
-
-        <div class="form-container sign-in <?php if (isset($_SESSION['active_tab']) && $_SESSION['active_tab'] == 'login') echo 'active'; ?>" id="sign-in-form">
-            <form action="login.php" method="POST" id="loginForm">
-                <h1>Iniciar Sesión </h1>
-                <img src="../../VistaCliente/img/chefclassFinal.png" alt="Logo" style="width: 150px; height: auto;">
-                <?php if (isset($_GET['message'])) { ?>
-                    <div class="alert alert-primary" role="alert" id="alert-message">
-                        <?php
-                        switch ($_GET['message']) {
-                            case 'ok':
-                                echo 'Por favor revisa tu correo electronico';
-                                break;
-                            case 'success_password':
-                                echo 'Inicia sesión con tu nueva contraseña';
-                                break;
-                            default:
-                                echo 'Algo salió mal, intenta de nuevo';
-                                break;
-                        }
-                        ?>
-                    </div>
-                    <script>
-                        setTimeout(function() {
-                            var alertMessage = document.getElementById('alert-message');
-                            if (alertMessage) {
-                                alertMessage.style.display = 'none';
-                            }
-                        }, 8000);
-                    </script>
-                <?php } ?>
-
-                <!-- Mensajes de inicio de sesión -->
-                <?php if (isset($_SESSION['login_captcha_error'])) { ?>
-                    <div class="alert alert-warning" role="alert">
-                        <?php echo $_SESSION['login_captcha_error']; ?>
-                    </div>
-                <?php unset($_SESSION['login_captcha_error']);
-                } ?>
-                <?php if (isset($_SESSION['login_email_error'])) { ?>
-                    <div class="alert alert-danger" role="alert">
-                        <?php echo $_SESSION['login_email_error']; ?>
-                    </div>
-                <?php unset($_SESSION['login_email_error']);
-                } ?>
-                <?php if (isset($_SESSION['login_contrasena_error'])) { ?>
-                    <div class="alert alert-danger" role="alert">
-                        <?php echo $_SESSION['login_contrasena_error']; ?>
-                    </div>
-                <?php unset($_SESSION['login_contrasena_error']);
-                } ?>
-                <?php if (isset($_SESSION['login_email_incorrecto'])) { ?>
-                    <div class="alert alert-danger" role="alert">
-                        <?php echo $_SESSION['login_email_incorrecto']; ?>
-                    </div>
-                <?php unset($_SESSION['login_email_incorrecto']);
-                } ?>
-                <?php if (isset($_SESSION['login_contrasena_incorrecta'])) { ?>
-                    <div class="alert alert-danger" role="alert">
-                        <?php echo $_SESSION['login_contrasena_incorrecta']; ?>
-                    </div>
-                <?php unset($_SESSION['login_contrasena_incorrecta']);
-                } ?>
-                <?php if (isset($_SESSION['login_cuenta_pendiente'])) { ?>
-                    <div class="alert alert-warning" role="alert">
-                        <?php echo $_SESSION['login_cuenta_pendiente']; ?>
-                    </div>
-                <?php unset($_SESSION['login_cuenta_pendiente']);
-                } ?>
-                <?php if (isset($_SESSION['login_cuenta_deshabilitada'])) { ?>
-                    <div class="alert alert-danger" role="alert">
-                        <?php echo $_SESSION['login_cuenta_deshabilitada']; ?>
-                    </div>
-                <?php unset($_SESSION['login_cuenta_deshabilitada']);
-                } ?>
-                <?php if (isset($_SESSION['registro_exitoso'])) { ?>
-                    <div class="alert alert-success" role="alert">
-                        <?php echo $_SESSION['registro_exitoso']; ?>
-                    </div>
-                <?php unset($_SESSION['registro_exitoso']);
-                } ?>
-
-                <?php if (isset($_SESSION['login_error'])) { ?>
-                    <div class="alert alert-danger" role="alert">
-                        <?php echo $_SESSION['login_error']; ?>
-                    </div>
-                <?php unset($_SESSION['login_error']);
-                } ?>
-                <input type="text" placeholder="Email" name="email" id="email">
-                <div class="input-group">
-                    <input type="password" class="form-control" placeholder="Contraseña" name="contrasena" id="contrasena">
-                    <span class="input-group-append cursor-pointer" onclick="togglePassword('contrasena')">
-                        <i class="fa fa-eye-slash" id="togglePasswordIcon"></i>
-                    </span>
                 </div>
-                <div class="d-flex justify-content-between">
-                    <a href="recuperar_contrasena.php">
-                        <small>¿Has olvidado tu contraseña?</small>
-                    </a>
-                </div>
-                <div class="g-recaptcha" data-sitekey="6LeVg9kqAAAAAIMcjLWNuyRhU1tdZUO55BFcIN0W"></div>
-                <button type="submit" name="enviar" id="enviar">Iniciar sesión</button>
-                <!-- Botón para mostrar el formulario de registro en pantallas pequeñas -->
-                <button type="button" class="register-button" onclick="showSignUpForm();">Registrar</button>
-            </form>
-        </div>
 
-        <div class="toggle-container">
-            <div class="toggle">
-                <div class="toggle-panel toggle-left">
-                    <h1>Bienvenido!</h1>
-                    <p>Ingrese sus datos personales para utilizar todas las funciones del sitio</p>
-                    <button class="hidden" id="login">Iniciar sesión</button>
-                </div>
-                <div class="toggle-panel toggle-right">
-                    <h1>Hola!</h1>
-                    <p>Registra tus datos personales para utilizar todas las funciones del sitio</p>
-                    <button class="hidden" id="register">Registrar</button>
-                </div>
             </div>
         </div>
     </div>
 
+    <!-- SCRIPTS -->
+    <script src="../assets/vendor/libs/jquery/jquery.js"></script>
+    <script src="../assets/vendor/libs/popper/popper.js"></script>
+    <script src="../assets/vendor/js/bootstrap.js"></script>
+    <script src="../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+    <script src="../assets/vendor/js/menu.js"></script>
+    <script src="../assets/js/main.js"></script>
+
     <script>
-        // ===================================================================
-        // FUNCIONES PARA DETECTAR CÓDIGO PHP Y CONTENIDO MALICIOSO
-        // ===================================================================
-        
-        // Función para detectar código PHP o contenido malicioso
-        function contieneCodigoPHP(texto) {
-            if (!texto || texto.trim() === '') return false;
-            
-            // Patrones comunes de código PHP y scripts maliciosos
-            const patrones = [
-                /<\?php/i,        // Apertura de código PHP
-                /<\?=/i,          // Short open tags
-                /<\?/i,           // Otras formas de abrir PHP
-                /\?>/i,           // Cierre de código PHP
-                /echo\s/i,        // Comando echo
-                /print\s/i,       // Comando print
-                /die\(/i,         // Función die
-                /exit\(/i,        // Función exit
-                /system\(/i,      // Función system
-                /exec\(/i,        // Función exec
-                /shell_exec\(/i,  // Función shell_exec
-                /eval\(/i,        // Función eval
-                /base64_decode/i, // Decodificación base64
-                /script\s*>/i,    // Etiquetas de script
-                /onload\s*=/i,    // Eventos DOM
-                /onerror\s*=/i,
-                /onclick\s*=/i,
-                /javascript:/i,   // Protocolo javascript
-                /document\.cookie/i, // Acceso a cookies
-            ];
+        // Función para mostrar/ocultar contraseña
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('password');
+            const toggleIcon = document.querySelector('#password + .input-group-text i');
 
-            return patrones.some(patron => patron.test(texto));
-        }
-
-        // Validar formulario de login antes de enviar
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            const email = document.getElementById('email').value;
-            const contrasena = document.getElementById('contrasena').value;
-            
-            if (contieneCodigoPHP(email) || contieneCodigoPHP(contrasena)) {
-                e.preventDefault();
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Contenido no permitido',
-                    text: 'El texto ingresado contiene código o caracteres no permitidos.',
-                    confirmButtonText: 'Entendido'
-                });
-            }
-        });
-
-        // ===================================================================
-        // FUNCIONES EXISTENTES DEL FORMULARIO
-        // ===================================================================
-        
-        function showSignUpForm() {
-            document.getElementById('container').classList.add('active');
-        }
-
-        function showSignInForm() {
-            document.getElementById('container').classList.remove('active');
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            if ('<?php echo $_SESSION['active_tab'] ?? ''; ?>' === 'register') {
-                document.getElementById('container').classList.add('active');
-            } else {
-                document.getElementById('container').classList.remove('active');
-            }
-        });
-
-        const container = document.querySelector("#container");
-
-        const registerBtn = document.querySelector("#register");
-        const loginBtn = document.querySelector("#login");
-
-        registerBtn.addEventListener('click', () => {
-            container.classList.add("active");
-        });
-
-        loginBtn.addEventListener('click', () => {
-            container.classList.remove("active");
-        });
-
-        function validarNombre(input) {
-            // Elimina espacios al principio
-            input.value = input.value.replace(/^\s+/, '');
-            // Reemplaza múltiples espacios por uno solo
-            input.value = input.value.replace(/\s{2,}/g, ' ');
-            // Solo letras y espacios
-            input.value = input.value.replace(/[^A-Za-z\s]/g, '');
-        }
-
-        function validarApellido(input) {
-            // Elimina espacios al principio
-            input.value = input.value.replace(/^\s+/, '');
-            // Reemplaza múltiples espacios por uno solo
-            input.value = input.value.replace(/\s{2,}/g, ' ');
-            // Solo letras y espacios
-            input.value = input.value.replace(/[^A-Za-z\s]/g, '');
-        }
-
-        function validarSinEspacios(input) {
-            input.value = input.value.replace(/\s+/g, '');
-        }
-
-        function togglePassword(id) {
-            const passwordInput = document.getElementById(id);
-            const toggleIcon = passwordInput.nextElementSibling.querySelector('i');
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
-                toggleIcon.classList.remove('fa-eye-slash');
-                toggleIcon.classList.add('fa-eye');
+                toggleIcon.classList.remove('bx-hide');
+                toggleIcon.classList.add('bx-show');
             } else {
                 passwordInput.type = 'password';
-                toggleIcon.classList.remove('fa-eye');
-                toggleIcon.classList.add('fa-eye-slash');
+                toggleIcon.classList.remove('bx-show');
+                toggleIcon.classList.add('bx-hide');
             }
         }
 
-        // ===================================================================
-        // VALIDACIÓN DE REGISTRO (MODIFICADA PARA INCLUIR DETECCIÓN DE CÓDIGO PHP)
-        // ===================================================================
-        
-        function validarRegistro() {
-            const nombre = document.getElementById('nombre').value;
-            const apellido = document.getElementById('apellido').value;
-            const genero = document.getElementById('genero').value;
-            const recaptchaResponse = grecaptcha.getResponse();
-
-            // Validar contenido malicioso
-            if (contieneCodigoPHP(nombre) || contieneCodigoPHP(apellido)) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Contenido no permitido',
-                    text: 'El texto ingresado contiene código o caracteres no permitidos.',
-                    confirmButtonText: 'Entendido'
-                });
-                return false;
-            }
-
-            // Validaciones existentes
-            if (nombre.trim() === '') {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'El campo Nombre es obligatorio.',
-                    confirmButtonText: 'Aceptar'
-                });
-                return false;
-            }
-
-            if (apellido.trim() === '') {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'El campo Apellido es obligatorio.',
-                    confirmButtonText: 'Aceptar'
-                });
-                return false;
-            }
-
-            if (genero === '') {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Debe seleccionar un género.',
-                    confirmButtonText: 'Aceptar'
-                });
-                return false;
-            }
-
-            if (recaptchaResponse === '') {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Debe completar el reCAPTCHA.',
-                    confirmButtonText: 'Aceptar'
-                });
-                return false;
-            }
-
-            return true;
-        }
-
-        // Reiniciar el reCAPTCHA si la sesión indica que es necesario
-        window.onload = function() {
-            if (typeof grecaptcha !== 'undefined' && typeof grecaptcha.reset === 'function') {
-                <?php if (isset($_SESSION['reset_recaptcha']) && $_SESSION['reset_recaptcha'] === true) { ?>
-                    grecaptcha.reset();
-                    <?php unset($_SESSION['reset_recaptcha']); // Limpiar la variable de sesión 
-                    ?>
-                <?php } ?>
-            }
-        };
-
+        // Auto-cerrar alertas después de 5 segundos
         document.addEventListener('DOMContentLoaded', function() {
-            const activeTab = '<?php echo $_SESSION['active_tab'] ?? ''; ?>';
-            const container = document.getElementById('container');
+            setTimeout(function() {
+                const alerts = document.querySelectorAll('.alert');
+                alerts.forEach(alert => {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                });
+            }, 5000);
+        });
 
-            if (activeTab === 'register') {
-                container.classList.add('right-panel-active'); // Mover el toggle a "Crear cuenta"
-            } else {
-                container.classList.remove('right-panel-active'); // Mostrar "Iniciar sesión" por defecto
+        // Resetear reCAPTCHA cada vez que se carga la página
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof grecaptcha !== 'undefined') {
+                setTimeout(function() {
+                    grecaptcha.reset();
+                }, 100);
             }
         });
+
+        // Resetear reCAPTCHA cuando se muestra un error
+        <?php if (
+            isset($_SESSION['login_captcha_error']) ||
+            isset($_SESSION['login_email_error']) ||
+            isset($_SESSION['login_contrasena_error']) ||
+            isset($_SESSION['login_email_incorrecto']) ||
+            isset($_SESSION['login_contrasena_incorrecta'])
+        ): ?>
+            document.addEventListener('DOMContentLoaded', function() {
+                if (typeof grecaptcha !== 'undefined') {
+                    setTimeout(function() {
+                        grecaptcha.reset();
+                    }, 500);
+                }
+            });
+        <?php endif; ?>
     </script>
-
-    <script src="../js/login.js"></script>
-
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const params = new URLSearchParams(window.location.search);
-            if (params.get('from') === 'create_account') {
-                document.getElementById('container').classList.add('active');
-            }
-        });
-    </script>
-
-    <?php
-    // Limpiar la variable de sesión después de usarla
-    unset($_SESSION['active_tab']);
-    ?>
-
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </body>
 
 </html>

@@ -321,17 +321,19 @@ if ($result_recetas_pendientes->num_rows > 0) {
 
                             // Consulta para obtener recetas con filtros y paginación 
                             $sql = "SELECT r.titulo, u.nombre AS usuario, r.dificultad, r.fecha_creacion, r.id_receta,
-                            GROUP_CONCAT(c.nombre SEPARATOR ', ') AS categorias,
-                            u.img AS img_perfil,
-                            img.url_imagen AS receta_img
+                                    GROUP_CONCAT(DISTINCT c.nombre SEPARATOR ', ') AS categorias,
+                                    u.img AS img_perfil,
+                                    (SELECT img.url_imagen 
+                                    FROM imagenes_recetas ir 
+                                    JOIN img_recetas img ON ir.img_id = img.id_img 
+                                    WHERE ir.recetas_id = r.id_receta 
+                                    LIMIT 1) AS receta_img
                             FROM recetas r
                             JOIN usuarios u ON r.usuario_id = u.id_usuario
                             JOIN recetas_categorias rc ON r.id_receta = rc.receta_id
                             JOIN categoria c ON rc.categoria_id = c.id_categoria
-                            LEFT JOIN imagenes_recetas ir ON r.id_receta = ir.recetas_id
-                            LEFT JOIN img_recetas img ON ir.img_id = img.id_img
                             WHERE $where_conditions AND r.estado = 'habilitado'
-                            GROUP BY r.id_receta
+                            GROUP BY r.id_receta, r.titulo, u.nombre, r.dificultad, r.fecha_creacion, u.img
                             ORDER BY $order_by
                             LIMIT $limit OFFSET $offset";
                             $result = $conexion->query($sql);
@@ -345,11 +347,11 @@ if ($result_recetas_pendientes->num_rows > 0) {
 
                             // Contar total de recetas para la paginación 
                             $sql_total = "SELECT COUNT(DISTINCT r.id_receta) AS total
-                            FROM recetas r
-                            JOIN usuarios u ON r.usuario_id = u.id_usuario
-                            JOIN recetas_categorias rc ON r.id_receta = rc.receta_id
-                            JOIN categoria c ON rc.categoria_id = c.id_categoria
-                            WHERE $where_conditions AND r.estado = 'habilitado'";
+                                        FROM recetas r
+                                        JOIN usuarios u ON r.usuario_id = u.id_usuario
+                                        JOIN recetas_categorias rc ON r.id_receta = rc.receta_id
+                                        JOIN categoria c ON rc.categoria_id = c.id_categoria
+                                        WHERE $where_conditions AND r.estado = 'habilitado'";
 
                             $result_total = $conexion->query($sql_total);
                             $total = $result_total->fetch_assoc()['total'];
@@ -546,20 +548,22 @@ if ($result_recetas_pendientes->num_rows > 0) {
 
                             // Consulta para obtener recetas pendientes con filtros y paginación
                             $sql_pend = "SELECT r.titulo, u.nombre AS usuario, r.dificultad, r.fecha_creacion, r.id_receta,
-                            GROUP_CONCAT(c.nombre SEPARATOR ', ') AS categorias,
-                            u.img AS img_perfil,
-                            img.url_imagen AS receta_img
-                            FROM recetas r
-                            JOIN usuarios u ON r.usuario_id = u.id_usuario
-                            JOIN recetas_categorias rc ON r.id_receta = rc.receta_id
-                            JOIN categoria c ON rc.categoria_id = c.id_categoria
-                            LEFT JOIN imagenes_recetas ir ON r.id_receta = ir.recetas_id
-                            LEFT JOIN img_recetas img ON ir.img_id = img.id_img
-                            WHERE $pend_where AND r.estado = 'pendiente'
-                            GROUP BY r.id_receta
-                            ORDER BY $pend_order_by
-                            LIMIT $pend_limit OFFSET $pend_offset";
-                            $result_pend = $conexion->query($sql_pend);
+                                        GROUP_CONCAT(DISTINCT c.nombre SEPARATOR ', ') AS categorias,
+                                        u.img AS img_perfil,
+                                        (SELECT img.url_imagen 
+                                        FROM imagenes_recetas ir 
+                                        JOIN img_recetas img ON ir.img_id = img.id_img 
+                                        WHERE ir.recetas_id = r.id_receta 
+                                        LIMIT 1) AS receta_img
+                                        FROM recetas r
+                                        JOIN usuarios u ON r.usuario_id = u.id_usuario
+                                        JOIN recetas_categorias rc ON r.id_receta = rc.receta_id
+                                        JOIN categoria c ON rc.categoria_id = c.id_categoria
+                                        WHERE $pend_where AND r.estado = 'pendiente'
+                                        GROUP BY r.id_receta, r.titulo, u.nombre, r.dificultad, r.fecha_creacion, u.img
+                                        ORDER BY $pend_order_by
+                                        LIMIT $pend_limit OFFSET $pend_offset";
+                                        $result_pend = $conexion->query($sql_pend);
 
                             $recipes_pend = [];
                             if ($result_pend->num_rows > 0) {
@@ -570,11 +574,11 @@ if ($result_recetas_pendientes->num_rows > 0) {
 
                             // Contar total de recetas pendientes para la paginación
                             $sql_total_pend = "SELECT COUNT(DISTINCT r.id_receta) AS total
-                                FROM recetas r
-                                JOIN usuarios u ON r.usuario_id = u.id_usuario
-                                JOIN recetas_categorias rc ON r.id_receta = rc.receta_id
-                                JOIN categoria c ON rc.categoria_id = c.id_categoria
-                                WHERE $pend_where AND r.estado = 'pendiente'";
+                                                FROM recetas r
+                                                JOIN usuarios u ON r.usuario_id = u.id_usuario
+                                                JOIN recetas_categorias rc ON r.id_receta = rc.receta_id
+                                                JOIN categoria c ON rc.categoria_id = c.id_categoria
+                                                WHERE $pend_where AND r.estado = 'pendiente'";
                             $result_total_pend = $conexion->query($sql_total_pend);
                             $total_pend = $result_total_pend->fetch_assoc()['total'];
                             $total_pages_pend = ceil($total_pend / $pend_limit);
