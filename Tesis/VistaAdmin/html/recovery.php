@@ -42,7 +42,7 @@ if ($result->num_rows > 0) {
         // Contenido
         $mail->isHTML(true);
         $mail->Subject = 'Recuperar password';
-        $mail->Body = 'Hola, este es un correo generado para solicitar tu cambio de password, por favor, visita la pagina <a href="http://localhost/Tesis/VistaAdmin/html/cambiar_contrasena.php?id='.$row['id_usuario'].'">Cambiar password</a>';
+        $mail->Body = 'Hola, este es un correo generado para solicitar tu cambio de password, por favor, visita la pagina <a href="http://localhost/proyect-tesis/Proyect-Chefclass-Tesis-Instituto-SanMartin/Tesis/VistaAdmin/html/cambiar_contrasena.php?id='.$row['id_usuario'].'">Cambiar password</a>';
         $mail->AltBody = 'Este es el cuerpo en texto plano para clientes de correo que no admiten HTML.';
 
         $mail->send();

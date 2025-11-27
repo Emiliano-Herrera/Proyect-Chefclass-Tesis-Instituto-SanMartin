@@ -21,6 +21,10 @@ if ($result_categorias->num_rows > 0) {
 }
 
 // Obtener la categoría seleccionada
+/* 
+Lee el parámetro categoria de la URL (ej: vista-categoria.php?categoria=2)
+Si no existe, usa 0 (categoría "Todas")
+*/
 $categoria_filtro = isset($_GET['categoria']) ? (int)$_GET['categoria'] : 0;
 
 // Obtener recetas e imágenes para cada categoría
@@ -44,13 +48,18 @@ foreach ($categorias as $categoria) {
     $stmt->bind_param("i", $categoria_id);
     $stmt->execute();
     $result_recetas = $stmt->get_result();
-
+    // Verificamos si la consulta de recetas devolvió resultados (si hay recetas en esta categoría)
     if ($result_recetas->num_rows > 0) {
+        // recorremos cada fila de resultado
         while ($row = $result_recetas->fetch_assoc()) {
+            // verificamos si la receta fue procesada, evitamos duplicados
             if (!isset($recetas_por_categoria[$categoria_id][$row['id_receta']])) {
+                 // Si es una receta nueva, crear su entrada en el array organizado
                 $recetas_por_categoria[$categoria_id][$row['id_receta']] = $row;
+                // Crear un array vacío para almacenar todas las imágenes de esta receta
                 $recetas_por_categoria[$categoria_id][$row['id_receta']]['imagenes'] = [];
             }
+            // agregamos la imagen a la receta, le damos la url al array de imangenes relacionada con la misma receta
             $recetas_por_categoria[$categoria_id][$row['id_receta']]['imagenes'][] = $row['url_imagen'];
         }
     }
@@ -73,10 +82,10 @@ function formatear_fecha($fecha)
         12 => 'Dic'
     ];
 
-    $fecha_obj = new DateTime($fecha);
-    $dia = $fecha_obj->format('d');
-    $mes = $meses[(int)$fecha_obj->format('m')];
-    $anio = $fecha_obj->format('Y');
+    $fecha_obj = new DateTime($fecha); //Convierte el string $fecha en un objeto DateTime
+    $dia = $fecha_obj->format('d'); // extrae el dia
+    $mes = $meses[(int)$fecha_obj->format('m')]; // convierte el número en entero para poder traer el mes
+    $anio = $fecha_obj->format('Y'); // extrae el año
 
     return "$dia de $mes, $anio";
 }
@@ -119,8 +128,7 @@ function generar_estrellas($promedio)
 <html lang="en">
 
 
-<!-- Mirrored from technext.github.io/dingo/food_menu.html by HTTrack Website Copier/3.x [XR&CO'2014], Sat, 16 Nov 2024 18:26:36 GMT -->
-<!-- Added by HTTrack -->
+
 <meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
 
 <head>
@@ -365,7 +373,8 @@ function generar_estrellas($promedio)
                                 $recetas[$id_receta] = $receta; // Usar el id_receta como índice para evitar duplicados
                             }
                         }
-                    } else { // Recetas de una categoría específica
+                    } else { 
+                        // Filtra Recetas de una categoría específica
                         $recetas = isset($recetas_por_categoria[$categoria_filtro]) ? $recetas_por_categoria[$categoria_filtro] : [];
                     }
                     ?>
@@ -552,16 +561,17 @@ function generar_estrellas($promedio)
                 }
             }
 
+            // busqueda en tiempo real
             searchInput.addEventListener('input', function() {
-                const query = searchInput.value.toLowerCase();
-                const recetas = recetasContainer.querySelectorAll('.receta-item');
-
+                const query = searchInput.value.toLowerCase(); // convierte el caracter ingresado en minuscula
+                const recetas = recetasContainer.querySelectorAll('.receta-item'); // selecciona todo para poder filtrar
+                // filtramos las recetas por el titulo
                 recetas.forEach(function(receta) {
                     const title = receta.querySelector('.card-title').textContent.toLowerCase();
                     if (title.includes(query)) {
-                        receta.style.display = '';
+                        receta.style.display = ''; // mostramos si coincide
                     } else {
-                        receta.style.display = 'none';
+                        receta.style.display = 'none'; // ocultamos sino...
                     }
                 });
 

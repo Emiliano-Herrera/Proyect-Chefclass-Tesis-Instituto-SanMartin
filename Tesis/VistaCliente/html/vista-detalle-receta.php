@@ -24,6 +24,10 @@ $total_likes = $result_count_likes->fetch_assoc()['total_likes'];
 
 /* //*============================================================================================================= */
 // Consulta para obtener información de la receta
+/* 
+GROUP_CONCAT() es como un "recolector de URLs" que junta todas las imágenes de la receta en un solo texto separado por comas
+1. CONSULTA PRINCIPAL DE LA RECETA
+*/
 $sql_receta = "SELECT r.titulo, r.descripcion, r.dificultad,
     (SELECT GROUP_CONCAT(i.url_imagen SEPARATOR ',') FROM img_recetas i JOIN imagenes_recetas ir ON i.id_img = ir.img_id WHERE ir.recetas_id = r.id_receta) AS imagenes 
     FROM recetas r 
@@ -34,7 +38,8 @@ $stmt_receta->execute();
 $result_receta = $stmt_receta->get_result();
 $receta = $result_receta->fetch_assoc();
 
-// Consulta para obtener las imágenes y videos de la receta 
+// Consulta para obtener las imágenes y videos de la receta "FORMATO"
+// 2. CONSULTA DE MEDIAS (Imágenes y Videos) $imagenes[] y $videos[] para mostrarlos diferente
 $sql_medias = "
     SELECT i.url_imagen AS url, CASE 
         WHEN i.url_imagen LIKE '%.jpg' OR i.url_imagen LIKE '%.jpeg' OR i.url_imagen LIKE '%.png' OR i.url_imagen LIKE '%.gif' THEN 'imagen'
@@ -65,7 +70,8 @@ while ($media = $result_medias->fetch_assoc()) {
 
 $stmt_medias->close();
 
-// Nueva consulta para obtener información del usuario
+// Nueva consulta para obtener información del usuario 
+// 3. CONSULTA DEL USUARIO CREADOR
 $sql_usuario = "SELECT u.nombre, u.apellido, u.nombre_usuario ,u.img, u.id_usuario FROM usuarios u
     JOIN recetas r ON u.id_usuario = r.usuario_id
     WHERE r.id_receta = ?";
@@ -76,6 +82,7 @@ $result_usuario = $stmt_usuario->get_result();
 $usuario = $result_usuario->fetch_assoc();
 
 // Otras consultas relacionadas
+// 4. CONSULTA DE INGREDIENTES
 $sql_ingredientes = "SELECT i.nombre, ri.cantidad, ri.unidad 
     FROM ingredientes i 
     JOIN recetas_ingredientes ri ON i.id_ingrediente = ri.ingrediente_id 
@@ -85,6 +92,7 @@ $stmt_ingredientes->bind_param("i", $receta_id);
 $stmt_ingredientes->execute();
 $result_ingredientes = $stmt_ingredientes->get_result();
 
+// 5. CONSULTA DE INSTRUCCIONES
 $sql_instrucciones = "SELECT paso, descripcion 
     FROM instrucciones 
     WHERE receta_id = ? 
@@ -94,6 +102,7 @@ $stmt_instrucciones->bind_param("i", $receta_id);
 $stmt_instrucciones->execute();
 $result_instrucciones = $stmt_instrucciones->get_result();
 
+// 6. CONSULTA DE COMENTARIOS
 $sql_comentarios = "SELECT c.comentario, u.nombre, u.apellido, c.fecha_comentario
     FROM comentarios c 
     JOIN usuarios u ON c.usuario_id = u.id_usuario 
@@ -104,7 +113,7 @@ $stmt_comentarios->bind_param("i", $receta_id);
 $stmt_comentarios->execute();
 $result_comentarios = $stmt_comentarios->get_result();
 
-
+//7. CONSULTA DE CALIFICACIÓN DEL USUARIO ACTUAL
 // Obtener la calificación del usuario actual para esta receta
 $sql_calificacion_usuario = "SELECT calificacion FROM calificaciones WHERE receta_id = ? AND usuario_id = ?";
 $stmt_calificacion_usuario = $conexion->prepare($sql_calificacion_usuario);
@@ -115,7 +124,7 @@ $calificacion_usuario = $result_calificacion_usuario->fetch_assoc();
 $calificacion_actual = $calificacion_usuario ? $calificacion_usuario['calificacion'] : 0;
 $stmt_calificacion_usuario->close();
 
-
+// 8. CONSULTA DE SEGUIMIENTO
 // ...después de obtener $usuario y antes del formulario...
 $ya_sigue = false;
 if ($usuario['id_usuario'] != $ID_Usuario) {
@@ -469,14 +478,17 @@ $conexion->close();
 
                 <div class="post-actions d-flex justify-content-between align-items-center mt-3">
                     <div class="left-actions d-flex">
+                        <!-- Boton para dar me gusta -->
                         <button type="button" class="action-btn btn p-0 me-2" id="like-button">
                             <i class="bi bi-heart" style="font-size: 1.5rem;"></i>
                         </button>
                     </div>
                     <div class="right-actions">
+                        <!-- Boton para guardar receta -->
                         <button type="button" class="action-btn btn p-0" id="guardar-button">
                             <i class="bi bi-bookmark" style="font-size: 1.5rem;"></i>
                         </button>
+                        <!-- Boton para descargar el pdf de la receta -->
                         <button type="button" class="action-btn btn p-0 ms-2" id="descargar-pdf-button" title="Descargar receta en PDF">
                             <i class="bi bi-download" style="font-size: 1.5rem; color: #d32f2f;"></i>
                         </button>
@@ -692,32 +704,6 @@ $conexion->close();
 
         </div>
 
-
-
-
-        <!-- Nueva Sección: Datos del Usuario -->
-        <!-- <div class="usuario-container mt-5">
-            <div class="recipe-header">
-                <h2>Datos del Usuario</h2>
-                <div class="usuario-info">
-                    
-                    <div class="usuario-img-container">
-                        <?php $userImage = !empty($usuario['img']) ? "../../VistaAdmin/html/{$usuario['img']}" : "../img/login-persona.png"; ?>
-                        <img src="<?php echo $userImage; ?>" alt="Foto del usuario" class="usuario-img">
-                    </div>
-                    <div class="usuario-detalles">
-                        <p><strong>Nombre de Usuario:</strong> <?php echo $usuario['nombre_usuario']; ?></p>
-                        <p><strong>Nombre:</strong> <?php echo $usuario['nombre']; ?></p>
-                        <p><strong>Apellido:</strong> <?php echo $usuario['apellido']; ?></p>
-                        
-                        <form id="seguir-form" action="seguir-usuario.php" method="post">
-                            <input type="hidden" name="usuario_id" value="<?php echo $usuario['id_usuario']; ?>">
-                            <button type="submit" class="btn btn-primary">Seguir</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div> -->
 
     </div> <!-- Cierre del container principal -->
     <!-- footer part start-->

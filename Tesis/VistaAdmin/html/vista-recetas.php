@@ -372,6 +372,34 @@ if ($result_recetas_pendientes->num_rows > 0) {
                                 $selected = $filter_category == $row_categorias['nombre'] ? 'selected' : '';
                                 $categorias_options .= "<option value='{$row_categorias['nombre']}' $selected>{$row_categorias['nombre']}</option>";
                             }
+
+                            // funciones.php
+                            function formatearFechaEspanol($fechaBD)
+                            {
+                                $fecha = new DateTime($fechaBD);
+
+                                $meses = [
+                                    'January' => 'Ene',
+                                    'February' => 'Feb',
+                                    'March' => 'Mar',
+                                    'April' => 'Abr',
+                                    'May' => 'May',
+                                    'June' => 'Jun',
+                                    'July' => 'Jul',
+                                    'August' => 'Ago',
+                                    'September' => 'Sep',
+                                    'October' => 'Oct',
+                                    'November' => 'Nov',
+                                    'December' => 'Dic'
+                                ];
+
+                                $dia = $fecha->format('d');
+                                $mes = $meses[$fecha->format('F')];
+                                $anio = $fecha->format('Y');
+
+                                return "$dia de $mes del $anio";
+                            }
+
                             ?>
 
                             <div class="col-12 order-5">
@@ -433,7 +461,11 @@ if ($result_recetas_pendientes->num_rows > 0) {
                                                         </td>
                                                         <td class="text-center"><?php echo htmlspecialchars($row['categorias'] ?? ''); ?></td>
                                                         <td class="text-center"><?php echo htmlspecialchars($row['dificultad']); ?></td>
-                                                        <td class="text-center"><?php echo date('d/m/Y H:i', strtotime($row['fecha_creacion'])); ?></td>
+                                                        <!-- <td class="text-center"><?php echo date('d/m/Y H:i', strtotime($row['fecha_creacion'])); ?></td> -->
+                                                        <td class="text-center"><?php
+                                                                                // Si ya tienes el código detallado, puedes mantenerlo o cambiar a:
+                                                                                echo formatearFechaEspanol($row['fecha_creacion']);
+                                                                                ?></td>
                                                         <td class="text-center">
                                                             <div class="dropdown">
                                                                 <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
@@ -563,7 +595,7 @@ if ($result_recetas_pendientes->num_rows > 0) {
                                         GROUP BY r.id_receta, r.titulo, u.nombre, r.dificultad, r.fecha_creacion, u.img
                                         ORDER BY $pend_order_by
                                         LIMIT $pend_limit OFFSET $pend_offset";
-                                        $result_pend = $conexion->query($sql_pend);
+                            $result_pend = $conexion->query($sql_pend);
 
                             $recipes_pend = [];
                             if ($result_pend->num_rows > 0) {

@@ -73,7 +73,7 @@ try {
     $statement->bind_param("ssssi", $titulo, $tiempo_preparacion, $descripcion, $dificultad, $receta_id);
     $statement->execute();
 
-
+    // SI existe la variable $categorias_eliminar Y tiene al menos un elemento, entonces haz algo
     if (isset($categorias_eliminar) && count($categorias_eliminar) > 0) {
         foreach ($categorias_eliminar as $index => $valor) {
             if ($valor === 'true') {
@@ -104,7 +104,7 @@ try {
 
     //TODO instrucciones ======================================================================================================================================
 
-
+    // Eliminamos instrucciones en caso de que se haya eliminado una
     if (isset($instrucciones_eliminar) && count($instrucciones_eliminar) > 0) {
         foreach ($instrucciones_eliminar as $index => $valor) {
             if ($valor === 'true') {
@@ -149,6 +149,7 @@ try {
 
 
     //?INGREDIENTES==========================================================================================================================================================
+    // Si se elimino un ingrediente entonces lo eliminamos
     if (isset($ingredientes_eliminar) && count($ingredientes_eliminar) > 0) {
         foreach ($ingredientes_eliminar as $index => $valor) {
             if ($valor === 'true') {
@@ -298,7 +299,7 @@ try {
     $accion = "Modificación de receta";
     $fecha = date('Y-m-d H:i:s'); // Formato para la base de datos
     $detalle = htmlentities("La receta $titulo ha sido modificada por $Nombre $Apellido en la fecha " . date('d-m-Y H:i:s') . "'.");
-
+    // insertar para auditoria
     $sqlHistorial = "INSERT INTO historial_usuarios (id_usuario, Accion, Detalles, Fecha) VALUES (?, ?, ?, ?)";
     $stmtHistorial = $conexion->prepare($sqlHistorial);
     $stmtHistorial->bind_param("isss", $ID_Usuario, $accion, $detalle, $fecha);

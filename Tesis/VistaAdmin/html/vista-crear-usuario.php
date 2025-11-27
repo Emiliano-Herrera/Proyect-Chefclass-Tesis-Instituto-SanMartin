@@ -329,18 +329,18 @@
         // Valida que se haya seleccionado un género
         function validateGenero() {
             const generoSelect = document.getElementById('genero');
-            const isValid = generoSelect.value !== '';
+            const isValid = generoSelect.value !== ''; // Verifica que se haya seleccionado un género
 
             if (isValid) {
-                generoSelect.classList.remove('is-invalid');
-                generoSelect.classList.add('is-valid');
+                generoSelect.classList.remove('is-invalid'); // Muestra borde verde
+                generoSelect.classList.add('is-valid'); // Guarda en objeto global
                 formData['genero'] = generoSelect.value;
             } else {
                 generoSelect.classList.remove('is-valid');
-                generoSelect.classList.add('is-invalid');
+                generoSelect.classList.add('is-invalid'); // Muestra borde rojo
             }
 
-            return isValid;
+            return isValid; // Retorna si es válido o no
         }
 
         // Valida que el reCAPTCHA esté completado
@@ -356,10 +356,10 @@
             const recaptchaError = document.querySelector('.recaptcha-error');
 
             if (isValid) {
-                recaptchaError.classList.remove('d-block');
-                formData['g-recaptcha-response'] = recaptchaResponse;
+                recaptchaError.classList.remove('d-block'); // Oculta mensaje de error
+                formData['g-recaptcha-response'] = recaptchaResponse; // Guarda respuesta
             } else {
-                recaptchaError.classList.add('d-block');
+                recaptchaError.classList.add('d-block'); // Muestra mensaje de error
             }
 
             return isValid;
@@ -368,7 +368,7 @@
         // Resetea el reCAPTCHA cuando se vuelve al paso 1
         function resetRecaptcha() {
             if (typeof grecaptcha !== 'undefined' && grecaptcha.reset) {
-                grecaptcha.reset();
+                grecaptcha.reset(); // Reinicia el widget de reCAPTCHA
             }
             const recaptchaError = document.querySelector('.recaptcha-error');
             recaptchaError.classList.remove('d-block');
@@ -379,7 +379,7 @@
         // Navega entre los pasos del formulario
         function showStep(stepNumber) {
             // Guardar datos del paso actual antes de cambiar
-            saveCurrentStepData();
+            saveCurrentStepData(); // Guarda datos del paso actual
 
             // Ocultar todos los pasos
             document.querySelectorAll('.step-content').forEach(content => {
@@ -409,10 +409,14 @@
         }
 
         // Actualiza la barra de progreso visual (pasos completados/activos)
+        // Muestra visualmente en qué paso está el usuario
         function updateStepIndicator(stepNumber) {
             document.querySelectorAll('.step').forEach(step => {
                 step.classList.remove('active', 'completed');
             });
+            // Paso 1: [ACTIVE] [ ] [ ]
+            // Paso 2: [COMPLETED] [ACTIVE] [ ]
+            // Paso 3: [COMPLETED] [COMPLETED] [ACTIVE]
 
             // Marcar pasos anteriores como completados y el actual como activo
             for (let i = 1; i <= 3; i++) {
@@ -426,18 +430,20 @@
         }
 
         // Guarda los datos del paso actual en formData
+        // Guarda temporalmente los datos mientras el usuario navega entre pasos
         function saveCurrentStepData() {
             const currentStep = document.querySelector('.step-content:not(.d-none)');
             const inputs = currentStep.querySelectorAll('input, select');
 
             inputs.forEach(input => {
                 if (input.type !== 'submit' && input.type !== 'button') {
-                    formData[input.name] = input.value;
+                    formData[input.name] = input.value; // Guarda cada campo en objeto global
                 }
             });
         }
 
         // Carga los datos guardados en el paso actual
+        // Recupera los datos guardados cuando el usuario vuelve a un paso.
         function loadStepData(stepNumber) {
             const stepContent = document.getElementById(`step${stepNumber}-content`);
             const inputs = stepContent.querySelectorAll('input, select');
@@ -463,7 +469,7 @@
 
         // Valida que el teléfono tenga al menos 10 dígitos
         function validarTelefono(input) {
-            input.value = input.value.replace(/[^0-9]/g, '');
+            input.value = input.value.replace(/[^0-9]/g, ''); // solo números
             const isValid = input.value.length >= 10;
 
             if (isValid && input.value.length > 0) {
@@ -615,7 +621,7 @@
                 document.getElementById('req-lowercase').className = 'text-muted';
             }
 
-            // Validar números
+            // Validar números permitidos
             if (/[0-9]/.test(password)) {
                 strength += 20;
                 requirements.number = true;
@@ -624,7 +630,7 @@
                 document.getElementById('req-number').className = 'text-muted';
             }
 
-            // Validar caracteres especiales
+            // Validar caracteres especiales permitidos
             if (/[!@#$%^&*(),.":{}\-|]/.test(password)) {
                 strength += 20;
                 requirements.special = true;
@@ -637,7 +643,8 @@
             if (/\s/.test(password)) {
                 requirements.noSpaces = false;
             }
-
+            
+            // evitamos inyeccion sql cno este array
             const sqlKeywords = ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'DROP', 'UNION', 'FROM', 'WHERE', 'OR', 'AND'];
             const upperPassword = password.toUpperCase();
             sqlKeywords.forEach(keyword => {
@@ -831,14 +838,14 @@
                 return;
             }
 
-            // Usar la misma configuración del script que me pasaste
+            
             map = L.map('map').setView([-34.603722, -58.381592], 13);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             }).addTo(map);
 
-            // Configurar evento de clic en el mapa (igual que en tu script)
+            // Configurar evento de clic en el mapa
             map.on('click', function(e) {
                 if (marker) {
                     marker.setLatLng(e.latlng);
@@ -848,7 +855,7 @@
                 document.getElementById('latitude').value = e.latlng.lat;
                 document.getElementById('longitude').value = e.latlng.lng;
 
-                // Obtener detalles de la ubicación usando Nominatim (igual que en tu script)
+                // Obtener detalles de la ubicación usando Nominatim 
                 if (!isFetching) {
                     isFetching = true;
                     Swal.fire({
@@ -865,14 +872,14 @@
                         .then(data => {
                             console.log('Datos completos de ubicación:', data); // Para debug
 
-                            // MEJORADO: Capturar mejor el departamento con múltiples opciones
+                            
                             const departamento = data.address.county ||
                                 data.address.municipality ||
                                 data.address.district ||
                                 data.address.state_district ||
                                 '';
 
-                            // Asignar valores a los campos específicos de tu HTML
+                            // Asignar valores a los campos específicos del HTML
                             document.getElementById('provincia').value = data.address.state || data.address.region || '';
                             document.getElementById('departamento').value = departamento;
                             document.getElementById('localidad').value = data.address.city || data.address.town || data.address.village || data.address.hamlet || '';
@@ -908,7 +915,7 @@
                 }
             });
 
-            // Llamar a la función para obtener la ubicación actual del usuario después de 2 segundos (igual que en tu script)
+            // Llamar a la función para obtener la ubicación actual del usuario después de 2 segundos 
             setTimeout(() => {
                 Swal.fire({
                     title: 'Usar ubicación',
@@ -928,7 +935,7 @@
             });
         }
 
-        // Función para obtener ubicación (igual que en tu script)
+        // Función para obtener ubicación
         function obtenerUbicacion() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
@@ -944,7 +951,7 @@
             }
         }
 
-        // Función para mostrar posición (MEJORADA para capturar mejor departamento)
+        // Función para mostrar posición
         function mostrarPosicion(position) {
             var lat = position.coords.latitude;
             var lon = position.coords.longitude;
@@ -978,7 +985,7 @@
                     .then(data => {
                         console.log('Datos completos de ubicación:', data); // Para debug
 
-                        // MEJORADO: Capturar mejor el departamento con múltiples opciones
+                        
                         const departamento = data.address.county ||
                             data.address.municipality ||
                             data.address.district ||
@@ -1017,7 +1024,7 @@
             }
         }
 
-        // Función para mostrar errores (igual que en tu script)
+        // Función para mostrar errores
         function mostrarError(error) {
             switch (error.code) {
                 case error.PERMISSION_DENIED:

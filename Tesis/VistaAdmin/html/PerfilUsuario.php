@@ -19,26 +19,55 @@ $id_usuario = $_GET['id_usuario'];
 $conexion->query("SET lc_time_names = 'es_ES'");
 
 $sql = "SELECT U.*, G.*, R.*, T.telefono AS user_telefono, E.email AS user_email, 
-    DATE_FORMAT(U.fecha_creacion, '%d de %M del %Y') AS fecha_creacion_formateada, U.estado 
+    DATE_FORMAT(U.fecha_creacion, '%d de %M del %Y') AS fecha_creacion_formateada, U.estado,
+    S.id_seccion, S.nombre_seccion, RPS.permisos
     FROM usuarios U 
     LEFT JOIN generos G ON U.genero = G.id_genero 
     LEFT JOIN roles R ON U.rol = R.id_rol 
     LEFT JOIN telefonos_usuarios T ON U.id_usuario = T.id_usuario 
     LEFT JOIN emails_usuarios E ON U.id_usuario = E.id_usuario 
-    WHERE U.id_usuario = ? ORDER BY U.id_usuario ASC";
+    LEFT JOIN roles_permisos_secciones RPS ON R.id_rol = RPS.id_rol
+    LEFT JOIN secciones S ON RPS.id_seccion = S.id_seccion
+    WHERE U.id_usuario = ? 
+    ORDER BY U.id_usuario ASC, S.id_seccion ASC";
 
 $statement = $conexion->prepare($sql);
 $statement->bind_param("i", $id_usuario);
 $statement->execute();
 $resultado = $statement->get_result();
 $filas = [];
+$secciones_permisos = [];
+
 while ($fila = $resultado->fetch_assoc()) {
     $filas[] = $fila;
+    
+    // Agrupar secciones y permisos (evitando duplicados)
+    if ($fila['id_seccion'] && $fila['nombre_seccion']) {
+        $seccion_existente = false;
+        
+        // Verificar si la sección ya fue agregada
+        foreach ($secciones_permisos as $key => $seccion_exist) {
+            if ($seccion_exist['id_seccion'] == $fila['id_seccion']) {
+                $seccion_existente = true;
+                break;
+            }
+        }
+        
+        // Si no existe, agregarla
+        if (!$seccion_existente) {
+            $secciones_permisos[] = [
+                'id_seccion' => $fila['id_seccion'],
+                'nombre_seccion' => $fila['nombre_seccion'],
+                'permisos' => $fila['permisos'] ? explode(',', $fila['permisos']) : []
+            ];
+        }
+    }
 }
+
 // Obtener emails y teléfonos únicos
 $emails = array_unique(array_column($filas, 'user_email'));
-$telefonos = array_unique(array_column($filas, 'user_telefono')); ?>
-
+$telefonos = array_unique(array_column($filas, 'user_telefono'));
+?>
 
 <!DOCTYPE html>
 
@@ -305,17 +334,7 @@ $telefonos = array_unique(array_column($filas, 'user_telefono')); ?>
                                             <div class="d-flex align-items-md-end align-items-sm-start align-items-center justify-content-md-between justify-content-start mx-4 flex-md-row flex-column gap-4">
                                                 <div class="user-profile-info">
                                                     <h4><?php echo $filas[0]['nombre'], ' ', $filas[0]['apellido'] ?></h4>
-                                                    <!-- <ul class="list-inline mb-0 d-flex align-items-center flex-wrap justify-content-sm-start justify-content-center gap-2">
-                                                        <li class="list-inline-item fw-medium">
-                                                            <i class='bx bx-pen'></i> UX Designer
-                                                        </li>
-                                                        <li class="list-inline-item fw-medium">
-                                                            <i class='bx bx-map'></i> Vatican City
-                                                        </li>
-                                                        <li class="list-inline-item fw-medium">
-                                                            <i class='bx bx-calendar-alt'></i> Joined April 2021
-                                                        </li>
-                                                    </ul> -->
+
                                                 </div>
                                                 <a href="usuarios.php" class="btn btn-outline-secondary text-nowrap shadow-sm">
                                                     <i class='bx bx-arrow-back me-1'></i>Volver atrás
@@ -401,6 +420,45 @@ $telefonos = array_unique(array_column($filas, 'user_telefono')); ?>
                                             </li>
                                             <li class="d-flex align-items-center"><i class="bx bx-user-check me-2"></i>
                                                 <div class="d-flex flex-wrap"><span class="fw-medium me-2">Estado</span><span><?php echo $filas[0]['estado'] ?></span></div>
+                                            </li>
+                                            <li class="d-flex align-items-center mt-3"><i class="bx bx-user-check me-2"></i>
+                                                <div class="d-flex flex-wrap"><span class="fw-medium me-2">Rol</span><span><?php echo $filas[0]['nombre_rol'] ?></span></div>
+                                            </li>
+                                            <li class="d-flex align-items-start mt-3">
+                                                <i class="bx bx-user-check me-2 mt-1"></i>
+                                                <div class="d-flex flex-column w-100">
+                                                    <div class="d-flex flex-wrap align-items-center mb-2">
+                                                        <span class="fw-medium me-2">Secciones con acceso:</span>
+                                                        <span class="badge bg-primary me-1">
+                                                            <?php echo count($secciones_permisos); ?> secciones
+                                                        </span>
+                                                    </div>
+
+                                                    <div class="accordion" id="accordionPermisos">
+                                                        <?php foreach ($secciones_permisos as $index => $seccion): ?>
+                                                            <div class="accordion-item border-0">
+                                                                <h3 class="accordion-header">
+                                                                    <button class="accordion-button collapsed py-2" type="button" data-bs-toggle="collapse"
+                                                                        data-bs-target="#collapse<?php echo $index; ?>" aria-expanded="false">
+                                                                        <i class="bx bx-folder me-2"></i>
+                                                                        <?php echo htmlspecialchars($seccion['nombre_seccion']); ?>
+                                                                        <span class="badge bg-success ms-2"><?php echo count($seccion['permisos']); ?> permisos</span>
+                                                                    </button>
+                                                                </h3>
+                                                                <div id="collapse<?php echo $index; ?>" class="accordion-collapse collapse"
+                                                                    data-bs-parent="#accordionPermisos">
+                                                                    <div class="accordion-body pt-2">
+                                                                        <div class="d-flex flex-wrap gap-1">
+                                                                            <?php foreach ($seccion['permisos'] as $permiso): ?>
+                                                                                <span class="badge bg-info text-dark"><?php echo ucfirst($permiso); ?></span>
+                                                                            <?php endforeach; ?>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        <?php endforeach; ?>
+                                                    </div>
+                                                </div>
                                             </li>
                                         </ul>
                                     </div>

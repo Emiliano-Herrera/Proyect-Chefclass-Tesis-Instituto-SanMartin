@@ -284,18 +284,10 @@ $nombre_usuario = $_SESSION['nombre'];
                 " . (!empty($term) ? "AND nombre_rol LIKE '%$term%' " : '') . "
                 LIMIT $inicio, $resultadosPorPagina";
 
-
-
-
                 $result = $conexion->query($sql);
 
                 // Consulta para contar el total de roles 
                 $totalRoles = $conexion->query("SELECT COUNT(*) as total FROM roles WHERE estado = 'habilitado' ")->fetch_assoc()['total'];
-
-
-
-
-
 
                 if (!$result) {
                     die("Error en la consulta: " . $conexion->error);
@@ -702,7 +694,6 @@ $nombre_usuario = $_SESSION['nombre'];
                                 <form action="" method="GET" class="row g-3">
                                     <div class="col-auto">
                                         <input type="text" name="search" id="search" class="form-control mx-2" placeholder="Nombre del Rol">
-
                                     </div>
                                     <div class="col-auto">
                                         <button type="submit" class="btn btn-primary">Buscar<i class="bi bi-search m-2"></i></button>
@@ -718,10 +709,6 @@ $nombre_usuario = $_SESSION['nombre'];
 
 
                             </div>
-
-
-
-
 
 
                             <!-- //!TABLA=============================================================================== -->
@@ -1204,7 +1191,6 @@ $nombre_usuario = $_SESSION['nombre'];
     if (isset($_GET['search'])) {
         if (empty($term)) {
             // Si el campo de búsqueda está vacío
-
             echo "<script> window.onload = function() { Swal.fire({ icon: 'warning', title: 'Campo vacío', text: 'Por favor ingresa un nombre de rol para buscar.', 
                         confirmButtonColor: '#3085d6', allowOutsideClick: false }).then(() => { window.location.href = 'roles.php'; }); } </script>";
             exit;

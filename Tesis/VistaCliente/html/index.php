@@ -912,9 +912,6 @@ $conexion->close();
 
 
 
-
-    <!--::exclusive_item_part end::-->
-
     <!-- footer part start-->
     <!-- //! FOOTER ---------------------------------------------------------------------------------------------------------------------------------------------------->
     <footer class="footer-area">
@@ -1008,7 +1005,7 @@ $conexion->close();
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // SweetAlert para "Ver detalle" (ya lo tienes)
+            // SweetAlert para "Ver detalle"
             document.querySelectorAll('.ver-detalle-no-logeado').forEach(function(btn) {
                 btn.addEventListener('click', function(e) {
                     e.preventDefault();

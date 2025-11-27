@@ -208,7 +208,7 @@ $nombre_usuario = $_SESSION['nombre'];
                                     <li>
                                         <a class="dropdown-item" href="#">
                                             <div class="d-flex">
-                                                <div class="flex-shrink-0 me-3">
+                                                <div class="shrink-0 me-3">
                                                     <div class="avatar avatar-online">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
                                                             <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
@@ -216,7 +216,7 @@ $nombre_usuario = $_SESSION['nombre'];
                                                         </svg>
                                                     </div>
                                                 </div>
-                                                <div class="flex-grow-1">
+                                                <div class="grow">
                                                     <span class="fw-semibold d-block"><?php echo $Nombre ?></span>
                                                     <small class="text-muted"><?php echo $Apellido ?></small>
                                                 </div>
@@ -257,7 +257,6 @@ $nombre_usuario = $_SESSION['nombre'];
                     die("Error de conexión: " . mysqli_connect_error());
                 }
 
-
                 // Configuración de la paginación
                 $resultadosPorPagina = 8; // Establece la cantidad de resultados por página
                 $totalResultados = $conexion->query("SELECT COUNT(*) as total FROM categoria WHERE estado= 'habilitado'")->fetch_assoc()['total'];
@@ -280,17 +279,9 @@ $nombre_usuario = $_SESSION['nombre'];
                 " . (!empty($term) ? "AND nombre LIKE '%$term%' " : '') . "
                 LIMIT $inicio, $resultadosPorPagina";
 
-
-
-
                 $result = $conexion->query($sql);
                 // Consulta para contar el total de categorias habilitados 
                 $totalCategorias = $conexion->query("SELECT COUNT(*) as total FROM categoria WHERE estado = 'habilitado' ")->fetch_assoc()['total'];
-
-
-
-
-
 
                 if (!$result) {
                     die("Error en la consulta: " . $conexion->error);
@@ -310,12 +301,7 @@ $nombre_usuario = $_SESSION['nombre'];
                         </h4>
                         <!-- Hoverable Table rows -->
                         <div class="card">
-
-
-
                             <div class="card-header border-bottom">
-
-
                                 <?php if (in_array('crear', $permisos_categorias)): ?>
                                     <h6 class="card-title">Añadir una Categoria</h6>
                                     <a href="./vista-registrar-categoria.php" class="btn btn-primary">+ nueva categoría</a>
@@ -353,6 +339,7 @@ $nombre_usuario = $_SESSION['nombre'];
                                         </tr>
                                     </thead>
                                     <tbody class='table-border-bottom-0'>
+                                        <!-- Dame la siguiente fila como un array asociativo donde puedo acceder a los datos usando los nombres de las columnas de la base de datos -->
                                         <?php while ($row = $result->fetch_assoc()) : ?>
                                             <tr>
 
@@ -435,6 +422,7 @@ $nombre_usuario = $_SESSION['nombre'];
 
 
                     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+                    <!-- Script de sweet alert para eliminar una categoria -->
                     <script>
                         $(document).ready(function() {
                             $('.eliminar-categoria').on('click', function() {
@@ -752,6 +740,7 @@ $nombre_usuario = $_SESSION['nombre'];
 
     <!-- Place this tag in your head or just before your close body tag. -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Script para HABILITAR CATEGORIA -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Función para habilitar una categoría 
@@ -825,6 +814,7 @@ $nombre_usuario = $_SESSION['nombre'];
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- script para DESHABILITAR -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Función para deshabilitar una categoría 

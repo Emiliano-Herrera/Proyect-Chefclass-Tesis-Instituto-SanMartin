@@ -32,26 +32,44 @@ if (isset($_SESSION['id_usuario'])) {
 $conexion->query("SET lc_time_names = 'es_ES'");
 
 $sql = "SELECT U.*, G.*, R.nombre_rol, T.telefono AS user_telefono, E.email AS user_email, U.img, 
-        DATE_FORMAT(U.fecha_creacion, '%d de %M del %Y') AS fecha_creacion_formateada, U.estado 
+        DATE_FORMAT(U.fecha_creacion, '%d de %M del %Y') AS fecha_creacion_formateada, U.estado,
+        S.id_seccion, S.nombre_seccion, RPS.permisos
         FROM usuarios U 
         LEFT JOIN generos G ON U.genero = G.id_genero 
         LEFT JOIN roles R ON U.rol = R.id_rol 
         LEFT JOIN telefonos_usuarios T ON U.id_usuario = T.id_usuario 
         LEFT JOIN emails_usuarios E ON U.id_usuario = E.id_usuario 
-        WHERE U.id_usuario = ? ORDER BY U.id_usuario ASC";
-
+        LEFT JOIN roles_permisos_secciones RPS ON R.id_rol = RPS.id_rol
+        LEFT JOIN secciones S ON RPS.id_seccion = S.id_seccion
+        WHERE U.id_usuario = ? 
+        ORDER BY U.id_usuario ASC, S.id_seccion ASC";
 $statement = $conexion->prepare($sql);
 $statement->bind_param("i", $ID_Usuario);
 $statement->execute();
 $resultado = $statement->get_result();
 $filas = [];
+$secciones_permisos = [];
+
 while ($fila = $resultado->fetch_assoc()) {
     $filas[] = $fila;
+
+    // Agrupar secciones y permisos
+    if ($fila['id_seccion'] && $fila['nombre_seccion']) {
+        $secciones_permisos[] = [
+            'id_seccion' => $fila['id_seccion'],
+            'nombre_seccion' => $fila['nombre_seccion'],
+            'permisos' => $fila['permisos'] ? explode(',', $fila['permisos']) : []
+        ];
+    }
 }
+
 // Obtener emails, teléfonos y roles únicos 
 $emails = array_unique(array_column($filas, 'user_email'));
 $telefonos = array_unique(array_column($filas, 'user_telefono'));
 $roles = array_unique(array_column($filas, 'nombre_rol'));
+
+// Eliminar duplicados en secciones_permisos
+$secciones_permisos = array_unique($secciones_permisos, SORT_REGULAR);
 
 
 
@@ -256,17 +274,17 @@ if ($row_permiso_recetas = $result_permiso_recetas->fetch_assoc()) {
                                         </a>
                                     </li>
 
-                                    
-                                        <li>
-                                            <div class="dropdown-divider"></div>
-                                        </li>
-                                        <li>
-                                            <a class="dropdown-item" href="../../VistaCliente/html/index.php">
-                                                <i class='bx bx-arrow-back me-2'></i>
-                                                <span class="align-middle">Volver al sitio web</span>
-                                            </a>
-                                        </li>
-                                    
+
+                                    <li>
+                                        <div class="dropdown-divider"></div>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="../../VistaCliente/html/index.php">
+                                            <i class='bx bx-arrow-back me-2'></i>
+                                            <span class="align-middle">Volver al sitio web</span>
+                                        </a>
+                                    </li>
+
 
                                     <li>
                                         <div class="dropdown-divider"></div>
@@ -415,13 +433,49 @@ if ($row_permiso_recetas = $result_permiso_recetas->fetch_assoc()) {
                                                     <li class="d-flex align-items-center"><i class="bx bx-user-check me-2"></i>
                                                         <div class="d-flex flex-wrap"><span class="fw-medium me-2">Estado</span><span><?php echo $filas[0]['estado'] ?></span></div>
                                                     </li>
+                                                    <li class="d-flex align-items-center mt-3"><i class="bx bx-user-check me-2"></i>
+                                                        <div class="d-flex flex-wrap"><span class="fw-medium me-2">Rol</span><span><?php echo $filas[0]['nombre_rol'] ?></span></div>
+                                                    </li>
+                                                    <li class="d-flex align-items-start mt-3">
+                                                        <i class="bx bx-user-check me-2 mt-1"></i>
+                                                        <div class="d-flex flex-column w-100">
+                                                            <div class="d-flex flex-wrap align-items-center mb-2">
+                                                                <span class="fw-medium me-2">Secciones con acceso:</span>
+                                                                <span class="badge bg-primary me-1">
+                                                                    <?php echo count($secciones_permisos); ?> secciones
+                                                                </span>
+                                                            </div>
+
+                                                            <div class="accordion" id="accordionPermisos">
+                                                                <?php foreach ($secciones_permisos as $index => $seccion): ?>
+                                                                    <div class="accordion-item border-0">
+                                                                        <h3 class="accordion-header">
+                                                                            <button class="accordion-button collapsed py-2" type="button" data-bs-toggle="collapse"
+                                                                                data-bs-target="#collapse<?php echo $index; ?>" aria-expanded="false">
+                                                                                <i class="bx bx-folder me-2"></i>
+                                                                                <?php echo htmlspecialchars($seccion['nombre_seccion']); ?>
+                                                                                <span class="badge bg-success ms-2"><?php echo count($seccion['permisos']); ?> permisos</span>
+                                                                            </button>
+                                                                        </h3>
+                                                                        <div id="collapse<?php echo $index; ?>" class="accordion-collapse collapse"
+                                                                            data-bs-parent="#accordionPermisos">
+                                                                            <div class="accordion-body pt-2">
+                                                                                <div class="d-flex flex-wrap gap-1">
+                                                                                    <?php foreach ($seccion['permisos'] as $permiso): ?>
+                                                                                        <span class="badge bg-info text-dark"><?php echo ucfirst($permiso); ?></span>
+                                                                                    <?php endforeach; ?>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                <?php endforeach; ?>
+                                                            </div>
+                                                        </div>
+                                                    </li>
                                                 </ul>
                                             </div>
 
-                                            <div class="d-flex justify-content-center pt-3">
-                                                <!-- <a href="javascript:;" class="btn btn-primary me-3" data-bs-target="#editUser" data-bs-toggle="modal">Edit</a>
-                                                <a href="javascript:;" class="btn btn-label-danger suspend-user">Suspended</a> -->
-                                            </div>
+
                                         </div>
                                     </div>
                                 </div>
@@ -435,10 +489,7 @@ if ($row_permiso_recetas = $result_permiso_recetas->fetch_assoc()) {
                                 <!-- User Pills -->
                                 <ul class="nav nav-pills flex-column flex-md-row mb-3">
                                     <li class="nav-item"><a class="nav-link" href="#"><i class="bx bx-user me-1"></i>Cuenta</a></li>
-                                    <!-- <li class="nav-item"><a class="nav-link" href="app-user-view-security.html"><i class="bx bx-lock-alt me-1"></i>Security</a></li>
-                                    <li class="nav-item"><a class="nav-link" href="app-user-view-billing.html"><i class="bx bx-detail me-1"></i>Billing & Plans</a></li>
-                                    <li class="nav-item"><a class="nav-link active" href="javascript:void(0);"><i class="bx bx-bell me-1"></i>Notifications</a></li>
-                                    <li class="nav-item"><a class="nav-link" href="app-user-view-connections.html"><i class="bx bx-link-alt me-1"></i>Connections</a></li> -->
+
                                 </ul>
                                 <!--/ User Pills -->
 
@@ -588,63 +639,63 @@ if ($row_permiso_recetas = $result_permiso_recetas->fetch_assoc()) {
                                     </div>
                                 </div> -->
 
-                                <?php if(in_array('detalle',$permisos_recetas)) :?>
-                                <div class="card">
-                                    <div class="card-header d-flex align-items-center justify-content-between">
-                                        <div class="card-title mb-0">
-                                            <!-- <h5 class="m-0 me-2">Tabla de recetas</h5> -->
+                                <?php if (in_array('detalle', $permisos_recetas)) : ?>
+                                    <div class="card">
+                                        <div class="card-header d-flex align-items-center justify-content-between">
+                                            <div class="card-title mb-0">
+                                                <!-- <h5 class="m-0 me-2">Tabla de recetas</h5> -->
+                                            </div>
+                                            <div class="d-flex"> <input type="text" id="search" class="form-control me-2" placeholder="Buscar por titulo" value="<?php echo $search; ?>"> <select id="filter-difficulty" class="form-control me-2">
+                                                    <option value="">Todas las Dificultades</option>
+                                                    <option value="Fácil">Fácil</option>
+                                                    <option value="Intermedio">Intermedio</option>
+                                                    <option value="Difícil">Difícil</option>
+                                                </select>
+                                                <select id="filter-category" class="form-control me-2">
+                                                    <option value="">Todas las Categorías</option> <?php echo $categorias_options; ?>
+                                                </select>
+                                            </div>
                                         </div>
-                                        <div class="d-flex"> <input type="text" id="search" class="form-control me-2" placeholder="Buscar por titulo" value="<?php echo $search; ?>"> <select id="filter-difficulty" class="form-control me-2">
-                                                <option value="">Todas las Dificultades</option>
-                                                <option value="Fácil">Fácil</option>
-                                                <option value="Intermedio">Intermedio</option>
-                                                <option value="Difícil">Difícil</option>
-                                            </select>
-                                            <select id="filter-category" class="form-control me-2">
-                                                <option value="">Todas las Categorías</option> <?php echo $categorias_options; ?>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="card-datatable table-responsive">
-                                        <table class="table">
-                                            <thead>
-                                                <tr>
-                                                    <th class="text-center">Título</th>
-                                                    <!-- <th class="text-center">Usuario</th> -->
-                                                    <th class="text-center">Categoría</th>
-                                                    <th class="text-center">Dificultad</th>
-                                                    <!-- <th class="text-center">Tiempo de preparación</th> -->
-                                                    <th class="text-center">Acciones</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="recipes-table"> <?php foreach ($recipes as $row): ?> <tr>
-                                                        <td class="text-center"><?php echo $row['titulo']; ?></td>
-                                                        <!-- <td class="text-center"><?php echo $row['usuario']; ?></td> -->
-                                                        <td class="text-center"><?php echo $row['categorias'] ?? ''; ?></td>
-                                                        <td class="text-center"><?php echo $row['dificultad']; ?></td>
-                                                        <!-- <td class="text-center"><?php echo $row['tiempo_preparacion']; ?> min</td> -->
-                                                        <td class="text-center">
-                                                            <div class="dropdown">
-                                                                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
-                                                                <div class="dropdown-menu">
-                                                                    <?php if(in_array('detalle',$permisos_recetas)): ?>
-                                                                    <a class="dropdown-item" href="vista-detalle-receta.php?id_receta=<?php echo $row['id_receta']; ?>"><i class='bx bx-show-alt me-2'></i> Detalle</a>
-                                                                    <?php endif; ?>
-                                                                    <?php if(in_array('editar', $permisos_recetas)): ?>
-                                                                    <a class="dropdown-item" href="vista-editar-receta.php?id_receta=<?php echo $row['id_receta']; ?>"><i class='bx bx-edit-alt me-2'></i> Editar</a>
-                                                                    <?php endif; ?>
+                                        <div class="card-datatable table-responsive">
+                                            <table class="table">
+                                                <thead>
+                                                    <tr>
+                                                        <th class="text-center">Título</th>
+                                                        <!-- <th class="text-center">Usuario</th> -->
+                                                        <th class="text-center">Categoría</th>
+                                                        <th class="text-center">Dificultad</th>
+                                                        <!-- <th class="text-center">Tiempo de preparación</th> -->
+                                                        <th class="text-center">Acciones</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="recipes-table"> <?php foreach ($recipes as $row): ?> <tr>
+                                                            <td class="text-center"><?php echo $row['titulo']; ?></td>
+                                                            <!-- <td class="text-center"><?php echo $row['usuario']; ?></td> -->
+                                                            <td class="text-center"><?php echo $row['categorias'] ?? ''; ?></td>
+                                                            <td class="text-center"><?php echo $row['dificultad']; ?></td>
+                                                            <!-- <td class="text-center"><?php echo $row['tiempo_preparacion']; ?> min</td> -->
+                                                            <td class="text-center">
+                                                                <div class="dropdown">
+                                                                    <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
+                                                                    <div class="dropdown-menu">
+                                                                        <?php if (in_array('detalle', $permisos_recetas)): ?>
+                                                                            <a class="dropdown-item" href="vista-detalle-receta.php?id_receta=<?php echo $row['id_receta']; ?>"><i class='bx bx-show-alt me-2'></i> Detalle</a>
+                                                                        <?php endif; ?>
+                                                                        <?php if (in_array('editar', $permisos_recetas)): ?>
+                                                                            <a class="dropdown-item" href="vista-editar-receta.php?id_receta=<?php echo $row['id_receta']; ?>"><i class='bx bx-edit-alt me-2'></i> Editar</a>
+                                                                        <?php endif; ?>
+                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                        </td>
-                                                    </tr> <?php endforeach; ?> </tbody>
-                                        </table>
+                                                            </td>
+                                                        </tr> <?php endforeach; ?> </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="card-footer">
+                                            <p class="text-center">Total de recetas: <span id="total-recipes"><?php echo $total; ?></span></p>
+                                            <ul class="pagination justify-content-center" id="pagination"> <?php echo $pagination_html; ?> </ul>
+                                        </div>
                                     </div>
-                                    <div class="card-footer">
-                                        <p class="text-center">Total de recetas: <span id="total-recipes"><?php echo $total; ?></span></p>
-                                        <ul class="pagination justify-content-center" id="pagination"> <?php echo $pagination_html; ?> </ul>
-                                    </div>
-                                </div>
-                                <?php endif;?>
+                                <?php endif; ?>
 
                                 <!-- <script>
                                     const recetasPorPagina = 10;
