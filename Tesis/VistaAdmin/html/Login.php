@@ -151,7 +151,7 @@ if (isset($_POST['enviar'])) {
     <meta name="description" content="Sistema de autenticación" />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="../assets/img/favicon/favicon.ico" />
+    <link rel="icon" type="image/x-icon" href="../../VistaCliente/img/chefclassFinal.png" />
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -192,6 +192,30 @@ if (isset($_POST['enviar'])) {
                                 <span class="app-brand-text demo text-body fw-bold">Iniciar sesión</span>
                             </a>
                         </div>
+
+                        <!-- MENSAJE DE QUE SE ENVIO EL OKEY PARA EL CAMBIO DE CONTRASEÑA -->
+                        <?php
+                        /*  Este div es para mostrar el mensaje si es que existe el mensaje enviado desde recovery.php */
+                        if (isset($_GET['message'])) {
+                        ?>
+                            <div class="alert alert-primary" role="alert">
+                                <?php
+                                switch ($_GET['message']) {
+                                    case 'ok':
+                                        echo 'Por favor revisá tú email para el cambio de contraseña.';
+                                        break;
+                                    case 'success_password':
+                                        echo 'Ya puedes iniciar sesión con tú nueva contraseña.';
+                                        break;
+                                    default:
+                                        echo 'Algo salio mal, intenta de nuevo.';
+                                        break;
+                                }
+                                ?>
+                            </div>
+                        <?php
+                        }
+                        ?>
 
                         <!-- MENSAJES DE ERROR ESPECÍFICOS -->
                         <?php if (isset($_SESSION['login_email_error'])): ?>

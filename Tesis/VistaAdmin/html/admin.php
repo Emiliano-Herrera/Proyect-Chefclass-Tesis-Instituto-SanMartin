@@ -485,7 +485,7 @@ if ($result_mapa_usuarios && $result_mapa_usuarios->num_rows > 0) {
                   <li>
                     <a class="dropdown-item" href="#">
                       <div class="d-flex">
-                        <div class="flex-shrink-0 me-3">
+                        <div class="shrink-0 me-3">
                           <div class="avatar avatar-online">
                             <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
                               <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
@@ -493,7 +493,7 @@ if ($result_mapa_usuarios && $result_mapa_usuarios->num_rows > 0) {
                             </svg>
                           </div>
                         </div>
-                        <div class="flex-grow-1">
+                        <div class="grow">
                           <span class="fw-semibold d-block"><?php echo $Nombre ?></span>
                           <small class="text-muted"><?php echo $Apellido ?></small>
                         </div>
@@ -624,7 +624,7 @@ if ($result_mapa_usuarios && $result_mapa_usuarios->num_rows > 0) {
                         $colores = ['bg-label-primary', 'bg-label-info', 'bg-label-success', 'bg-label-warning', 'bg-label-danger', 'bg-label-secondary'];
                         foreach ($mejores_recetas_admin as $index => $receta): ?>
                           <li class="d-flex mb-4 pb-1">
-                            <div class="avatar flex-shrink-0 me-3">
+                            <div class="avatar shrink-0 me-3">
                               <span class="avatar-initial rounded <?= $colores[$index % count($colores)] ?>"><i class='bx bx-star'></i></span>
                             </div>
                             <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
@@ -656,7 +656,7 @@ if ($result_mapa_usuarios && $result_mapa_usuarios->num_rows > 0) {
                         $colores = ['bg-label-primary', 'bg-label-info', 'bg-label-success', 'bg-label-warning', 'bg-label-danger', 'bg-label-secondary'];
                         foreach ($mas_guardadas as $index => $receta): ?>
                           <li class="d-flex mb-4 pb-1">
-                            <div class="avatar flex-shrink-0 me-3">
+                            <div class="avatar shrink-0 me-3">
                               <span class="avatar-initial rounded <?= $colores[$index % count($colores)] ?>"><i class='bx  bx-bookmark'></i></span>
                             </div>
                             <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
@@ -721,7 +721,7 @@ if ($result_mapa_usuarios && $result_mapa_usuarios->num_rows > 0) {
                   }
                 </style>
                 <!-- ============================================== -->
-                <div class="col-12 col-xl-6">
+                <div class="col-12 col-xl-6 mb-4">
                   <div class="card h-100">
                     <div class="card-header d-flex align-items-center justify-content-between">
                       <h4 class="card-title m-0 me-2">Distribución por Categoría</h4>
@@ -830,7 +830,7 @@ if ($result_mapa_usuarios && $result_mapa_usuarios->num_rows > 0) {
                   }
                 </style>
                 <!-- ============================================== -->
-                <div class="col-12 col-xl-6">
+                <div class="col-12 col-xl-6 mb-4">
                   <div class="card h-100">
                     <div class="card-header">
                       <h5 class="card-title">Distribución de Recetas por Dificultad</h5>
@@ -846,15 +846,11 @@ if ($result_mapa_usuarios && $result_mapa_usuarios->num_rows > 0) {
 
                 <!-- ============================================== -->
                 <!-- MAPA DE CALOR - UBICACIONES DE USUARIOS -->
-                <div class="col-12 mt-4">
+                <div class="col-12">
                   <div class="card">
                     <div class="card-header d-flex align-items-center justify-content-between">
                       <h4 class="card-title m-0">Mapa de Calor - Distribución de Usuarios</h4>
-                      <div class="d-flex align-items-center">
-                        <span class="badge bg-success me-2">1 usuario</span>
-                        <span class="badge bg-warning me-2">2 usuarios</span>
-                        <span class="badge bg-danger">3+ usuarios</span>
-                      </div>
+                      
                     </div>
                     <div class="card-body">
                       <div id="mapaCalorUsuarios" style="height: 500px; width: 100%; border-radius: 8px;"></div>
@@ -924,11 +920,11 @@ if ($result_mapa_usuarios && $result_mapa_usuarios->num_rows > 0) {
      * mediante un efecto de calor (heatmap) donde los colores indican concentración
      */
 
-    // Mapa de Calor - Solo calor sin pines
+    // Mapa de Calor
     document.addEventListener('DOMContentLoaded', function() {
       /**
        * DATOS DESDE PHP
-       * Convertimos el array PHP a JavaScript para su uso en el cliente
+       * Convertimos el array PHP a JavaScript
        */
       const ubicaciones = <?php echo json_encode($ubicaciones_usuarios); ?>;
 

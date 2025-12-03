@@ -294,10 +294,10 @@ if (isset($_SESSION['id_usuario'])) {
                 <div class="col-sm-6 col-lg-4">
                     <div class="single_blog_item">
                         <div class="single_blog_img">
-                            <img src="../img/team/chefs_2.png" alt="">
+                            <img src="../img/Elemy.jpg" alt="">
                         </div>
                         <div class="single_blog_text text-center">
-                            <h3>Emiliano Olivera</h3>
+                            <h3>Emiliano Herrera</h3>
                             <p>Desarrollador de Software</p>
 
                         </div>

@@ -773,7 +773,8 @@ $conexion->close();
                 <div class="col-sm-6 col-lg-4">
                     <div class="single_blog_item">
                         <div class="single_blog_img">
-                            <img src="../img/team/chefs_2.png" alt="">
+                            <img src="../img/Elemy.jpg
+                            " alt="">
                         </div>
                         <div class="single_blog_text text-center">
                             <h3>Emiliano Olivera</h3>
