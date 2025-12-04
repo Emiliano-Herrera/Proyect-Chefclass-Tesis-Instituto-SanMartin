@@ -50,7 +50,7 @@ function limitar_descripcion($descripcion, $limite = 15)
 {
     // Dividir la descripción en palabras individuales
     $palabras = explode(' ', $descripcion);
-    
+
     // Si hay más palabras que el límite, recortar y agregar "..."
     if (count($palabras) > $limite) {
         return implode(' ', array_slice($palabras, 0, $limite)) . '...';
@@ -100,7 +100,7 @@ $recetas_por_categoria = [];
 // Recorrer cada categoría para obtener sus recetas
 foreach ($categorias as $categoria) {
     $categoria_id = $categoria['id_categoria'];
-    
+
     // Consulta preparada para seguridad (evita inyección SQL)
     $sql_recetas = "
         SELECT R.id_receta, R.titulo, R.descripcion, R.dificultad, RI.url_imagen, U.nombre_usuario, R.fecha_creacion, AVG(C.calificacion) as promedio_calificacion
@@ -116,7 +116,7 @@ foreach ($categorias as $categoria) {
         GROUP BY R.id_receta
         LIMIT 3
     ";
-    
+
     // Preparar y ejecutar consulta con parámetro seguro
     $stmt = $conexion->prepare($sql_recetas);
     $stmt->bind_param("i", $categoria_id);  // "i" indica que es un parámetro integer
@@ -168,10 +168,10 @@ function generar_estrellas($promedio)
 {
     // Calcular estrellas completas (parte entera del promedio)
     $estrellas_completas = floor($promedio);
-    
+
     // Determinar si necesita media estrella
     $mitad_estrella = ($promedio - $estrellas_completas >= 0.5) ? true : false;
-    
+
     $estrellas_html = '';
 
     // Generar 5 estrellas (máxima calificación)
@@ -527,10 +527,10 @@ $conexion->close();
                         <h2>¿Tienes una receta especial? ¡Publícala y hazla famosa!</h2>
                         <h4>Inspira a otros, comparte tus secretos culinarios y sé parte de nuestra comunidad</h4>
                         <p>En ChefClass, cada receta cuenta una historia. Anímate a compartir tus mejores platos, ayuda a otros a descubrir nuevos sabores y deja tu huella en nuestra comunidad. ¡Tu receta puede ser la próxima favorita de todos!</p>
-                        
+
+                    </div>
                 </div>
             </div>
-        </div>
     </section>
     <!-- about part end-->
 
@@ -608,15 +608,18 @@ $conexion->close();
                 .card-img-top {
                     width: 100%;
                     height: 200px;
-                    /* Ajusta la altura según sea necesario */
                     object-fit: cover;
-                    /* Asegura que la imagen cubra el contenedor sin distorsionarse */
                     border-top-left-radius: 15px;
                     border-top-right-radius: 15px;
                 }
 
                 .card {
                     transition: transform 0.3s ease;
+                    height: 100%;
+                    min-height: 500px;
+                    /* Aumenté esta altura para acomodar mejor el contenido */
+                    display: flex;
+                    flex-direction: column;
                 }
 
                 .card:hover {
@@ -626,7 +629,6 @@ $conexion->close();
                 .fa-star,
                 .fa-star-half-alt {
                     color: #ffeb3b;
-                    /* Color para las estrellas amarillas */
                 }
 
                 .fa-star.checked,
@@ -636,12 +638,57 @@ $conexion->close();
 
                 .fa-star {
                     color: #ccc;
-                    /* Color para las estrellas grises */
                 }
 
                 .rou {
                     border-radius: 15px;
-                    /* Ajusta este valor según sea necesario */
+                }
+
+                /* SOLUCIÓN PRINCIPAL - Obligar tamaño uniforme */
+                .recipes-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+                    gap: 1.5rem;
+                }
+
+                @media (min-width: 768px) {
+                    .recipes-grid {
+                        grid-template-columns: repeat(3, 1fr);
+                    }
+                }
+
+                /* Asegurar que todas las cards sean iguales */
+                .recipe-card {
+                    height: 100%;
+                    display: flex;
+                }
+
+                .recipe-card .card {
+                    width: 100%;
+                }
+
+                /* Control preciso del contenido interno */
+                .card-body {
+                    flex: 1;
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                .card-title {
+                    min-height: 60px;
+                    /* Altura fija para el título */
+                    display: flex;
+                    align-items: center;
+                }
+
+                .card-text {
+                    flex: 1;
+                    overflow: hidden;
+                    display: -webkit-box;
+                    -webkit-line-clamp: 3;
+                    /* Limita a 3 líneas */
+                    -webkit-box-orient: vertical;
+                    margin-bottom: 1rem;
                 }
             </style>
 
@@ -650,30 +697,40 @@ $conexion->close();
                     <div class="tab-content" id="myTabContent">
                         <?php foreach ($categorias as $categoria): ?>
                             <div class="tab-pane fade <?= $categoria['id_categoria'] == 1 ? 'show active' : '' ?>" id="categoria-<?= $categoria['id_categoria'] ?>" role="tabpanel" aria-labelledby="categoria-<?= $categoria['id_categoria'] ?>-tab">
-                                <div class="row row-cols-1 row-cols-md-3 g-4">
-                                    <!-- Verifica si existen recetas para la categoría actual antes de intentar mostrarlas. -->
+
+                                <!-- CAMBIO PRINCIPAL: Reemplazar row de Bootstrap por grid CSS -->
+                                <div class="recipes-grid">
                                     <?php if (isset($recetas_por_categoria[$categoria['id_categoria']])): ?>
                                         <?php
-                                        /* Limitar la cantidad de recetas mostradas */
                                         $contador = 0;
                                         foreach ($recetas_por_categoria[$categoria['id_categoria']] as $receta):
                                             if ($contador >= 3) break;
                                             $contador++;
                                         ?>
-
-                                            <div class="col mb-4">
+                                            <div class="recipe-card">
                                                 <div class="card h-100 shadow-lg border-0 rou">
                                                     <img src="<?= $receta['imagenes'][0]; ?>" class="card-img-top" alt="Imagen de <?= $receta['titulo']; ?>">
                                                     <div class="card-body">
-                                                        <h3 class="card-title text-dark font-weight-bold"><?= $receta['titulo'] ?></h3>
-                                                        <div class="d-flex justify-content-between mt-3">
-                                                            <h6 class="text-muted"><i class="bi bi-person-fill"></i> <?= $receta['nombre_usuario'] ?></h6>
-                                                            <h6 class="text-muted"><i class="bi bi-calendar-fill"></i><?= strftime(' %e de %b, %Y', strtotime($receta['fecha_creacion'])) ?></h6>
+                                                        <!-- Título con altura fija -->
+                                                        <h3 class="card-title text-dark font-weight-bold mb-3"><?= $receta['titulo'] ?></h3>
+
+                                                        <!-- Información del usuario y fecha -->
+                                                        <div class="d-flex justify-content-between mb-3">
+                                                            <h6 class="text-muted m-0"><i class="bi bi-person-fill"></i> <?= $receta['nombre_usuario'] ?></h6>
+                                                            <h6 class="text-muted m-0"><i class="bi bi-calendar-fill"></i><?= strftime(' %e de %b, %Y', strtotime($receta['fecha_creacion'])) ?></h6>
                                                         </div>
-                                                        <p class=""><?= generar_estrellas($receta['promedio_calificacion']) ?></p>
-                                                        <p class="card-text mt-3"><?= limitar_descripcion($receta['descripcion']) ?></p>
+
+                                                        <!-- Estrellas -->
+                                                        <div class="mb-3">
+                                                            <?= generar_estrellas($receta['promedio_calificacion']) ?>
+                                                        </div>
+
+                                                        <!-- Descripción limitada y altura fija -->
+                                                        <p class="card-text text-muted"><?= limitar_descripcion($receta['descripcion']) ?></p>
                                                     </div>
-                                                    <div class="card-footer">
+
+                                                    <!-- Footer siempre al fondo -->
+                                                    <div class="card-footer bg-transparent border-top-0 pt-0">
                                                         <?php if (!isset($_SESSION['id_usuario'])): ?>
                                                             <a href="#" class="btn_3 ver-detalle-no-logeado">Ver detalle <i class="bi bi-chevron-compact-right"></i></a>
                                                         <?php else: ?>
@@ -683,20 +740,27 @@ $conexion->close();
                                                 </div>
                                             </div>
                                         <?php endforeach; ?>
+
                                         <?php if (count($recetas_por_categoria[$categoria['id_categoria']]) > 3): ?>
-                                            <div class="col-12 text-center mt-4">
+                                            <div class="col-12 text-center mt-4" style="grid-column: 1 / -1;">
                                                 <a href="vista-categoria.php?id=<?= $categoria['id_categoria'] ?>" class="btn_3">Ver más</a>
                                             </div>
                                         <?php endif; ?>
                                     <?php else: ?>
-                                        <p>No hay recetas en esta categoría.</p>
+                                        <div class="col-12">
+                                            <p class="text-center py-4">No hay recetas en esta categoría.</p>
+                                        </div>
                                     <?php endif; ?>
                                 </div>
+
                             </div>
                         <?php endforeach; ?>
                     </div>
                 </div>
             </div>
+
+
+
 
 
         </div>
