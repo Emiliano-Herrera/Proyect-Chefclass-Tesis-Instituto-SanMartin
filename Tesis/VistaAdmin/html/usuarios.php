@@ -600,10 +600,10 @@ if (isset($_SESSION['id_usuario'])) {
                                     <!-- TEXTO INFORMATIVO SOBRE LOS RESULTADOS MOSTRADOS -->
                                     <div class="text-muted">
                                         <!-- 
-                    Muestra el rango de resultados actual y el total
-                    Ej: "Mostrando 1 a 10 de 25 usuarios"
-                    min() evita que se muestre un número mayor al total
-                    -->
+                                        Muestra el rango de resultados actual y el total
+                                        Ej: "Mostrando 1 a 10 de 25 usuarios"
+                                        min() evita que se muestre un número mayor al total
+                                        -->
                                         Mostrando <?= ($inicio + 1) ?> a <?= min($inicio + $resultadosPorPagina, $totalUsuarios) ?> de <?= $totalUsuarios ?> usuarios
                                     </div>
 

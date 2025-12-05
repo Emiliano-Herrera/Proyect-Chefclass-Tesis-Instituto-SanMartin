@@ -290,7 +290,7 @@ if ($result_recetas_pendientes->num_rows > 0) {
                             <?php
                             include('conexion.php');
                             // Conexión a la base de datos 
-                            // Parámetros de búsqueda y filtros 
+                            // Parámetros de búsqueda y filtros / si existe ?search = pasta -> $search = "pasta";
                             $search = isset($_GET['search']) ? $conexion->real_escape_string($_GET['search']) : '';
                             $filter_difficulty = isset($_GET['filter_difficulty']) ? $conexion->real_escape_string($_GET['filter_difficulty']) : '';
                             $filter_category = isset($_GET['filter_category']) ? $conexion->real_escape_string($_GET['filter_category']) : '';
@@ -444,8 +444,29 @@ if ($result_recetas_pendientes->num_rows > 0) {
                                                         <!-- Título + imagen receta -->
                                                         <td class="">
                                                             <div class="d-flex align-items-center">
+                                                                <!-- <div class="avatar me-2">
+                                                                    <img src="<?php echo !empty($row['receta_img']) ? htmlspecialchars($row['receta_img']) : '../assets/img/avatars/bread.png'; ?>" alt="Receta" class="rounded" style="width:40px;height:40px;object-fit:cover;">
+                                                                </div> -->
+                                                                <?php
+                                                                // Primero verifica si la imagen existe
+                                                                $imagen_receta = '../assets/img/avatars/bread.png'; // Imagen por defecto para recetas
+
+                                                                if (!empty($row['receta_img'])) {
+                                                                    // Verifica si es una URL o ruta local
+                                                                    if (filter_var($row['receta_img'], FILTER_VALIDATE_URL)) {
+                                                                        $imagen_receta = $row['receta_img'];
+                                                                    } elseif (file_exists($row['receta_img'])) {
+                                                                        $imagen_receta = $row['receta_img'];
+                                                                    }
+                                                                }
+                                                                ?>
+
                                                                 <div class="avatar me-2">
-                                                                    <img src="<?php echo !empty($row['receta_img']) ? htmlspecialchars($row['receta_img']) : '../../assets/img/avatars/1.png'; ?>" alt="Receta" class="rounded" style="width:40px;height:40px;object-fit:cover;">
+                                                                    <img src="<?php echo htmlspecialchars($imagen_receta); ?>"
+                                                                        alt="<?php echo !empty($row['titulo']) ? htmlspecialchars($row['titulo']) : 'Receta'; ?>"
+                                                                        class="rounded"
+                                                                        style="width:40px;height:40px;object-fit:cover;"
+                                                                        onerror="this.src='../assets/img/avatars/bread.png';">
                                                                 </div>
                                                                 <span><?php echo htmlspecialchars($row['titulo']); ?></span>
                                                             </div>
@@ -453,8 +474,15 @@ if ($result_recetas_pendientes->num_rows > 0) {
                                                         <!-- Usuario + imagen perfil -->
                                                         <td class="text-center">
                                                             <div class="d-flex align-items-center justify-content-center">
+                                                                <!-- <div class="avatar me-2">
+                                                                    <img src="<?php echo !empty($row['img_perfil']) ? htmlspecialchars($row['img_perfil']) : '../assets/img/avatars/1avatar.png'; ?>" alt="Perfil" class="rounded-circle" style="width:40px;height:40px;object-fit:cover;">
+                                                                </div> -->
                                                                 <div class="avatar me-2">
-                                                                    <img src="<?php echo !empty($row['img_perfil']) ? htmlspecialchars($row['img_perfil']) : '../../assets/img/avatars/1.png'; ?>" alt="Perfil" class="rounded-circle" style="width:40px;height:40px;object-fit:cover;">
+                                                                    <img src="<?php echo !empty($row['img_perfil']) ? htmlspecialchars($row['img_perfil']) : '../assets/img/avatars/1avatar.png'; ?>"
+                                                                        alt="Avatar de <?php echo !empty($row['nombre_usuario']) ? htmlspecialchars($row['nombre_usuario']) : 'Usuario'; ?>"
+                                                                        class="rounded-circle"
+                                                                        style="width:40px;height:40px;object-fit:cover;"
+                                                                        onerror="this.onerror=null; this.src='../assets/img/avatars/1avatar.png';">
                                                                 </div>
                                                                 <span><?php echo htmlspecialchars($row['usuario']); ?></span>
                                                             </div>
@@ -513,13 +541,20 @@ if ($result_recetas_pendientes->num_rows > 0) {
                                         const difficulty = filterDifficulty.value;
                                         const category = filterCategory.value;
                                         const fecha = filterFecha.value;
+
+                                        // Contruye URL con parametros
                                         fetch(`?search=${encodeURIComponent(search)}&filter_difficulty=${encodeURIComponent(difficulty)}&filter_category=${encodeURIComponent(category)}&filter_fecha=${encodeURIComponent(fecha)}&page=${page}`).then(response => response.text()).then(data => {
                                             // Actualizar la parte del cuerpo de la tabla 
+                                            // parsea el html completo devuelto por php.
                                             const parser = new DOMParser();
                                             const doc = parser.parseFromString(data, 'text/html');
+
+                                            // extraemos solo las partes que necesitamos actualizar
                                             const newRecipesTable = doc.getElementById('recipes-table').innerHTML;
                                             const newTotalRecipes = doc.getElementById('total-recipes').innerHTML;
                                             const newPagination = doc.getElementById('pagination').innerHTML;
+
+                                            // actualiza el dom
                                             recipesTable.innerHTML = newRecipesTable;
                                             totalRecipes.innerHTML = newTotalRecipes;
                                             pagination.innerHTML = newPagination;
@@ -529,10 +564,13 @@ if ($result_recetas_pendientes->num_rows > 0) {
                                         });
                                     };
                                     // Event listeners 
+                                    // actualiza al escribir en la busqueda
                                     searchInput.addEventListener('input', () => loadRecipes(1));
+                                    // actualiza al acambiar los filtros
                                     filterDifficulty.addEventListener('change', () => loadRecipes(1));
                                     filterCategory.addEventListener('change', () => loadRecipes(1));
                                     filterFecha.addEventListener('change', () => loadRecipes(1));
+                                    // maneja los clicks en paginacion
                                     pagination.addEventListener('click', (e) => {
                                         if (e.target.tagName === 'A') {
                                             e.preventDefault();
@@ -675,8 +713,29 @@ if ($result_recetas_pendientes->num_rows > 0) {
                                                         <!-- Título + imagen receta -->
                                                         <td class="">
                                                             <div class="d-flex align-items-center">
+                                                                <!-- <div class="avatar me-2">
+                                                                    <img src="<?php echo !empty($row['receta_img']) ? htmlspecialchars($row['receta_img']) : '../assets/img/avatars/bread.png'; ?>" alt="Receta" class="rounded" style="width:40px;height:40px;object-fit:cover;">
+                                                                </div> -->
+                                                                <?php
+                                                                // Primero verifica si la imagen existe
+                                                                $imagen_receta = '../assets/img/avatars/bread.png'; // Imagen por defecto para recetas
+
+                                                                if (!empty($row['receta_img'])) {
+                                                                    // Verifica si es una URL o ruta local
+                                                                    if (filter_var($row['receta_img'], FILTER_VALIDATE_URL)) {
+                                                                        $imagen_receta = $row['receta_img'];
+                                                                    } elseif (file_exists($row['receta_img'])) {
+                                                                        $imagen_receta = $row['receta_img'];
+                                                                    }
+                                                                }
+                                                                ?>
+
                                                                 <div class="avatar me-2">
-                                                                    <img src="<?php echo !empty($row['receta_img']) ? htmlspecialchars($row['receta_img']) : '../../assets/img/avatars/1.png'; ?>" alt="Receta" class="rounded" style="width:40px;height:40px;object-fit:cover;">
+                                                                    <img src="<?php echo htmlspecialchars($imagen_receta); ?>"
+                                                                        alt="<?php echo !empty($row['titulo']) ? htmlspecialchars($row['titulo']) : 'Receta'; ?>"
+                                                                        class="rounded"
+                                                                        style="width:40px;height:40px;object-fit:cover;"
+                                                                        onerror="this.src='../assets/img/avatars/bread.png';">
                                                                 </div>
                                                                 <span><?php echo htmlspecialchars($row['titulo']); ?></span>
                                                             </div>
@@ -684,8 +743,15 @@ if ($result_recetas_pendientes->num_rows > 0) {
                                                         <!-- Usuario + imagen perfil -->
                                                         <td class="text-center">
                                                             <div class="d-flex align-items-center justify-content-center">
+                                                                <!-- <div class="avatar me-2">
+                                                                    <img src="<?php echo !empty($row['img_perfil']) ? htmlspecialchars($row['img_perfil']) : '../assets/img/avatars/1avatar.png'; ?>" alt="Perfil" class="rounded-circle" style="width:40px;height:40px;object-fit:cover;">
+                                                                </div> -->
                                                                 <div class="avatar me-2">
-                                                                    <img src="<?php echo !empty($row['img_perfil']) ? htmlspecialchars($row['img_perfil']) : '../../assets/img/avatars/1.png'; ?>" alt="Perfil" class="rounded-circle" style="width:40px;height:40px;object-fit:cover;">
+                                                                    <img src="<?php echo !empty($row['img_perfil']) ? htmlspecialchars($row['img_perfil']) : '../assets/img/avatars/1avatar.png'; ?>"
+                                                                        alt="Avatar de <?php echo !empty($row['nombre_usuario']) ? htmlspecialchars($row['nombre_usuario']) : 'Usuario'; ?>"
+                                                                        class="rounded-circle"
+                                                                        style="width:40px;height:40px;object-fit:cover;"
+                                                                        onerror="this.onerror=null; this.src='../assets/img/avatars/1avatar.png';">
                                                                 </div>
                                                                 <span><?php echo htmlspecialchars($row['usuario']); ?></span>
                                                             </div>

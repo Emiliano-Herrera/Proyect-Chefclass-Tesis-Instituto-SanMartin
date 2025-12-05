@@ -708,7 +708,7 @@ if ($result_mapa_usuarios && $result_mapa_usuarios->num_rows > 0) {
                 </div>
 
                 <!-- ============================================== -->
-                <!-- DISTRIBUCIÓN POR CATEGORÍA -->
+                <!-- //TODO -- DISTRIBUCIÓN POR CATEGORÍA -->
                 <style>
                   .distribution-bars .progress {
                     background-color: #f5f5f5;
@@ -720,7 +720,7 @@ if ($result_mapa_usuarios && $result_mapa_usuarios->num_rows > 0) {
                     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
                   }
                 </style>
-                <!-- ============================================== -->
+                
                 <div class="col-12 col-xl-6 mb-4">
                   <div class="card h-100">
                     <div class="card-header d-flex align-items-center justify-content-between">
@@ -809,7 +809,7 @@ if ($result_mapa_usuarios && $result_mapa_usuarios->num_rows > 0) {
                   });
                 </script>
                 <!-- ============================================== -->
-                <!-- DISTRIBUCIÓN POR DIFICULTAD - GRÁFICO CIRCULAR -->
+                <!-- //* -- DISTRIBUCIÓN POR DIFICULTAD - GRÁFICO CIRCULAR -->
                 <style>
                   .chart-container {
                     position: relative;
@@ -829,7 +829,7 @@ if ($result_mapa_usuarios && $result_mapa_usuarios->num_rows > 0) {
                     font-weight: 600;
                   }
                 </style>
-                <!-- ============================================== -->
+                
                 <div class="col-12 col-xl-6 mb-4">
                   <div class="card h-100">
                     <div class="card-header">
@@ -845,7 +845,7 @@ if ($result_mapa_usuarios && $result_mapa_usuarios->num_rows > 0) {
                 </div>
 
                 <!-- ============================================== -->
-                <!-- MAPA DE CALOR - UBICACIONES DE USUARIOS -->
+                <!-- //! -- MAPA DE CALOR - UBICACIONES DE USUARIOS -->
                 <div class="col-12">
                   <div class="card">
                     <div class="card-header d-flex align-items-center justify-content-between">

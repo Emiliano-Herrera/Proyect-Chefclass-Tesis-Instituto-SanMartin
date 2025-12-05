@@ -307,12 +307,47 @@ if (isset($_SESSION['id_usuario'])) {
                 // Obtener todas las acciones para el filtro
                 $accionesQuery = "SELECT DISTINCT Accion FROM historial_usuarios";
                 $accionesResult = mysqli_query($conexion, $accionesQuery);
+
+                // Función para formatear fecha en español
+                function formatearFechaEspanol($fechaBD)
+                {
+                    if (empty($fechaBD)) {
+                        return '';
+                    }
+
+                    try {
+                        $fecha = new DateTime($fechaBD);
+
+                        $meses = [
+                            'January' => 'Enero',
+                            'February' => 'Febrero',
+                            'March' => 'Marzo',
+                            'April' => 'Abril',
+                            'May' => 'Mayo',
+                            'June' => 'Junio',
+                            'July' => 'Julio',
+                            'August' => 'Agosto',
+                            'September' => 'Septiembre',
+                            'October' => 'Octubre',
+                            'November' => 'Noviembre',
+                            'December' => 'Diciembre'
+                        ];
+
+                        $dia = $fecha->format('d');
+                        $mes = $meses[$fecha->format('F')];
+                        $anio = $fecha->format('Y');
+
+                        return "$dia de $mes del $anio";
+                    } catch (Exception $e) {
+                        return $fechaBD; // Si hay error, devolver fecha original
+                    }
+                }
                 ?>
 
                 <!-- //!Content wrapper MAIN MENÚ -->
                 <div class="content-wrapper">
                     <!-- Content -->
-                    <div class="container-xxl flex-grow-1 container-p-y">
+                    <div class="container-xxl grow container-p-y">
                         <h4 class="py-3 mb-4">
                             <span class="text-muted fw-light">Administración /</span> Auditoría
                         </h4>
@@ -385,7 +420,11 @@ if (isset($_SESSION['id_usuario'])) {
                                                         <td><?php echo htmlspecialchars($auditoria['nombre_completo']); ?></td>
                                                         <td><?php echo htmlspecialchars($auditoria['Accion']); ?></td>
                                                         <td><?php echo htmlspecialchars($auditoria['Detalles']); ?></td>
-                                                        <td><?php echo htmlspecialchars($auditoria['Fecha']); ?></td>
+                                                        <td>
+                                                            <?php
+                                                            echo htmlspecialchars(formatearFechaEspanol($auditoria['Fecha']));
+                                                            ?>
+                                                        </td>
                                                     </tr>
                                                 <?php } ?>
                                             </tbody>
@@ -444,6 +483,7 @@ if (isset($_SESSION['id_usuario'])) {
                                         if (detalleFiltro) params.push('detalle=' + encodeURIComponent(detalleFiltro));
                                         window.location.href = '?' + params.join('&');
                                     }
+
                                     function resetFiltros() {
                                         window.location.href = 'auditoria.php';
                                     }

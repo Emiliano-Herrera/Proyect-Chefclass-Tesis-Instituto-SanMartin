@@ -472,10 +472,6 @@ if (isset($_SESSION['id_usuario'])) {
 
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
-
-
-
-
     <!-- Scrip para poner en contorno rojo cuando se saltea algun input o select del formulario -->
     <!-- Y para los sweetAlert cuando falta algo del formulario -->
 
