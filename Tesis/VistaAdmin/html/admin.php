@@ -809,7 +809,7 @@ if ($result_mapa_usuarios && $result_mapa_usuarios->num_rows > 0) {
                   });
                 </script>
                 <!-- ============================================== -->
-                <!-- //* -- DISTRIBUCIÓN POR DIFICULTAD - GRÁFICO CIRCULAR -->
+                <!-- //? -- DISTRIBUCIÓN POR DIFICULTAD - GRÁFICO CIRCULAR -->
                 <style>
                   .chart-container {
                     position: relative;
@@ -892,10 +892,6 @@ if ($result_mapa_usuarios && $result_mapa_usuarios->num_rows > 0) {
             </div>
           </div>
           <!-- / Content -->
-
-
-
-
 
           <div class="content-backdrop fade"></div>
         </div>
